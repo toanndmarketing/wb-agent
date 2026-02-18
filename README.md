@@ -24,7 +24,7 @@ Tool này tự động tạo cấu trúc `.agent/` chuẩn cho Antigravity IDE, 
 
 ```bash
 # Windows / Linux / macOS — Cài global, lệnh `wb-agent` dùng được ở mọi nơi
-pip install git+https://github.com/compnew2006/antigravity-ssd.git
+pip install git+https://github.com/toanndmarketing/wb-agent.git
 
 # Kiểm tra
 wb-agent version
@@ -38,8 +38,8 @@ wb-agent version
 pip install pipx
 pipx ensurepath
 
-# Cài antigravity-ssd
-pipx install git+https://github.com/compnew2006/antigravity-ssd.git
+# Cài wb-agent
+pipx install git+https://github.com/toanndmarketing/wb-agent.git
 
 # Kiểm tra
 wb-agent version
@@ -48,8 +48,8 @@ wb-agent version
 ### Cách 3: Clone + Install (Development)
 
 ```bash
-git clone https://github.com/compnew2006/antigravity-ssd.git
-cd antigravity-ssd
+git clone https://github.com/toanndmarketing/wb-agent.git
+cd wb-agent
 
 # Cài editable mode (thay đổi code tự động có hiệu lực)
 pip install -e .
@@ -62,16 +62,16 @@ python ssd.py init
 
 ```bash
 # Clone về và chạy trực tiếp
-git clone https://github.com/compnew2006/antigravity-ssd.git
-python antigravity-ssd/ssd.py init --target /path/to/project
+git clone https://github.com/toanndmarketing/wb-agent.git
+python wb-agent/ssd.py init --target /path/to/project
 ```
 
 ### Gỡ cài đặt
 
 ```bash
-pip uninstall antigravity-ssd
+pip uninstall wb-agent
 # hoặc
-pipx uninstall antigravity-ssd
+pipx uninstall wb-agent
 ```
 
 ---
@@ -402,17 +402,17 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 ## 🏗️ Architecture (Tool)
 
 ```
-antigravity-ssd/
+wb-agent/
 ├── ssd.py                    # Backward-compat wrapper (python ssd.py)
 ├── pyproject.toml            # Package config (PEP 621)
 ├── README.md                 # This file
 ├── LICENSE                   # MIT License
 ├── .gitignore
-└── antigravity_ssd/          # Python package
+└── wb_agent/                 # Python package
     ├── __init__.py            # Version: __version__ = "1.0.0"
-    ├── __main__.py            # python -m antigravity_ssd
+    ├── __main__.py            # python -m wb_agent
     ├── cli.py                 # Console script entry point → `wb-agent` command
-    ├── registry.py            # Single Source of Truth — 17 skills + 19 workflows
+    ├── registry.py            # Single Source of Truth — 17 skills + 20 workflows
     ├── templates.py           # Core templates — SKILL.md, workflows, scripts, docs
     ├── generator.py           # Generator engine — orchestrates .agent/ creation
     └── validators.py          # 10 validation checks

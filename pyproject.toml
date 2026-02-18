@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "antigravity-ssd"
+name = "wb-agent"
 version = "1.0.0"
-description = "⚡ Spec-Driven Development CLI - Initialize any project with Antigravity's agentic AI workflow"
+description = "⚡ Spec-Driven Development CLI - Initialize ASF 3.3 projects with Antigravity standards"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -19,6 +19,7 @@ keywords = [
     "antigravity",
     "code-generation",
     "project-scaffolding",
+    "wb-agent"
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -37,13 +38,12 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/compnew2006/antigravity-ssd"
-Repository = "https://github.com/compnew2006/antigravity-ssd"
-Issues = "https://github.com/compnew2006/antigravity-ssd/issues"
+Homepage = "https://github.com/toanndmarketing/wb-agent"
+Repository = "https://github.com/toanndmarketing/wb-agent"
+Issues = "https://github.com/toanndmarketing/wb-agent/issues"
 
-# Console script: lệnh `wb-agent` chạy được ở mọi nơi sau khi pip install
 [project.scripts]
-wb-agent = "antigravity_ssd.cli:main"
+wb-agent = "wb_agent.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["antigravity_ssd*"]
+include = ["wb_agent*"]

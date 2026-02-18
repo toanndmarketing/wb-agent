@@ -15,10 +15,10 @@ import argparse
 import sys
 import os
 
-from antigravity_ssd import __version__
-from antigravity_ssd.generator import ProjectGenerator
-from antigravity_ssd.validators import validate_agent_structure
-from antigravity_ssd.registry import SKILLS_REGISTRY, WORKFLOWS_REGISTRY
+from wb_agent import __version__
+from wb_agent.generator import ProjectGenerator
+from wb_agent.validators import validate_agent_structure
+from wb_agent.registry import SKILLS_REGISTRY, WORKFLOWS_REGISTRY
 
 
 def cmd_init(args):
