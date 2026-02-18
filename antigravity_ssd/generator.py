@@ -87,11 +87,16 @@ class ProjectGenerator:
     def _create_knowledge_base(self):
         """Tạo các file tri thức nền tảng."""
         base_path = os.path.join(self.agent_dir, "knowledge_base")
+        
+        # Infra file from template
+        infra_path = os.path.join(base_path, "infrastructure.md")
+        infra_template = DOCUMENT_TEMPLATE_MAP.get("infrastructure-template.md")
+        self._write_file(infra_path, infra_template())
+
         files = {
             "business_logic.md": "# Business Logic\n\nĐịnh nghĩa logic nghiệp vụ cốt lõi tại đây.",
             "data_schema.md": "# Data Schema\n\nĐịnh nghĩa cấu trúc database, quan hệ thực thể tại đây.",
             "api_standards.md": "# API Standards\n\nQuy tắc thiết kế API, error codes, auth headers.",
-            "infrastructure.md": "# Infrastructure\n\nThông tin về Server, Docker, Ports, Deployment."
         }
         for name, content in files.items():
             self._write_file(os.path.join(base_path, name), content)

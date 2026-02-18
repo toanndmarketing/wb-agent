@@ -8,6 +8,11 @@ Registry - Định nghĩa tất cả Skills và Workflows cho Spec-Kit Antigravi
 # ============================================================================
 SKILLS_REGISTRY = [
     {
+        "name": "speckit.devops",
+        "role": "DevOps Architect",
+        "description": "Chuyên gia hạ tầng Docker & Security Hardening theo dải port 8900-8999.",
+    },
+    {
         "name": "speckit.identity",
         "role": "Persona Architect",
         "description": "Quản lý nhân cách và định hướng hành vi của AI cho dự án.",
