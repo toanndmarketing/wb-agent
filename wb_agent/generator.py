@@ -1,6 +1,7 @@
 """
 Generator - Core logic tạo cấu trúc .agent/ chuẩn ASF 3.3.
 Hỗ trợ lọc skills/workflows theo Project Type.
+Tự động populate nội dung từ Scanner khi dự án có sẵn.
 """
 
 import os
@@ -19,15 +20,17 @@ from .templates import (
     doc_identity_template,
     doc_seo_standards_template,
 )
+from .scanner import ProjectScanner
 
 
 class ProjectGenerator:
     """Sinh cấu trúc .agent/ cho project theo chuẩn Spec-Kit & ASF 3.3."""
 
-    def __init__(self, target_dir: str, project_name: str, project_type: str = "fullstack"):
+    def __init__(self, target_dir: str, project_name: str, project_type: str = "fullstack", scan_profile: dict = None):
         self.target_dir = target_dir
         self.project_name = project_name
         self.project_type = project_type
+        self.scan_profile = scan_profile  # Kết quả từ ProjectScanner
         self.agent_dir = os.path.join(target_dir, ".agent")
 
         # Lọc skills/workflows theo project type
@@ -90,30 +93,63 @@ class ProjectGenerator:
             self.stats["directories"] += 1
 
     def _create_identity(self):
-        """Tạo Master Identity chuẩn nhân cách AI — có nhận biết Project Type."""
+        """Tạo Master Identity — có nhận biết Project Type + thông tin scan."""
         filepath = os.path.join(self.agent_dir, "identity", "master-identity.md")
         content = doc_identity_template(self.project_name, self.project_type)
+
+        # Bổ sung context từ scanner
+        if self.scan_profile and self.scan_profile.get("has_existing_code"):
+            scanner = ProjectScanner(self.target_dir)
+            scanner.profile = self.scan_profile
+            context = scanner.generate_identity_context()
+            if context:
+                content += f"\n## 🔬 Project Context (Auto-detected)\n{context}\n"
+
         self._write_file(filepath, content)
         self.stats["identity"] += 1
 
     def _create_knowledge_base(self):
-        """Tạo các file tri thức nền tảng — có điều kiện theo project type."""
+        """Tạo các file tri thức nền tảng — dùng scan data nếu có."""
         base_path = os.path.join(self.agent_dir, "knowledge_base")
 
-        # Infra file from template (luôn tạo)
-        infra_path = os.path.join(base_path, "infrastructure.md")
-        infra_template = DOCUMENT_TEMPLATE_MAP.get("infrastructure-template.md")
-        self._write_file(infra_path, infra_template())
+        if self.scan_profile and self.scan_profile.get("has_existing_code"):
+            # ĐỌC DỮ LIỆU THẬT TỪ SCANNER
+            scanner = ProjectScanner(self.target_dir)
+            scanner.profile = self.scan_profile
 
-        # Core knowledge files (luôn tạo)
-        files = {
-            "business_logic.md": "# Business Logic\n\nĐịnh nghĩa logic nghiệp vụ cốt lõi tại đây.",
-            "data_schema.md": "# Data Schema\n\nĐịnh nghĩa cấu trúc database, quan hệ thực thể tại đây.",
-            "api_standards.md": "# API Standards\n\nQuy tắc thiết kế API, error codes, auth headers.",
-        }
-        for name, content in files.items():
-            self._write_file(os.path.join(base_path, name), content)
-            self.stats["knowledge"] += 1
+            print("  📖 Đang điền nội dung từ codebase thật...")
+
+            self._write_file(
+                os.path.join(base_path, "infrastructure.md"),
+                scanner.generate_infrastructure_content()
+            )
+            self._write_file(
+                os.path.join(base_path, "data_schema.md"),
+                scanner.generate_data_schema_content()
+            )
+            self._write_file(
+                os.path.join(base_path, "api_standards.md"),
+                scanner.generate_api_standards_content()
+            )
+            self._write_file(
+                os.path.join(base_path, "business_logic.md"),
+                scanner.generate_business_logic_content()
+            )
+            self.stats["knowledge"] += 4
+        else:
+            # Dự án mới — dùng template placeholder
+            infra_path = os.path.join(base_path, "infrastructure.md")
+            infra_template = DOCUMENT_TEMPLATE_MAP.get("infrastructure-template.md")
+            self._write_file(infra_path, infra_template())
+
+            files = {
+                "business_logic.md": "# Business Logic\n\nĐịnh nghĩa logic nghiệp vụ cốt lõi tại đây.",
+                "data_schema.md": "# Data Schema\n\nĐịnh nghĩa cấu trúc database, quan hệ thực thể tại đây.",
+                "api_standards.md": "# API Standards\n\nQuy tắc thiết kế API, error codes, auth headers.",
+            }
+            for name, content in files.items():
+                self._write_file(os.path.join(base_path, name), content)
+                self.stats["knowledge"] += 1
 
         # SEO Standards — CHỈ tạo cho Web projects
         type_info = PROJECT_TYPES.get(self.project_type, {})

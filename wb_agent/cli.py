@@ -17,6 +17,7 @@ import os
 
 from wb_agent import __version__
 from wb_agent.generator import ProjectGenerator
+from wb_agent.scanner import ProjectScanner
 from wb_agent.validators import validate_agent_structure
 from wb_agent.registry import (
     SKILLS_REGISTRY, WORKFLOWS_REGISTRY, PROJECT_TYPES,
@@ -113,11 +114,23 @@ def cmd_init(args):
 
     print()
 
+    # SCAN EXISTING CODEBASE
+    print("🔬 Đang quét codebase...")
+    scanner = ProjectScanner(target)
+    scan_profile = scanner.scan()
+
+    if scan_profile["has_existing_code"]:
+        print(scanner.generate_report())
+        print("  ✅ Sẽ auto-populate Knowledge Base từ dữ liệu thật!\n")
+    else:
+        print("  📭 Dự án trống — sử dụng templates mặc định.\n")
+
     # Generate
     generator = ProjectGenerator(
         target_dir=target,
         project_name=name,
         project_type=project_type,
+        scan_profile=scan_profile,
     )
     generator.generate()
 
