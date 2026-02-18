@@ -26,6 +26,7 @@ def cmd_init(args):
     target = os.path.abspath(args.target or os.getcwd())
     name = args.name or os.path.basename(target)
     force = getattr(args, 'force', False)
+    agent_dir = os.path.join(target, ".agent")
 
     print(f"\n⚡ WB-Agent v{__version__} - Spec-Driven Development")
     print(f"{'─' * 50}")
@@ -33,25 +34,76 @@ def cmd_init(args):
     print(f"  📛 Project: {name}")
     print(f"{'─' * 50}\n")
 
-    # Kiểm tra nếu .agent/ đã tồn tại
-    agent_dir = os.path.join(target, ".agent")
+    # MIGRATION AUDIT LOGIC
     if os.path.exists(agent_dir) and not force:
-        response = input("⚠️  Thư mục .agent/ đã tồn tại. Ghi đè? (y/N): ").strip().lower()
-        if response != 'y':
-            print("❌ Đã hủy.")
-            return
+        print("🔍 Đang quét cấu trúc .agent/ hiện có...")
+        audit_report = _audit_existing_agent(agent_dir)
+        
+        if audit_report["is_legacy"]:
+            print("\n⚠️  PHÁT HIỆN CẤU TRÚC CŨ (LEGACY AGENT)\n")
+            print(f"  {'File/Folder':<25} {'Trạng thái':<15} {'Hướng xử lý'}")
+            print(f"  {'─' * 23}   {'─' * 13}   {'─' * 18}")
+            
+            for item in audit_report["items"]:
+                print(f"  {item['name']:<25} {item['status']:<15} {item['action']}")
+            
+            print("\n💡 Đề xuất tối ưu:")
+            print("  - Nâng cấp core skills & workflows lên bản v1.0.0 (chuẩn ASF 3.3)")
+            print("  - Thiết lập tầng Identity & Knowledge Base để 'gắn não' AI")
+            print("  - Di chuyển hiến pháp cũ vào memory/constitution.md")
+            
+            response = input("\n🚀 Nâng cấp & Tối ưu hóa lên ASF 3.3 ngay? (y/N): ").strip().lower()
+            if response != 'y':
+                print("❌ Đã hủy.")
+                return
+        else:
+            print("✅ Cấu trúc hiện tại đã đúng chuẩn ASF 3.3.")
+            response = input("♻️  Bạn vẫn muốn cài đặt lại (Re-init)? (y/N): ").strip().lower()
+            if response != 'y':
+                print("❌ Đã hủy.")
+                return
 
     generator = ProjectGenerator(target_dir=target, project_name=name)
     generator.generate()
 
-    print(f"\n✅ Khởi tạo thành công!")
-    print(f"  📂 .agent/ đã được tạo tại: {agent_dir}")
-    print(f"  🎯 Skills:    {len(SKILLS_REGISTRY)} skills")
+    print(f"\n✅ Khởi tạo/Nâng cấp thành công!")
+    print(f"  📂 .agent/ đã được tối ưu tại: {agent_dir}")
+    print(f"  🎯 Skills:    {len(SKILLS_REGISTRY)} skills (ASF 3.3 Standard)")
     print(f"  🔄 Workflows: {len(WORKFLOWS_REGISTRY)} workflows")
-    print(f"\n💡 Tiếp theo:")
-    print(f"  1. Mở project trong Antigravity IDE")
-    print(f"  2. Chạy /01-speckit.constitution để thiết lập Constitution")
-    print(f"  3. Chạy /02-speckit.specify <mô tả feature> để bắt đầu\n")
+    print(f"\n💡 Bước tiếp theo:")
+    print(f"  1. Kiểm tra '.agent/identity/master-identity.md' để AI nhận diện dự án")
+    print(f"  2. Chạy /01-speckit.constitution để cập nhật Tech Stack & Docker Ports")
+    print(f"  3. Chạy @speckit.devops để tạo Docker environment chuẩn Security\n")
+
+
+def _audit_existing_agent(agent_dir):
+    """Quét và so sánh cấu trúc hiện có."""
+    report = {"is_legacy": False, "items": []}
+    
+    # 1. Kiểm tra các thư mục mới (Chuẩn ASF 3.3)
+    standard_dirs = ["identity", "knowledge_base", "memory", "scripts/bash"]
+    for d in standard_dirs:
+        path = os.path.join(agent_dir, d)
+        if not os.path.exists(path):
+            report["is_legacy"] = True
+            report["items"].append({"name": d, "status": "THIẾU", "action": "Khởi tạo mới"})
+        else:
+            report["items"].append({"name": d, "status": "OK", "action": "Giữ lại"})
+
+    # 2. Kiểm tra files lẻ/thừa không thuộc chuẩn mới
+    # (Ví dụ: các file rules.md, sdd.md cũ thường nằm ở root .agent/)
+    for item in os.listdir(agent_dir):
+        if item in [".", "..", "skills", "workflows", "templates", "scripts", "identity", "knowledge_base", "memory", "README.md"]:
+            continue
+        report["is_legacy"] = True
+        report["items"].append({"name": item, "status": "NON-STANDARD", "action": "Backup & Di chuyển"})
+
+    # 3. Skills/Workflows luôn cần update core
+    report["is_legacy"] = True
+    report["items"].append({"name": "skills/", "status": "CẦN UPDATE", "action": "Nâng cấp Core"})
+    report["items"].append({"name": "workflows/", "status": "CẦN UPDATE", "action": "Nâng cấp Core"})
+
+    return report
 
 
 def cmd_list_skills(args):
