@@ -6,10 +6,10 @@
 
 Tool này tự động tạo cấu trúc `.agent/` chuẩn cho Antigravity IDE, bao gồm:
 
-- **Skills** (17 skills) — Khả năng AI tự trị cho từng phase SDLC
-- **Workflows** (19 workflows) — Orchestration commands cho pipeline
-- **Templates** — Spec, Plan, Tasks, Constitution templates
-- **Scripts** — Shared bash core utilities
+- **Skills** (22 skills) — Khả năng AI tự trị cho từng phase SDLC, mỗi skill có protocol chi tiết
+- **Workflows** (22 workflows) — Orchestration commands với pre-conditions, gate checks, success criteria
+- **Templates** — Spec, Plan, Tasks, Constitution, Infrastructure, SEO templates
+- **Scripts** — 4 bash utilities (create-feature, setup-plan, check-prerequisites, update-context)
 
 ## 📋 Requirements
 
@@ -172,7 +172,7 @@ Bước 6: Implement     →  /07-speckit.implement
 wb-agent init --target /path/to/project --name "My Project"
 ```
 
-- Tạo cấu trúc `.agent/` (46 files: 17 skills, 19 workflows, 4 templates, 4 scripts, constitution, README)
+- Tạo cấu trúc `.agent/` (~60 files: 22 skills, 22 workflows, 6 templates, 4 scripts, identity, knowledge base, constitution, README)
 - Mở project trong Antigravity IDE — agent tự động nhận diện `.agent/` folder
 
 #### Bước 1 — `/01-speckit.constitution` ⚠️ BẮT BUỘC
@@ -339,14 +339,26 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 
 ```
 .agent/
-├── skills/                    # @ Mentions — 17 Agentic Capabilities
+├── identity/                  # Tầng nhân cách AI
+│   └── master-identity.md     # Persona, Soul, Core Capabilities
+│
+├── knowledge_base/            # Tầng tri thức dự án (auto-populated)
+│   ├── infrastructure.md      # Docker, ports, environments
+│   ├── data_schema.md         # DB models, relationships
+│   ├── api_standards.md       # Routes, conventions, auth
+│   ├── business_logic.md      # Domain rules, source structure
+│   └── seo_standards.md       # SEO/GEO checklist (web projects only)
+│
+├── skills/                    # @ Mentions — 22 Agentic Capabilities
+│   ├── speckit.identity/      # Persona Architect
+│   ├── speckit.devops/        # DevOps & Docker Architect
 │   ├── speckit.analyze/       # Consistency Checker
 │   ├── speckit.checker/       # Static Analysis Aggregator
 │   ├── speckit.checklist/     # Requirements Validator
 │   ├── speckit.clarify/       # Ambiguity Resolver
 │   ├── speckit.constitution/  # Governance Manager
 │   ├── speckit.diff/          # Artifact Comparator
-│   ├── speckit.implement/     # Code Builder (Anti-Regression)
+│   ├── speckit.implement/     # Code Builder (IRONCLAD Anti-Regression)
 │   ├── speckit.migrate/       # Legacy Code Migrator
 │   ├── speckit.plan/          # Technical Planner
 │   ├── speckit.quizme/        # Logic Challenger (Red Team)
@@ -356,23 +368,29 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 │   ├── speckit.tasks/         # Task Breaker
 │   ├── speckit.taskstoissues/ # Issue Tracker Syncer
 │   ├── speckit.tester/        # Test Runner & Coverage
-│   └── speckit.validate/      # Implementation Validator
+│   ├── speckit.validate/      # Implementation Validator
+│   ├── speckit.seo/           # Technical SEO (web projects)
+│   ├── speckit.geo/           # Generative Engine Optimization (web projects)
+│   └── speckit.content/       # Content Architect (web_public projects)
 │
-├── workflows/                 # / Slash Commands — 19 Orchestrations
-│   ├── 00-speckit.all.md           # Full Pipeline
+├── workflows/                 # / Slash Commands — 22 Orchestrations
+│   ├── 00-speckit.all.md           # Full Pipeline (Specify→Clarify→Plan→Tasks→Analyze)
 │   ├── 01-speckit.constitution.md  # Constitution Setup
 │   ├── 02-speckit.specify.md       # Feature Specification
 │   ├── 03-speckit.clarify.md       # Ambiguity Resolution
 │   ├── 04-speckit.plan.md          # Technical Planning
 │   ├── 05-speckit.tasks.md         # Task Breakdown
 │   ├── 06-speckit.analyze.md       # Consistency Analysis
-│   ├── 07-speckit.implement.md     # Implementation
+│   ├── 07-speckit.implement.md     # Implementation (IRONCLAD)
 │   ├── 08-speckit.checker.md       # Static Analysis
 │   ├── 09-speckit.tester.md        # Testing & Coverage
 │   ├── 10-speckit.reviewer.md      # Code Review
 │   ├── 11-speckit.validate.md      # Final Validation
-│   ├── speckit.prepare.md          # Prep Pipeline
+│   ├── 12-speckit.seo.md           # SEO Audit (web projects)
+│   ├── 13-speckit.geo.md           # GEO Audit (web projects)
+│   ├── speckit.prepare.md          # Prep Pipeline (no implement)
 │   ├── util-speckit.checklist.md   # Requirements Checklist
+│   ├── util-speckit.content.md     # Content Audit (web_public)
 │   ├── util-speckit.diff.md        # Artifact Comparison
 │   ├── util-speckit.migrate.md     # Legacy Migration
 │   ├── util-speckit.quizme.md      # Red Team Quiz
@@ -380,12 +398,14 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 │   └── util-speckit.taskstoissues.md # Issue Sync
 │
 ├── templates/                 # Document Templates
-│   ├── spec-template.md       # Feature Specification template
-│   ├── plan-template.md       # Implementation Plan template
-│   ├── tasks-template.md      # Task Breakdown template
-│   └── constitution-template.md # Constitution template
+│   ├── spec-template.md       # Feature Specification
+│   ├── plan-template.md       # Implementation Plan
+│   ├── tasks-template.md      # Task Breakdown
+│   ├── constitution-template.md    # Constitution
+│   ├── infrastructure-template.md  # Infrastructure & Docker
+│   └── seo-standards-template.md   # SEO & GEO (web projects)
 │
-├── scripts/bash/              # Shared Bash Core
+├── scripts/bash/              # Shared Bash Utilities
 │   ├── create-new-feature.sh  # Create feature branch + specs directory
 │   ├── setup-plan.sh          # Locate feature spec for planning
 │   ├── check-prerequisites.sh # Verify prerequisite artifacts
@@ -394,6 +414,7 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 ├── memory/                    # Persistent Memory
 │   └── constitution.md        # Project Constitution (Source of Law)
 │
+├── project.json               # Project metadata (type, name, ASF version)
 └── README.md                  # Agent configuration guide
 ```
 
@@ -412,8 +433,11 @@ wb-agent/
     ├── __init__.py            # Version: __version__ = "1.0.0"
     ├── __main__.py            # python -m wb_agent
     ├── cli.py                 # Console script entry point → `wb-agent` command
-    ├── registry.py            # Single Source of Truth — 17 skills + 20 workflows
-    ├── templates.py           # Core templates — SKILL.md, workflows, scripts, docs
+    ├── registry.py            # Single Source of Truth — 22 skills + 22 workflows + 5 project types
+    ├── skill_templates.py     # 22 SKILL.md templates (Mission, Protocol, Guard Rails)
+    ├── workflow_templates.py  # 22 workflow templates (Pre-conditions, Gates, Success Criteria)
+    ├── templates.py           # Document + Script templates aggregator
+    ├── scanner.py             # Codebase scanner — auto-detect tech stack, DB, Docker, API
     ├── generator.py           # Generator engine — orchestrates .agent/ creation
     └── validators.py          # 10 validation checks
 ```
