@@ -14,9 +14,9 @@ from .registry import (
 )
 from .templates import (
     SKILL_TEMPLATE_MAP,
+    WORKFLOW_TEMPLATE_MAP,
     SCRIPT_TEMPLATE_MAP,
     DOCUMENT_TEMPLATE_MAP,
-    workflow_all,
     doc_identity_template,
     doc_seo_standards_template,
 )
@@ -203,9 +203,13 @@ Bạn là **{skill['role']}**.
             cmd = wf["command"]
             filepath = os.path.join(self.agent_dir, "workflows", f"{cmd}.md")
 
-            content = f"---\ndescription: {wf['description']}\n---\n\n# Workflow: {cmd}\n\n1. Run @{wf['skills'][0] if wf['skills'] else 'speckit.tasks'}"
-            if cmd == "00-speckit.all":
-                content = workflow_all()
+            # Ưu tiên template chi tiết từ WORKFLOW_TEMPLATE_MAP
+            template_fn = WORKFLOW_TEMPLATE_MAP.get(cmd)
+            if template_fn:
+                content = template_fn()
+            else:
+                # Fallback cho workflows không có template
+                content = f"---\ndescription: {wf['description']}\n---\n\n# Workflow: {cmd}\n\n1. Run @{wf['skills'][0] if wf['skills'] else 'speckit.tasks'}"
 
             self._write_file(filepath, content)
             self.stats["workflows"] += 1

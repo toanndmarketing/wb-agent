@@ -1,10 +1,16 @@
 """
-Templates - Chứa nội dung mẫu cho Skills, Workflows, Documents và Scripts.
+Templates - Aggregator cho Document, Skill, Workflow, Script templates.
+Skill và Workflow templates được tách ra file riêng để dễ maintain.
 """
 
 from datetime import datetime
+from .skill_templates import SKILL_TEMPLATE_MAP
+from .workflow_templates import WORKFLOW_TEMPLATE_MAP
 
-# --- DOCUMENT TEMPLATES ---
+
+# =============================================================================
+# DOCUMENT TEMPLATES
+# =============================================================================
 
 def doc_spec_template():
     return """---
@@ -19,10 +25,16 @@ version: 1.0.0
 [Mô tả ngắn gọn về tính năng]
 
 ## 2. User Scenarios (Stories)
-- **As a** [user role], **I want to** [action], **so that** [value].
+- **US1**: As a [user role], I want to [action], so that [value].
 
-## 3. Success Criteria
-- [ ] [Criteria 1]
+## 3. Functional Requirements
+- FR01: [requirement cụ thể, measurable]
+
+## 4. Non-Functional Requirements
+- NFR01: Response time < 2s
+
+## 5. Success Criteria
+- [ ] SC01: [testable criterion]
 """
 
 def doc_plan_template():
@@ -43,6 +55,21 @@ depends_on: spec.md
 
 ## 3. API Contracts
 - **Endpoint**: `POST /api/v1/...`
+- **Body**: `{ field: type }`
+- **Response**: `{ data: ..., meta: ... }`
+- **Errors**: `400 | 401 | 404 | 500`
+
+## 4. Folder Structure
+```
+src/
+├── app/
+├── components/
+├── lib/
+└── api/
+```
+
+## 5. Dependencies
+[Thư viện cần thêm — PHẢI có trong package.json]
 """
 
 def doc_tasks_template():
@@ -50,10 +77,19 @@ def doc_tasks_template():
 
 ## 📊 Progress Overview
 - [ ] Phase 1: Setup & Foundation (0%)
+- [ ] Phase 2: Core Features (0%)
+- [ ] Phase 3: Polish (0%)
 
 ## 🛠️ Tasks
+
 ### Phase 1: Setup
-- [ ] T001 [P] Setup Boilerplate
+- [ ] T001 [P] Setup project structure per plan.md
+
+### Phase 2: Core Features
+- [ ] T002 [P] [US1] Implement feature per spec.md
+
+### Phase 3: Polish
+- [ ] T003 Error handling & edge cases
 """
 
 def doc_identity_template(project_name="Project", project_type="fullstack"):
@@ -65,7 +101,7 @@ def doc_identity_template(project_name="Project", project_type="fullstack"):
         "fullstack": "Full-stack (Web + API)",
     }
     label = type_labels.get(project_type, "Full-stack")
-    
+
     seo_section = ""
     if project_type in ("web_public", "fullstack", "web_saas"):
         seo_section = """
@@ -103,18 +139,25 @@ You strictly follow the **Docker-First Policy** and **ASF 3.3** standards.
 def doc_constitution_template():
     return """# 📜 Project Constitution
 
-## 1. Infrastructure (DOCKER-FIRST)
+## §1 Infrastructure (DOCKER-FIRST)
 - **Mặc định dùng Docker** cho cả Local và Production.
 - **Local**: Dùng `docker-compose.yml` để dev.
 - **Production**: Dùng `docker-compose.prod.yml` kèm Security Hardening.
 - **Ports**: Tuân thủ dải **8900-8999**.
 
-## 2. Security
+## §2 Security
 - Production containers KHÔNG chạy quyền root.
-- CẤM hard-code SSH/Tokens/Keys vào Dockerfile.
+- CẤM hard-code SSH/Tokens/Keys vào Dockerfile hoặc source code.
 - Sử dụng Multi-stage builds để tối ưu size và bảo mật.
+- Sensitive vars PHẢI dùng ENV (`.env` local, server ENV prod).
 
-## 3. Environments
+## §3 Code Standards
+- CẤM hard-code: URLs, Tokens, Keys, Credentials, Endpoints, Default Text.
+- Dùng ENV vars với prefix: `NEXT_PUBLIC_*`, `API_*`, `DB_*`.
+- Critical vars: `throw new Error()` nếu thiếu.
+- Optional vars: `console.error()` nếu thiếu.
+
+## §4 Environments
 - Chỉ khởi tạo `local` và `production` mặc định.
 - `beta` hoặc `staging` chỉ tạo khi có yêu cầu cụ thể.
 """
@@ -144,253 +187,116 @@ def doc_seo_standards_template():
 - [ ] `sitemap.xml` tự động generate và submit lên Google Search Console
 - [ ] `robots.txt` cấu hình đúng (không block CSS/JS)
 - [ ] Image: `alt` text mô tả, lazy loading, format WebP/AVIF
-- [ ] URL slug: lowercase, dấu gạch ngang, không dấu tiếng Việt (sử dụng transliteration)
+- [ ] URL slug: lowercase, dấu gạch ngang, không dấu tiếng Việt
 - [ ] Mobile-first responsive design
 - [ ] Core Web Vitals targets: LCP < 2.5s, INP < 200ms, CLS < 0.1
 
-## 🤖 GEO (Generative Engine Optimization) — AI Search
-- [ ] File `llms.txt` tại root domain (hướng dẫn AI crawlers)
+## 🤖 GEO (Generative Engine Optimization)
+- [ ] File `llms.txt` tại root domain
 - [ ] Structured Data (JSON-LD) cho Article, Product, FAQ, BreadcrumbList
 - [ ] E-E-A-T signals: Author bio, nguồn trích dẫn, ngày publish/update
 - [ ] Content format: short paragraphs, bullet points, numbered lists
-- [ ] Fact-density: Mỗi đoạn văn phải chứa ít nhất 1 data point hoặc trích dẫn
-- [ ] Conversational Q&A sections (People Also Ask format)
-- [ ] Topic clusters: Liên kết nội bộ giữa các bài viết cùng chủ đề
+- [ ] Fact-density: Mỗi đoạn văn ≥1 data point hoặc trích dẫn
+- [ ] FAQ sections dạng "People Also Ask"
+- [ ] Topic clusters: Liên kết nội bộ giữa bài viết cùng chủ đề
 
-## 📊 Schema.org Markup (JSON-LD Templates)
+## 📊 Schema.org (JSON-LD Templates)
 
-### Article Schema
+### Article
 ```json
-{
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": "...",
-  "author": { "@type": "Person", "name": "..." },
-  "datePublished": "2026-...",
-  "dateModified": "2026-...",
-  "image": "...",
-  "publisher": { "@type": "Organization", "name": "..." }
-}
+{"@context":"https://schema.org","@type":"Article","headline":"...","author":{"@type":"Person","name":"..."},"datePublished":"...","image":"..."}
 ```
 
-### Product Schema
+### Product
 ```json
-{
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "...",
-  "image": "...",
-  "offers": { "@type": "Offer", "price": "...", "priceCurrency": "VND" }
-}
+{"@context":"https://schema.org","@type":"Product","name":"...","image":"...","offers":{"@type":"Offer","price":"...","priceCurrency":"VND"}}
 ```
 
-### FAQ Schema
+### FAQ
 ```json
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    { "@type": "Question", "name": "...", "acceptedAnswer": { "@type": "Answer", "text": "..." } }
-  ]
-}
-```
-
-## 📁 llms.txt Template
-```
-# [Project Name]
-> [Mô tả ngắn về website]
-
-## Docs
-- [/about](/about): Giới thiệu về chúng tôi
-- [/products](/san-pham): Danh mục sản phẩm
-- [/blog](/tin-tuc): Tin tức và bài viết chuyên sâu
-
-## Optional
-- [/api-docs](/api-docs): API Documentation
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"...","acceptedAnswer":{"@type":"Answer","text":"..."}}]}
 ```
 """
 
 
-# --- SKILL TEMPLATES ---
+# =============================================================================
+# SCRIPT TEMPLATES
+# =============================================================================
 
-def skill_seo():
-    return """---
-name: speckit.seo
-description: Technical SEO Lead - Tối ưu Meta Tags, Sitemap, Core Web Vitals, Schema.org
-role: SEO Technical Lead
----
-
-## 🎯 Mission
-Đảm bảo mọi page public đạt chuẩn Technical SEO và sẵn sàng cho AI Search (GEO).
-
-## 📋 Protocol
-
-### Bước 1: Audit Technical SEO
-Đọc file `.agent/knowledge_base/seo_standards.md` để nắm checklist.
-Quét toàn bộ pages và kiểm tra:
-- Meta title/description có tồn tại và unique không?
-- Heading hierarchy (H1 → H2 → H3) có đúng không?
-- Canonical URLs có được set không?
-- Structured Data (JSON-LD) có đang áp dụng đúng schema không?
-
-### Bước 2: Core Web Vitals
-- LCP (Largest Contentful Paint) < 2.5s
-- INP (Interaction to Next Paint) < 200ms
-- CLS (Cumulative Layout Shift) < 0.1
-- Kiểm tra: Image optimization (WebP/AVIF, lazy loading, explicit dimensions)
-- Kiểm tra: Font loading strategy (font-display: swap)
-
-### Bước 3: Crawlability
-- `robots.txt` không block CSS/JS
-- `sitemap.xml` tự động generate
-- Internal linking structure hợp lý
-- 404 pages có redirect hoặc custom page
-
-### Bước 4: Output
-Tạo báo cáo SEO Audit tại `.agent/memory/seo-audit-report.md` với:
-- Danh sách issues (Critical / Warning / Info)
-- Đề xuất fix cho từng issue
-- Score tổng thể (0-100)
-
-## 🔗 Handoffs
-- `@speckit.geo`: Sau khi Technical SEO đạt, chuyển sang GEO audit
-- `@speckit.implement`: Fix các issues được phát hiện
+def script_create_feature():
+    return """#!/bin/bash
+# Create new feature branch + specs directory
+set -e
+FEATURE_NAME=${1:?"Usage: ./create-new-feature.sh <feature-name>"}
+SPECS_DIR=".agent/specs/$FEATURE_NAME"
+mkdir -p "$SPECS_DIR"
+echo "✅ Created specs directory: $SPECS_DIR"
+echo "📋 Next: Run /02-speckit.specify to create spec.md"
 """
 
-def skill_geo():
-    return """---
-name: speckit.geo
-description: GEO Strategist - Tối ưu cho AI Search (ChatGPT, Gemini, Perplexity)
-role: GEO Strategist
----
-
-## 🎯 Mission
-Đảm bảo website được AI Search engines **trích dẫn** (cite) trong câu trả lời,
-thay vì chỉ xếp hạng trên Google SERP truyền thống.
-
-## 🆕 GEO vs SEO (2025-2026)
-- **SEO**: Xếp hạng top Google → Clicks
-- **GEO**: Được AI **nhắc tên thương hiệu** trong câu trả lời → Trust + Authority
-
-## 📋 Protocol
-
-### Bước 1: AI Crawlability
-- Kiểm tra file `llms.txt` tại root domain
-- Đảm bảo SSR/SSG (không dùng CSR cho content quan trọng)
-- Structured Data (JSON-LD) phải đầy đủ cho Article, Product, FAQ
-
-### Bước 2: E-E-A-T Compliance
-- **Experience**: Nội dung có thể hiện kinh nghiệm thực tế không?
-- **Expertise**: Có author bio, credentials không?
-- **Authoritativeness**: Có nguồn trích dẫn, data points không?
-- **Trustworthiness**: HTTPS, privacy policy, contact info
-
-### Bước 3: Content Format for AI
-- Short paragraphs (2-3 câu)
-- Bullet points và numbered lists
-- Direct answers ở đầu mỗi section
-- FAQ sections dạng "People Also Ask"
-- Fact-dense: Mỗi đoạn ≥ 1 data point
-
-### Bước 4: Topic Authority
-- Xây dựng topic clusters (pillar + supporting articles)
-- Internal linking giữa các bài viết cùng chủ đề
-- Cover related entities và adjacent queries
-
-### Bước 5: Output
-Tạo báo cáo GEO Audit tại `.agent/memory/geo-audit-report.md`
-
-## 🔗 Handoffs
-- `@speckit.content`: Tối ưu nội dung theo chuẩn GEO
-- `@speckit.seo`: Quay lại fix Technical SEO nếu cần
+def script_setup_plan():
+    return """#!/bin/bash
+# Locate feature spec for planning
+set -e
+FEATURE_NAME=${1:?"Usage: ./setup-plan.sh <feature-name>"}
+SPEC_FILE=".agent/specs/$FEATURE_NAME/spec.md"
+if [ ! -f "$SPEC_FILE" ]; then
+  echo "❌ spec.md not found at $SPEC_FILE"
+  echo "💡 Run /02-speckit.specify first"
+  exit 1
+fi
+echo "✅ Found spec: $SPEC_FILE"
+echo "📋 Next: Run /04-speckit.plan"
 """
 
-def skill_content():
-    return """---
-name: speckit.content
-description: Content Architect - Heading Structure, Readability, Multimodal, Fact-density
-role: Content Strategist
----
-
-## 🎯 Mission
-Đảm bảo nội dung website đạt chuẩn cho cả người đọc VÀ AI search engines.
-
-## 📋 Protocol
-
-### Bước 1: Heading Structure
-- Mỗi page chỉ 1 `<h1>` duy nhất
-- Hierarchy chuẩn: H1 → H2 → H3 (không nhảy cấp)
-- Heading phải mô tả nội dung section, không generic ("Giới thiệu" ❌ → "Giới thiệu về [Brand]" ✅)
-
-### Bước 2: Readability
-- Đoạn văn: Tối đa 3-4 câu
-- Sử dụng bullet points thay cho đoạn dài
-- Ngôn ngữ: Conversational, dễ hiểu
-- Highlight key terms (bold/italic)
-
-### Bước 3: Multimodal Content
-- Image: Luôn có `alt` text mô tả chi tiết
-- Video: Có transcript hoặc description
-- Tables: Responsive, có caption
-- Infographics: Có text alternative
-
-### Bước 4: Fact-density (GEO)
-- Mỗi section phải chứa ít nhất 1 statistic/data point
-- Trích dẫn nguồn khi đưa ra claims
-- Sử dụng quotes từ experts khi phù hợp
-
-### Bước 5: Output
-Tạo content guidelines tại `.agent/memory/content-guidelines.md`
-
-## 🔗 Handoffs
-- `@speckit.seo`: Validate SEO compliance sau khi optimize content
+def script_check_prerequisites():
+    return """#!/bin/bash
+# Verify prerequisite artifacts exist
+set -e
+FEATURE_NAME=${1:?"Usage: ./check-prerequisites.sh <feature-name>"}
+SPECS_DIR=".agent/specs/$FEATURE_NAME"
+ERRORS=0
+for f in spec.md plan.md tasks.md; do
+  if [ ! -f "$SPECS_DIR/$f" ]; then
+    echo "❌ Missing: $SPECS_DIR/$f"
+    ERRORS=$((ERRORS + 1))
+  else
+    echo "✅ Found: $SPECS_DIR/$f"
+  fi
+done
+if [ $ERRORS -gt 0 ]; then
+  echo "⚠️  $ERRORS prerequisite(s) missing"
+  exit 1
+fi
+echo "✅ All prerequisites met"
 """
 
-def skill_devops():
-    return """---
-name: speckit.devops
-description: Chuyên gia hạ tầng Docker & Security Hardening.
-role: DevOps Architect
----
-
-## Task
-Thiết lập và quản lý hệ thống Docker cho dự án theo chuẩn ASF 3.3.
-
-## 🛠️ DOCKER PROTOCOLS
-
-### 1. Local Environment
-- Luôn sử dụng `volume mount` để hot-reload code.
-- Mapping port theo dải 8900-8999.
-
-### 2. Production Environment
-- Sử dụng **Multi-stage builds**.
-- Ép buộc chạy user không phải root (`USER node` hoặc `appuser`).
-- Loại bỏ các tool không cần thiết (curl, git, v.v.) khỏi image final.
-
-### 3. Security Check
-- Kiểm soát `.dockerignore` để tránh leak `.env` hoặc `.git`.
-- Kiểm tra các port đang mở trên server trước khi mapping.
+def script_update_context():
+    return """#!/bin/bash
+# Update agent context files after changes
+set -e
+echo "🔄 Updating agent context..."
+if [ -f ".agent/memory/constitution.md" ]; then
+  echo "✅ Constitution: OK"
+else
+  echo "⚠️  Constitution missing — run /01-speckit.constitution"
+fi
+if [ -d ".agent/identity" ]; then
+  echo "✅ Identity: OK"
+else
+  echo "⚠️  Identity missing — run wb-agent init"
+fi
+echo "✅ Context update complete"
 """
 
-def skill_implement():
-    return """---
-name: speckit.implement
-description: Code Builder với IRONCLAD anti-regression protocols.
-role: Master Builder
----
-## Role
-Thực thi code theo tasks.md. Luôn kiểm tra xem code mới có tương thích với Docker environment hiện tại không.
-"""
 
-# --- MAPS ---
+# =============================================================================
+# TEMPLATE MAPS — Re-exported from sub-modules + local definitions
+# =============================================================================
 
-SKILL_TEMPLATE_MAP = {
-    "speckit.seo": skill_seo,
-    "speckit.geo": skill_geo,
-    "speckit.content": skill_content,
-    "speckit.devops": skill_devops,
-    "speckit.implement": skill_implement,
-}
+# Re-export from sub-modules (for backward compat)
+# SKILL_TEMPLATE_MAP imported from skill_templates
+# WORKFLOW_TEMPLATE_MAP imported from workflow_templates
 
 DOCUMENT_TEMPLATE_MAP = {
     "spec-template.md": doc_spec_template,
@@ -401,17 +307,9 @@ DOCUMENT_TEMPLATE_MAP = {
     "seo-standards-template.md": doc_seo_standards_template,
 }
 
-def workflow_all():
-    return """---
-description: Full Pipeline Spec → Plan → DevOps → Tasks
----
-# 🚀 Full Pipeline
-1. @speckit.specify
-2. @speckit.plan
-3. @speckit.devops (Docker & Infra)
-4. @speckit.tasks
-"""
-
 SCRIPT_TEMPLATE_MAP = {
-    "create-new-feature.sh": lambda: "#!/bin/bash\necho 'Feature Created'",
+    "create-new-feature.sh": script_create_feature,
+    "setup-plan.sh": script_setup_plan,
+    "check-prerequisites.sh": script_check_prerequisites,
+    "update-agent-context.sh": script_update_context,
 }

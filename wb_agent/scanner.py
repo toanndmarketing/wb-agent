@@ -423,6 +423,9 @@ class ProjectScanner:
             "test-output", "test-output-deep", "test-output-infra",
         }
 
+        if not os.path.isdir(self.target_dir):
+            return
+
         for item in sorted(os.listdir(self.target_dir)):
             if item.startswith(".") and item not in (".env.example",):
                 if item == ".agent":
