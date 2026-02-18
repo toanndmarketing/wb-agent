@@ -8,6 +8,11 @@ Registry - Định nghĩa tất cả Skills và Workflows cho Spec-Kit Antigravi
 # ============================================================================
 SKILLS_REGISTRY = [
     {
+        "name": "speckit.identity",
+        "role": "Persona Architect",
+        "description": "Quản lý nhân cách và định hướng hành vi của AI cho dự án.",
+    },
+    {
         "name": "speckit.analyze",
         "description": "Consistency Checker - Phân tích tính nhất quán giữa spec, plan, tasks",
         "version": "1.0.0",
