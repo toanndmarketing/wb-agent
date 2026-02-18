@@ -12,6 +12,17 @@ build/
 .venv/
 venv/
 env/
+BIN/
+obj/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.bak
+*.env.old
 
 # IDE
 .vscode/
@@ -19,17 +30,37 @@ env/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 Desktop.ini
 
-# Testing
-test-output/
+# Testing & Artifacts
+test-output*/
+.agent/
 .pytest_cache/
 htmlcov/
 .coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.screenshot.png
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pip-log.txt
 
 # Distribution
 *.tar.gz
