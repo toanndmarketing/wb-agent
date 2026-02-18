@@ -1,27 +1,39 @@
 """
 Generator - Core logic tạo cấu trúc .agent/ chuẩn ASF 3.3.
+Hỗ trợ lọc skills/workflows theo Project Type.
 """
 
 import os
 import stat
 from datetime import datetime
 
-from .registry import SKILLS_REGISTRY, WORKFLOWS_REGISTRY
+from .registry import (
+    SKILLS_REGISTRY, WORKFLOWS_REGISTRY, PROJECT_TYPES,
+    get_skills_for_project_type, get_workflows_for_project_type,
+)
 from .templates import (
     SKILL_TEMPLATE_MAP,
     SCRIPT_TEMPLATE_MAP,
     DOCUMENT_TEMPLATE_MAP,
     workflow_all,
+    doc_identity_template,
+    doc_seo_standards_template,
 )
 
 
 class ProjectGenerator:
     """Sinh cấu trúc .agent/ cho project theo chuẩn Spec-Kit & ASF 3.3."""
 
-    def __init__(self, target_dir: str, project_name: str):
+    def __init__(self, target_dir: str, project_name: str, project_type: str = "fullstack"):
         self.target_dir = target_dir
         self.project_name = project_name
+        self.project_type = project_type
         self.agent_dir = os.path.join(target_dir, ".agent")
+
+        # Lọc skills/workflows theo project type
+        self.filtered_skills = get_skills_for_project_type(project_type)
+        self.filtered_workflows = get_workflows_for_project_type(project_type)
+
         self.stats = {
             "skills": 0,
             "workflows": 0,
@@ -56,6 +68,7 @@ class ProjectGenerator:
         print("🔧 Tạo Bash Scripts...")
         self._create_scripts()
 
+        self._create_project_config()
         self._create_agent_readme()
         self._print_stats()
 
@@ -77,22 +90,22 @@ class ProjectGenerator:
             self.stats["directories"] += 1
 
     def _create_identity(self):
-        """Tạo Master Identity chuẩn nhân cách AI."""
+        """Tạo Master Identity chuẩn nhân cách AI — có nhận biết Project Type."""
         filepath = os.path.join(self.agent_dir, "identity", "master-identity.md")
-        template_fn = DOCUMENT_TEMPLATE_MAP.get("identity-template.md")
-        content = template_fn()
+        content = doc_identity_template(self.project_name, self.project_type)
         self._write_file(filepath, content)
         self.stats["identity"] += 1
 
     def _create_knowledge_base(self):
-        """Tạo các file tri thức nền tảng."""
+        """Tạo các file tri thức nền tảng — có điều kiện theo project type."""
         base_path = os.path.join(self.agent_dir, "knowledge_base")
-        
-        # Infra file from template
+
+        # Infra file from template (luôn tạo)
         infra_path = os.path.join(base_path, "infrastructure.md")
         infra_template = DOCUMENT_TEMPLATE_MAP.get("infrastructure-template.md")
         self._write_file(infra_path, infra_template())
 
+        # Core knowledge files (luôn tạo)
         files = {
             "business_logic.md": "# Business Logic\n\nĐịnh nghĩa logic nghiệp vụ cốt lõi tại đây.",
             "data_schema.md": "# Data Schema\n\nĐịnh nghĩa cấu trúc database, quan hệ thực thể tại đây.",
@@ -102,9 +115,18 @@ class ProjectGenerator:
             self._write_file(os.path.join(base_path, name), content)
             self.stats["knowledge"] += 1
 
+        # SEO Standards — CHỈ tạo cho Web projects
+        type_info = PROJECT_TYPES.get(self.project_type, {})
+        allowed_skills = type_info.get("includes_skills", [])
+        if "web" in allowed_skills or "web_public" in allowed_skills:
+            seo_path = os.path.join(base_path, "seo_standards.md")
+            self._write_file(seo_path, doc_seo_standards_template())
+            self.stats["knowledge"] += 1
+            print("  🔍 SEO & GEO Standards → knowledge_base/seo_standards.md")
+
     def _create_skills(self):
-        """Tạo SKILL.md cho mỗi skill."""
-        for skill in SKILLS_REGISTRY:
+        """Tạo SKILL.md cho mỗi skill — CHỈ tạo skills phù hợp project type."""
+        for skill in self.filtered_skills:
             skill_name = skill["name"]
             skill_dir = os.path.join(self.agent_dir, "skills", skill_name)
             os.makedirs(skill_dir, exist_ok=True)
@@ -127,7 +149,7 @@ role: {skill['role']}
 ---
 
 ## Role
-Bạn là **{skill['role']}**. 
+Bạn là **{skill['role']}**.
 
 ## Task
 {skill['description']}
@@ -140,22 +162,29 @@ Bạn là **{skill['role']}**.
 """
 
     def _create_workflows(self):
-        """Tạo workflow .md files."""
-        for wf in WORKFLOWS_REGISTRY:
+        """Tạo workflow .md files — CHỈ tạo workflows phù hợp project type."""
+        for wf in self.filtered_workflows:
             cmd = wf["command"]
             filepath = os.path.join(self.agent_dir, "workflows", f"{cmd}.md")
-            
-            # Simplified workflow generation for demo
+
             content = f"---\ndescription: {wf['description']}\n---\n\n# Workflow: {cmd}\n\n1. Run @{wf['skills'][0] if wf['skills'] else 'speckit.tasks'}"
             if cmd == "00-speckit.all":
                 content = workflow_all()
-            
+
             self._write_file(filepath, content)
             self.stats["workflows"] += 1
 
     def _create_templates(self):
         for filename, template_fn in DOCUMENT_TEMPLATE_MAP.items():
-            if filename == "identity-template.md": continue
+            # Skip internal templates
+            if filename in ("identity-template.md",):
+                continue
+            # Skip SEO template cho non-web projects
+            type_info = PROJECT_TYPES.get(self.project_type, {})
+            allowed_skills = type_info.get("includes_skills", [])
+            if filename == "seo-standards-template.md" and "web" not in allowed_skills:
+                continue
+
             filepath = os.path.join(self.agent_dir, "templates", filename)
             self._write_file(filepath, template_fn())
             self.stats["templates"] += 1
@@ -174,21 +203,50 @@ Bạn là **{skill['role']}**.
             except: pass
             self.stats["scripts"] += 1
 
+    def _create_project_config(self):
+        """Lưu thông tin project type vào .agent/project.json."""
+        import json
+        config = {
+            "project_name": self.project_name,
+            "project_type": self.project_type,
+            "asf_version": "3.3",
+            "wb_agent_version": "1.0.0",
+            "created_at": datetime.now().isoformat(),
+            "skills_count": self.stats["skills"],
+            "workflows_count": self.stats["workflows"],
+        }
+        filepath = os.path.join(self.agent_dir, "project.json")
+        self._write_file(filepath, json.dumps(config, indent=2, ensure_ascii=False))
+
     def _create_agent_readme(self):
         today = datetime.now().strftime("%Y-%m-%d")
+        type_info = PROJECT_TYPES.get(self.project_type, {})
+        type_label = type_info.get("label", self.project_type)
+
+        seo_section = ""
+        allowed_skills = type_info.get("includes_skills", [])
+        if "web" in allowed_skills:
+            seo_section = """
+## 🔍 SEO & GEO
+- `@speckit.seo`: Audit Technical SEO (Meta, Sitemap, Core Web Vitals)
+- `@speckit.geo`: Tối ưu cho AI Search (llms.txt, E-E-A-T, Schema.org)
+- `knowledge_base/seo_standards.md`: Checklist & JSON-LD templates
+"""
+
         content = f"""# 🤖 WB-Agent Configuration (ASF 3.3)
 
 > **Project**: {self.project_name}
+> **Type**: {type_label}
 > **Generated**: {today}
 
 ## 🏗️ Architecture
 
 - `.agent/identity/`: Định nghĩa Persona & Soul của AI.
-- `.agent/knowledge_base/`: Kho tri thức về Business, Data, API.
+- `.agent/knowledge_base/`: Kho tri thức về Business, Data, API, SEO.
 - `.agent/skills/`: Các kỹ năng AI chuyên biệt (@mentions).
 - `.agent/workflows/`: Các quy trình tự động hóa (/commands).
 - `.agent/memory/`: Project Constitution (Luật dự án).
-
+{seo_section}
 ## 🚀 Quick Start
 1. Run `/01-speckit.constitution` để thiết lập luật dự án.
 2. Run `@speckit.identity` để tinh chỉnh Persona của AI.
@@ -202,8 +260,10 @@ Bạn là **{skill['role']}**.
             f.write(content)
 
     def _print_stats(self):
+        type_info = PROJECT_TYPES.get(self.project_type, {})
+        type_label = type_info.get("label", self.project_type)
         print(f"\n{'─' * 50}")
-        print(f"📊 Thống kê khởi tạo (ASF 3.3):")
+        print(f"📊 Thống kê khởi tạo (ASF 3.3 — {type_label}):")
         print(f"  🎭 Identity:  {self.stats['identity']}")
         print(f"  🧠 Knowledge: {self.stats['knowledge']}")
         print(f"  🛠️ Skills:    {self.stats['skills']}")
