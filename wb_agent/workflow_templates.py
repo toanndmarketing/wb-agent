@@ -217,13 +217,18 @@ Cho MỖI task `- [ ]` trong tasks.md (theo thứ tự):
    - P2: Strategy Selection → inline edit hoặc Strangler Pattern
    - P3: TDD → repro script fail → code → pass
    - P4: Context Anchoring → re-read constitution mỗi 3 tasks
-2. Mark `- [X]` khi task pass
+   - P5: **Build Gate** → chạy `tsc --noEmit` hoặc `docker compose build`
+     - Nếu thêm/sửa component props → grep tất cả callers
+     - Nếu thêm/sửa type interface → grep tất cả usage
+     - Nếu đổi file structure → verify Dockerfile COPY paths
+2. Mark `- [X]` khi task pass **VÀ build gate pass**
 3. Repeat cho task tiếp theo
 
 ## Success Criteria
 - ✅ Mọi tasks marked `[X]`
 - ✅ Docker build pass
 - ✅ Không regression trên tasks đã complete
+- ✅ Mọi build gates pass
 """
 
 
@@ -239,14 +244,52 @@ description: Chạy Static Analysis
 
 ## Steps
 
-1. **@speckit.checker** — Quét codebase:
-   - Import hygiene, ENV compliance, type safety
-   - Security scan, Docker compliance
-2. Output: Report nhóm theo severity
+// turbo-all
+
+1. **TypeScript Compile Check** (CRITICAL):
+   ```bash
+   docker compose build 2>&1 | grep -iE "error|fail|TS[0-9]"
+   ```
+   Hoặc:
+   ```bash
+   docker compose exec topdeli-web npx tsc --noEmit
+   docker compose exec topdeli-admin npx tsc --noEmit
+   docker compose exec topdeli-api npx tsc --noEmit
+   ```
+
+2. **Dockerfile Integrity** — Kiểm tra COPY paths:
+   - Verify mọi thư mục được COPY tồn tại (đặc biệt `public/`)
+   - Verify CMD entrypoint khớp với build output structure
+   - Verify KHÔNG có volume mount `.:/app` trong production/beta compose
+
+3. **ENV Compliance** — Scan hard-coded values:
+   ```bash
+   grep -rn "http://localhost\\|http://127.0.0.1" apps/*/src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules"
+   grep -rn '|| "' apps/*/src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules"
+   ```
+
+4. **Build-time Safety** — Verify SSG pages:
+   ```bash
+   grep -rn "await api\\.\\|await fetchApi" apps/*/src/app/sitemap.ts apps/*/src/app/*/page.tsx
+   ```
+   Mỗi kết quả PHẢI nằm trong try-catch block.
+
+5. **Monorepo Type Contract** — @speckit.checker:
+   - Cross-reference shared type exports vs component usage
+   - Verify shared package exports match actual file structure
+
+6. **Security Scan**:
+   - Tìm `eval()`, `dangerouslySetInnerHTML`, exposed secrets
+   - Docker compliance: ports trong range 8900-8999
+
+7. **Output Report** → `.agent/memory/checker-report.md`
 
 ## Success Criteria
+- ✅ TypeScript compile: 0 errors
+- ✅ Docker build: thành công hoàn toàn
 - ✅ 0 issues CRITICAL (🔴)
 - ✅ Report file tồn tại
+- ❌ Nếu có bất kỳ 🔴 CRITICAL → BLOCK deploy
 """
 
 
@@ -306,15 +349,56 @@ description: Validate Implementation vs Spec
 
 ## Steps
 
-1. **@speckit.validate** — Final gate check:
-   - Tasks 100% complete?
-   - Success criteria đạt?
-   - Docker build pass?
-   - Constitution compliance?
-2. Verdict: READY FOR DEPLOY hoặc BLOCKED
+// turbo-all
+
+1. **Tasks Completion Check**:
+   - Đọc `tasks.md` → mọi task phải `[X]`
+   - Nếu còn `[ ]` hoặc `[/]` → ❌ BLOCKED
+
+2. **TypeScript Build Gate** (CRITICAL):
+   ```bash
+   docker compose -f docker-compose.beta.yml build 2>&1 | tail -n 100
+   ```
+   Nếu build fail → ❌ BLOCKED, liệt kê errors
+
+3. **Runtime Verification**:
+   ```bash
+   docker compose -f docker-compose.beta.yml up -d
+   sleep 15
+   docker compose -f docker-compose.beta.yml ps
+   ```
+   - Tất cả services phải `Up` (KHÔNG `Restarting`)
+   - Nếu `Restarting` → chạy `docker compose logs <service>` → ❌ BLOCKED
+
+4. **Health Check**:
+   ```bash
+   curl -s http://localhost:<web_port> | head -c 200  # Public Web
+   curl -s http://localhost:<admin_port> | head -c 200  # Admin Panel
+   curl -s http://localhost:<api_port>/health  # API
+   ```
+   Tất cả phải trả về 200
+
+5. **Constitution Compliance**:
+   - Verify Monorepo Rules (type contracts)
+   - Verify Docker Rules (no volume shadowing in prod)
+   - Verify Build-time Safety (try-catch trong SSG)
+
+6. **Final Verdict**:
+   ```
+   🏁 VALIDATION REPORT
+   ═══════════════════════
+   Tasks:        N/N ✅
+   TS Build:     PASS ✅
+   Runtime:      PASS ✅ (all services Up)
+   Health:       PASS ✅ (all 200)
+   Constitution: PASS ✅
+   ───────────────────────
+   VERDICT: ✅ READY FOR DEPLOY
+   ```
 
 ## Success Criteria
 - ✅ Verdict: READY FOR DEPLOY
+- ❌ Nếu BẤT KỲ step nào FAIL → BLOCKED (không được deploy)
 """
 
 

@@ -133,26 +133,83 @@ role: Static Analyst
 
 ## 🎯 Mission
 Quét codebase phát hiện vi phạm coding standards, security issues, performance anti-patterns.
+**PHẢI chạy actual commands** — không chỉ scan bằng mắt.
 
 ## 📥 Input
 - Source code (toàn bộ `src/`, `app/`, `pages/`)
 - `.agent/memory/constitution.md` (coding standards)
+- `Dockerfile`, `docker-compose*.yml`
 
 ## 📋 Protocol
-1. **Import Hygiene**: Tìm unused imports, circular dependencies.
-2. **ENV Compliance**: Tìm hard-coded URLs, tokens, keys, default text fallbacks (`|| "text"`).
-3. **Type Safety**: Tìm `any` type, missing return types, untyped parameters.
-4. **Security Scan**: Tìm `eval()`, `dangerouslySetInnerHTML`, SQL concatenation.
-5. **Docker Compliance**: Verify ports trong range 8900-8999, check Dockerfile best practices.
-6. **Output Report**: Nhóm theo severity (🔴 Critical / 🟡 Warning / 🟢 Info).
+
+### Phase 1: TypeScript Compile Check (CRITICAL)
+Đây là bước quan trọng nhất, PHẢI chạy trước mọi deploy:
+```bash
+# Trong Docker container hoặc local:
+docker compose exec <service> npx tsc --noEmit
+# Hoặc build thử:
+docker compose build 2>&1 | grep -i "error\\|fail"
+```
+- Bắt: type mismatch, missing props, sai tên thuộc tính, import lỗi
+- Mọi lỗi TS đều là 🔴 CRITICAL
+
+### Phase 2: Dockerfile & Docker Compose Lint
+```bash
+# Kiểm tra mọi COPY source tồn tại
+# Kiểm tra docker compose syntax:
+docker compose -f docker-compose*.yml config --quiet
+# Kiểm tra volume shadowing (CẤM dùng volumes cho production):
+grep -A 5 "volumes:" docker-compose.prod.yml  # Phải KHÔNG có `. :/app`
+```
+- Volume mount `- .:/app` trong production → 🔴 CRITICAL
+- COPY path không tồn tại → 🔴 CRITICAL
+- Port ngoài 8900-8999 → 🟡 WARNING
+
+### Phase 3: ENV Compliance
+```bash
+# Tìm hard-coded URLs/tokens:
+grep -rn "http://localhost\\|http://127.0.0.1\\|https://" apps/*/src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules\\|.next\\|schema.org"
+# Tìm default text fallback:
+grep -rn '|| "' apps/*/src/ --include="*.ts" --include="*.tsx" | grep -v "node_modules"
+```
+
+### Phase 4: Import Hygiene
+- Tìm unused imports, circular dependencies
+- Verify shared package exports match actual usage
+
+### Phase 5: Build-time Safety (Next.js specific)
+```bash
+# Tìm SSG/SSR pages gọi API mà không có try-catch:
+grep -rn "await api\\.\\|await fetchApi" apps/*/src/app/sitemap.ts apps/*/src/app/*/page.tsx
+# Mỗi kết quả phải nằm trong try-catch block
+```
+- API call trong `generateStaticParams` / `sitemap()` không có try-catch → 🔴 CRITICAL
+
+### Phase 6: Security Scan
+- Tìm `eval()`, `dangerouslySetInnerHTML` (cần sanitize), SQL concatenation
+- Tìm secrets/keys trong source code
+
+### Phase 7: Monorepo Integrity
+- Verify shared package exports khớp với imports
+- Cross-reference types: mọi `entity.X` phải tồn tại trong interface
 
 ## 📤 Output
 - File: `.agent/memory/checker-report.md`
-- Format: Severity → File:Line → Description → Suggested Fix
+- Format:
+  ```
+  ## 🔴 CRITICAL (N issues)
+  - `apps/web/src/app/page.tsx:65` — Property 'category' does not exist on type 'Article'
+  ## 🟡 WARNING (N issues)
+  - `docker-compose.beta.yml:40` — Volume mount `.:/app` sẽ override built code
+  ## 🟢 INFO (N issues)
+  - ...
+  ```
 
 ## 🚫 Guard Rails
 - CHỈ báo cáo — KHÔNG tự sửa code.
 - Mỗi finding phải có file path + line number cụ thể.
+- **PHẢI chạy `tsc --noEmit` hoặc `docker compose build`** — scan bằng mắt KHÔNG ĐỦ.
+- Nếu có 🔴 CRITICAL → kết luận FAIL, deploy KHÔNG được phép.
 """
 
 
@@ -258,6 +315,22 @@ Tạo và duy trì constitution.md — "luật tối cao" mà mọi agent phải
    - **§2 Security**: No root containers, no hardcoded secrets, multi-stage builds
    - **§3 Code Standards**: Language, naming conventions, ENV policy
    - **§4 Non-Negotiables**: Danh sách rules KHÔNG BAO GIỜ được vi phạm
+   - **§5 Monorepo Rules** (nếu monorepo):
+     - Shared Package Contract: type exports là source of truth
+     - Build Independence: mỗi app phải compile độc lập
+     - Package exports phải match actual file structure
+   - **§6 Docker Deployment Rules**:
+     - CẤM volume shadowing (`- .:/app`) trong production/beta
+     - Dockerfile COPY paths phải tồn tại
+     - CMD entrypoint phải match với build output
+     - Next.js apps phải có thư mục `public/`
+   - **§7 Build-time Safety** (nếu Next.js):
+     - SSG pages (sitemap, generateStaticParams): API calls phải try-catch
+     - fetchApi phải return null/empty nếu API_URL undefined
+   - **§8 Pre-Deploy Checklist**:
+     - `docker compose build` thành công
+     - Tất cả services `Up` (không `Restarting`)
+     - Health check: 200 OK
 3. Validate: Mỗi section phải có ít nhất 1 rule cụ thể, không chung chung.
 
 ## 📤 Output
@@ -309,7 +382,7 @@ role: Master Builder
 ---
 
 ## 🎯 Mission
-Implement code theo tasks.md, tuân thủ 4 IRONCLAD Protocols, zero regression.
+Implement code theo tasks.md, tuân thủ 5 IRONCLAD Protocols, zero regression.
 
 ## 📥 Input
 - `.agent/specs/[feature]/tasks.md` (danh sách tasks)
@@ -335,8 +408,28 @@ Implement code theo tasks.md, tuân thủ 4 IRONCLAD Protocols, zero regression.
 - Mỗi 3 tasks → re-read `constitution.md` + project structure.
 - Đảm bảo không drift khỏi architecture.
 
+### Protocol 5: Post-Implementation Build Gate ⭐
+**SAU MỖI TASK**, chạy kiểm tra compile:
+1. **TypeScript Check**:
+   ```bash
+   docker compose exec <service> npx tsc --noEmit
+   # Hoặc:
+   docker compose build 2>&1 | tail -n 50
+   ```
+2. **Interface Contract Check**:
+   - Nếu task THÊM/SỬA props vào component → grep TẤT CẢ nơi gọi component đó.
+   - Nếu task THÊM/SỬA type interface → grep TẤT CẢ nơi dùng type đó.
+   ```bash
+   grep -rn "ComponentName" apps/*/src/ --include="*.tsx"
+   ```
+3. **Dockerfile Path Check** (nếu task liên quan):
+   - Nếu task tạo/xóa/di chuyển file → verify Dockerfile COPY paths vẫn hợp lệ.
+   - Nếu task đổi `output` config (standalone, etc.) → verify runner CMD path.
+
+Nếu build gate FAIL → fix ngay TRƯỚC KHI chuyển task tiếp theo.
+
 ### Completion
-- Đánh `- [X] T001 ...` trong tasks.md khi task pass.
+- Đánh `- [X] T001 ...` trong tasks.md khi task pass **VÀ build gate pass**.
 - Commit message format: `feat(T001): [description]`
 
 ## 📤 Output
@@ -348,6 +441,7 @@ Implement code theo tasks.md, tuân thủ 4 IRONCLAD Protocols, zero regression.
 - KHÔNG sửa quá 3 files trong 1 task mà không hỏi.
 - KHÔNG bỏ qua TDD step — phải có repro script.
 - KHÔNG hard-code URLs, tokens, keys, default text.
+- KHÔNG tick task [X] nếu chưa qua build gate. ⭐
 """
 
 
@@ -764,17 +858,35 @@ Kiểm tra TOÀN BỘ implementation có đáp ứng spec.md hay không — fina
 ## 📋 Protocol
 1. **Tasks Completion**: Mọi task trong tasks.md đã `[X]`?
 2. **Success Criteria**: Mọi SC trong spec.md đã đạt?
-3. **Build Verification**: `docker compose build` thành công?
-4. **Runtime Verification**: App khởi động được, routes respond?
-5. **Constitution Check**: Không vi phạm rules nào?
-6. **Final Verdict**:
+3. **Build Verification** (PHẢI chạy actual command):
+   ```bash
+   docker compose -f docker-compose.beta.yml build 2>&1 | tail -n 100
+   ```
+   Nếu fail → ❌ BLOCKED
+4. **Runtime Verification** (PHẢI chạy actual command):
+   ```bash
+   docker compose -f docker-compose.beta.yml up -d
+   sleep 15
+   docker compose -f docker-compose.beta.yml ps
+   ```
+   - Tất cả services phải `Up` (KHÔNG `Restarting`)
+   - Nếu `Restarting` → chạy `docker compose logs <service>` → ❌ BLOCKED
+5. **Health Check** (PHẢI chạy actual command):
+   ```bash
+   curl -s http://localhost:<web_port> | head -c 200
+   curl -s http://localhost:<api_port>/health
+   ```
+   Tất cả phải trả về 200
+6. **Constitution Check**: Không vi phạm rules nào?
+7. **Final Verdict**:
    ```
    🏁 VALIDATION REPORT
    ═══════════════════════
    Tasks:        15/15 ✅
-   Criteria:      8/8  ✅
-   Build:         PASS ✅
-   Constitution:  PASS ✅
+   TS Build:     PASS ✅
+   Runtime:      PASS ✅ (all services Up)
+   Health:       PASS ✅ (all 200)
+   Constitution: PASS ✅
    ───────────────────────
    VERDICT: ✅ READY FOR DEPLOY
    ```
@@ -786,6 +898,8 @@ Kiểm tra TOÀN BỘ implementation có đáp ứng spec.md hay không — fina
 ## 🚫 Guard Rails
 - KHÔNG approve nếu còn task chưa complete.
 - KHÔNG approve nếu build fail.
+- KHÔNG approve nếu bất kỳ service nào `Restarting`.
+- PHẢI chạy actual commands — không chỉ đọc code.
 """
 
 
