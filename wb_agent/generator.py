@@ -19,6 +19,14 @@ from .templates import (
     DOCUMENT_TEMPLATE_MAP,
     doc_identity_template,
     doc_seo_standards_template,
+    doc_antigravity_rules_template,
+    doc_cursor_rules_template,
+    doc_windsurf_rules_template,
+    doc_vscode_copilot_template,
+    doc_jetbrains_rules_template,
+    doc_kiro_steering_template,
+    doc_claude_md_template,
+    doc_agents_md_template,
 )
 from .scanner import ProjectScanner
 
@@ -71,9 +79,91 @@ class ProjectGenerator:
         print("🔧 Tạo Bash Scripts...")
         self._create_scripts()
 
+        print("🖥️  Thiết lập Rules cho 8 IDE/Agent...")
+        self._create_ide_rules()
+
         self._create_project_config()
         self._create_agent_readme()
         self._print_stats()
+
+    def _create_ide_rules(self):
+        """Tạo rules files chuẩn cho 8 IDE/Agent — đúng path + format từng IDE."""
+        name = self.project_name
+
+        # ─── 1. Antigravity (Google) ────────────────────────
+        # Path: .agent/rules/wb-agent.md
+        self._write_file(
+            os.path.join(self.agent_dir, "rules", "wb-agent.md"),
+            doc_antigravity_rules_template(name)
+        )
+        print("  ✅ Antigravity  → .agent/rules/wb-agent.md")
+
+        # ─── 2. Cursor ──────────────────────────────────────
+        # Path: .cursor/rules/wb-agent.mdc (YAML frontmatter, .mdc extension)
+        cursor_dir = os.path.join(self.target_dir, ".cursor", "rules")
+        os.makedirs(cursor_dir, exist_ok=True)
+        self._write_file(
+            os.path.join(cursor_dir, "wb-agent.mdc"),
+            doc_cursor_rules_template(name)
+        )
+        print("  ✅ Cursor       → .cursor/rules/wb-agent.mdc")
+
+        # ─── 3. Windsurf (Codeium) ──────────────────────────
+        # Path: .windsurf/rules/wb-agent.md
+        windsurf_dir = os.path.join(self.target_dir, ".windsurf", "rules")
+        os.makedirs(windsurf_dir, exist_ok=True)
+        self._write_file(
+            os.path.join(windsurf_dir, "wb-agent.md"),
+            doc_windsurf_rules_template(name)
+        )
+        print("  ✅ Windsurf     → .windsurf/rules/wb-agent.md")
+
+        # ─── 4. VS Code (GitHub Copilot) ────────────────────
+        # Path: .github/copilot-instructions.md
+        github_dir = os.path.join(self.target_dir, ".github")
+        os.makedirs(github_dir, exist_ok=True)
+        self._write_file(
+            os.path.join(github_dir, "copilot-instructions.md"),
+            doc_vscode_copilot_template(name)
+        )
+        print("  ✅ VS Code      → .github/copilot-instructions.md")
+
+        # ─── 5. JetBrains (PhpStorm, WebStorm, PyCharm) ────
+        # Path: .aiassistant/rules/wb-agent.md
+        jb_dir = os.path.join(self.target_dir, ".aiassistant", "rules")
+        os.makedirs(jb_dir, exist_ok=True)
+        self._write_file(
+            os.path.join(jb_dir, "wb-agent.md"),
+            doc_jetbrains_rules_template(name)
+        )
+        print("  ✅ JetBrains    → .aiassistant/rules/wb-agent.md")
+
+        # ─── 6. Kiro (AWS) ──────────────────────────────────
+        # Path: .kiro/steering/tech.md
+        kiro_dir = os.path.join(self.target_dir, ".kiro", "steering")
+        os.makedirs(kiro_dir, exist_ok=True)
+        self._write_file(
+            os.path.join(kiro_dir, "tech.md"),
+            doc_kiro_steering_template(name)
+        )
+        print("  ✅ Kiro         → .kiro/steering/tech.md")
+
+        # ─── 7. Claude Code ─────────────────────────────────
+        # Path: CLAUDE.md (root)
+        self._write_file(
+            os.path.join(self.target_dir, "CLAUDE.md"),
+            doc_claude_md_template(name)
+        )
+        print("  ✅ Claude Code  → CLAUDE.md")
+
+        # ─── 8. GitHub Copilot Agent ────────────────────────
+        # Path: AGENTS.md (root)
+        self._write_file(
+            os.path.join(self.target_dir, "AGENTS.md"),
+            doc_agents_md_template(name)
+        )
+        print("  ✅ GitHub Agent → AGENTS.md")
+
 
     def _create_directories(self):
         """Tạo cấu trúc thư mục .agent/ theo chuẩn ASF 3.3."""
@@ -85,6 +175,7 @@ class ProjectGenerator:
             ".agent/scripts/bash",   # Tầng hạ tầng
             ".agent/templates",      # Tầng khuôn mẫu
             ".agent/memory",         # Tầng lưu trữ Constitution
+            ".agent/rules",          # Tầng Rules cho Antigravity
         ]
 
         for d in dirs:

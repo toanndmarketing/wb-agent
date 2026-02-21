@@ -134,32 +134,44 @@ You strictly follow the **Docker-First Policy** and **ASF 3.3** standards.
 2. **Security is non-negotiable**: Production containers must be hardened.
 3. **Spec-Driven**: No code without a plan.
 4. **Context is King**: Never code without understanding the "Why".
+5. **WB-Agent First**: Mọi thay đổi và vận hành phải thông qua wb-agent workflows.
 """
 
 def doc_constitution_template():
     return """# 📜 Project Constitution
 
+## §0 WB-Agent Protocol (MANDATORY)
+- **BẮT BUỘC**: Mọi hoạt động phát triển (Code), kiểm thử (Test), và triển khai (Deploy Production) PHẢI sử dụng `wb-agent`.
+- **Pipeline**: Tuân thủ nghiêm ngặt quy trình: Specify → Plan → Tasks → Implement.
+- **Tools**: Chỉ sử dụng các workflows trong `.agent/workflows` để thực hiện task.
+
 ## §1 Infrastructure (DOCKER-FIRST)
-- **Mặc định dùng Docker** cho cả Local và Production.
+- **Mặc định dùng Docker** cho cả Local và Production. KHÔNG chạy `npm`/`node`/`python` trực tiếp trên host.
 - **Local**: Dùng `docker-compose.yml` để dev.
 - **Production**: Dùng `docker-compose.prod.yml` kèm Security Hardening.
-- **Ports**: Tuân thủ dải **8900-8999**.
+- **Ports**: Chỉ dùng dải **8900-8999**.
+  - Public FE: `N` | Admin FE: `N+1` | Backend API: `N+2`
+- **Lệnh PowerShell**: Dùng PowerShell 5.1+, ngăn cách lệnh bằng `;` (KHÔNG dùng `&&`).
 
-## §2 Security
-- Production containers KHÔNG chạy quyền root.
-- CẤM hard-code SSH/Tokens/Keys vào Dockerfile hoặc source code.
-- Sử dụng Multi-stage builds để tối ưu size và bảo mật.
-- Sensitive vars PHẢI dùng ENV (`.env` local, server ENV prod).
+## §2 Security & Production Safety
+- **CẤM**: `docker compose down -v` trên Production.
+- **CẤM**: Deploy thủ công (phải dùng workflows `/deploy-production` hoặc `/deploy-staging`).
+- **Xác nhận**: Yêu cầu xác nhận trước khi Deep Clean, Deploy Prod, hoặc Delete Data.
+- **Runtime**: Production containers KHÔNG chạy quyền root.
 
-## §3 Code Standards
-- CẤM hard-code: URLs, Tokens, Keys, Credentials, Endpoints, Default Text.
-- Dùng ENV vars với prefix: `NEXT_PUBLIC_*`, `API_*`, `DB_*`.
-- Critical vars: `throw new Error()` nếu thiếu.
-- Optional vars: `console.error()` nếu thiếu.
+## §3 Code Standards & ENV
+- **CẤM hard-code**: URLs, Tokens, Keys, Credentials, Endpoints, Default Text.
+- **Sensitive vars**: PHẢI dùng ENV (`.env` local, server ENV prod).
+  - Prefix: `NEXT_PUBLIC_*`, `API_*`, `DB_*`.
+- **Validate**: 
+  - Critical vars: `throw new Error()` nếu thiếu.
+  - Optional vars: `console.error()` nếu thiếu.
+- **Documentation**: Phải có `.env.example` đầy đủ.
 
-## §4 Environments
-- Chỉ khởi tạo `local` và `production` mặc định.
-- `beta` hoặc `staging` chỉ tạo khi có yêu cầu cụ thể.
+## §4 Workflow & Scripting
+- **Tự động hóa**: Tạo script khi gặp lỗi hoặc task lặp lại.
+- **Git**: Lưu script vào `.agent/scripts`, commit vào hệ thống version control.
+- **Update**: Cập nhật workflow tương ứng sau khi tạo script mới.
 """
 
 def doc_infrastructure_template():
@@ -287,6 +299,153 @@ else
   echo "⚠️  Identity missing — run wb-agent init"
 fi
 echo "✅ Context update complete"
+"""
+
+
+# =============================================================================
+# IDE RULES TEMPLATES — Chuẩn format cho từng IDE
+# Research date: 2026-02-21
+# =============================================================================
+
+def _core_rules_content(project_name="Project"):
+    """Nội dung rules chung — được tái sử dụng cho mọi IDE."""
+    return f"""Dự án: {project_name}
+
+## 1. PHÁP LỆNH TỐI CAO
+- Tuân thủ nghiêm ngặt file `.agent/memory/constitution.md`.
+- Docker-First: Mọi hoạt động code và chạy app phải diễn ra trong container. KHÔNG chạy node/python trên host.
+- Ports: Chỉ sử dụng dải port 8900-8999.
+
+## 2. WB-AGENT PROTOCOL
+- Mọi task phải đi qua quy trình: Specify → Plan → Tasks → Implement.
+- Sử dụng Workflows trong `.agent/workflows/` và Skills trong `.agent/skills/`.
+
+## 3. NGÔN NGỮ & CODE
+- Phản hồi developer hoàn toàn bằng Tiếng Việt.
+- 15-Minute Rule: Mỗi task phải atomic, ≤ 15 phút, ảnh hưởng ≤ 3 files.
+- PowerShell 5.1+, ngăn cách lệnh bằng dấu `;` (KHÔNG dùng `&&`).
+- KHÔNG hard-code URLs, Tokens, Keys. Dùng ENV vars (`.env`).
+
+## 4. AN TOÀN
+- KHÔNG chạy `docker compose down -v` trên Production.
+- Tạo script tự động (`.agent/scripts/`) cho lỗi lặp lại.
+- Kiểm tra logs ngay khi lỗi: `docker compose logs -f <service>`.
+"""
+
+
+def doc_antigravity_rules_template(project_name="Project"):
+    """Antigravity IDE (Google) — .agent/rules/wb-agent.md"""
+    return f"""# 🛡️ WB-Agent Workspace Rules
+
+{_core_rules_content(project_name)}
+"""
+
+
+def doc_cursor_rules_template(project_name="Project"):
+    """Cursor IDE — .cursor/rules/wb-agent.mdc (YAML frontmatter + markdown)"""
+    return f"""---
+description: WB-Agent project rules for {project_name}
+globs:
+alwaysApply: true
+---
+
+# WB-Agent Rules
+
+{_core_rules_content(project_name)}
+"""
+
+
+def doc_windsurf_rules_template(project_name="Project"):
+    """Windsurf IDE (Codeium) — .windsurf/rules/wb-agent.md"""
+    return f"""# WB-Agent Rules
+
+{_core_rules_content(project_name)}
+"""
+
+
+def doc_vscode_copilot_template(project_name="Project"):
+    """VS Code (GitHub Copilot) — .github/copilot-instructions.md"""
+    return f"""# Copilot Instructions for {project_name}
+
+{_core_rules_content(project_name)}
+
+## References
+- Constitution: `.agent/memory/constitution.md`
+- Infrastructure: `.agent/knowledge_base/infrastructure.md`
+- Workflows: `.agent/workflows/`
+- Skills: `.agent/skills/`
+"""
+
+
+def doc_jetbrains_rules_template(project_name="Project"):
+    """JetBrains AI Assistant (PhpStorm, WebStorm, PyCharm) — .aiassistant/rules/wb-agent.md"""
+    return f"""# WB-Agent Rules for {project_name}
+
+{_core_rules_content(project_name)}
+"""
+
+
+def doc_kiro_steering_template(project_name="Project"):
+    """Kiro IDE (AWS) — .kiro/steering/tech.md"""
+    return f"""# Technology & Development Standards
+
+Project: {project_name}
+Build System: Docker (docker compose)
+Port Range: 8900-8999
+Shell: PowerShell 5.1+ (Windows)
+
+## Development Protocol
+- Follow Spec-Driven Development (SDD): Specify → Plan → Tasks → Implement.
+- Specs directory: `.agent/specs/`
+- Constitution: `.agent/memory/constitution.md`
+- 15-Minute Rule: Each task must be atomic, ≤ 15 minutes, affecting ≤ 3 files.
+
+## Environment
+- Docker-First: All apps run inside containers. Never run npm/python on host directly.
+- ENV vars required for all sensitive config (`.env` files).
+- No hardcoded URLs, Tokens, Keys, or Credentials.
+
+## Language
+- Respond in Vietnamese (Tiếng Việt).
+
+## Safety
+- NEVER run `docker compose down -v` on Production.
+- Always check logs on error: `docker compose logs -f <service>`.
+"""
+
+
+def doc_claude_md_template(project_name="Project"):
+    """Claude Code — CLAUDE.md (root)"""
+    return f"""# {project_name}
+
+{_core_rules_content(project_name)}
+
+## Project Structure
+- `.agent/memory/constitution.md` — Project Constitution (Source of Law)
+- `.agent/identity/master-identity.md` — AI Persona & Soul
+- `.agent/knowledge_base/` — Domain knowledge (infrastructure, data, API)
+- `.agent/skills/` — AI skills (@mentions)
+- `.agent/workflows/` — Automation workflows (/commands)
+- `.agent/specs/` — Feature specifications
+"""
+
+
+def doc_agents_md_template(project_name="Project"):
+    """GitHub Copilot Coding Agent — AGENTS.md (root)"""
+    return f"""# {project_name} — Agent Instructions
+
+{_core_rules_content(project_name)}
+
+## Build & Test
+- Build: `docker compose build`
+- Run: `docker compose up -d`
+- Logs: `docker compose logs -f <service>`
+- Stop: `docker compose down`
+
+## Project Context
+- Constitution: `.agent/memory/constitution.md`
+- Infrastructure: `.agent/knowledge_base/infrastructure.md`
+- Workflows: `.agent/workflows/`
 """
 
 

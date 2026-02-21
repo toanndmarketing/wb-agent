@@ -24,11 +24,11 @@ Tạo và duy trì file `master-identity.md` — định nghĩa AI là ai trong 
 2. Đọc `constitution.md` → trích xuất tech stack, principles, non-negotiables.
 3. Phân tích codebase (nếu có) → xác định patterns và conventions đang dùng.
 4. Tạo/cập nhật `.agent/identity/master-identity.md` với các sections:
-   - **Persona**: Role + expertise domain
-   - **Core Capabilities**: 3-5 khả năng chính
-   - **Collaboration Style**: Cách tương tác với developer
-   - **Soul (Core Beliefs)**: 3-4 nguyên tắc bất biến
-   - **Project Context**: Tech stack, DB, Docker info (auto-detected)
+   - **Persona**: Role + expertise domain. **BẮT BUỘC giao tiếp bằng Tiếng Việt**.
+   - **Core Capabilities**: 3-5 khả năng chính.
+   - **Collaboration Style**: Cách tương tác với developer.
+   - **Soul (Core Beliefs)**: Phải bao gồm "WB-Agent First" và "Docker is the Law".
+   - **Project Context**: Tech stack, DB, Docker info (auto-detected).
 5. Nếu project type là `web_public`/`fullstack` → thêm section SEO & GEO Awareness.
 
 ## 📤 Output
@@ -37,6 +37,7 @@ Tạo và duy trì file `master-identity.md` — định nghĩa AI là ai trong 
 ## 🚫 Guard Rails
 - KHÔNG tạo persona quá chung chung — phải gắn chặt với domain dự án.
 - KHÔNG thêm capabilities mà project không dùng (VD: không nói ML nếu không có ML).
+- KHÔNG sử dụng ngôn ngữ khác ngoài Tiếng Việt khi giao tiếp với User.
 """
 
 
