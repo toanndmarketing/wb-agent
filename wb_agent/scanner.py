@@ -64,7 +64,9 @@ class ProjectScanner:
         # Đánh dấu có code hay không
         if (self.profile["tech_stack"]
             or self.profile["dependencies"]
-            or self.profile["docker"]["has_docker"]):
+            or self.profile["dev_dependencies"]
+            or self.profile["docker"]["has_docker"]
+            or self.profile["docker"]["has_compose"]):
             self.profile["has_existing_code"] = True
 
         return self.profile
@@ -114,6 +116,8 @@ class ProjectScanner:
             "mongoose": "MongoDB",
             "redis": "Redis",
             "ioredis": "Redis",
+            "tsx": "TypeScript",
+            "prisma-client-js": "Prisma",
         }
         for dep_name, tech_label in tech_map.items():
             if dep_name in all_deps and tech_label not in self.profile["tech_stack"]:
@@ -121,12 +125,14 @@ class ProjectScanner:
 
         self.profile["scripts"] = pkg.get("scripts", {})
         self.profile["language"] = "JavaScript"
-        if "typescript" in all_deps or "ts-node" in all_deps:
+        if "typescript" in all_deps or "ts-node" in all_deps or "tsx" in all_deps:
             self.profile["language"] = "TypeScript"
 
         # Package manager detection
-        if os.path.exists(os.path.join(self.target_dir, "pnpm-lock.yaml")):
+        if os.path.exists(os.path.join(self.target_dir, "pnpm-workspace.yaml")) or os.path.exists(os.path.join(self.target_dir, "pnpm-lock.yaml")):
             self.profile["package_manager"] = "pnpm"
+            if "pnpm" not in self.profile["tech_stack"]:
+                self.profile["tech_stack"].append("pnpm Monorepo")
         elif os.path.exists(os.path.join(self.target_dir, "yarn.lock")):
             self.profile["package_manager"] = "yarn"
         else:
@@ -180,8 +186,8 @@ class ProjectScanner:
     def _scan_docker(self):
         """Quét Docker files để lấy services, ports."""
         # Dockerfile
-        dockerfile = os.path.join(self.target_dir, "Dockerfile")
-        if os.path.exists(dockerfile):
+        dockerfiles = glob.glob(os.path.join(self.target_dir, "**/Dockerfile"), recursive=True)
+        if dockerfiles:
             self.profile["docker"]["has_docker"] = True
             if "Docker" not in self.profile["tech_stack"]:
                 self.profile["tech_stack"].append("Docker")
