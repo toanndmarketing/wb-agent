@@ -1,12 +1,12 @@
 ---
-description: WB-Agent project rules for WB-Agent
+description: WB-Agent project rules for wb-agent
 globs:
 alwaysApply: true
 ---
 
 # WB-Agent Rules
 
-Dự án: WB-Agent
+Dự án: wb-agent
 
 ## 1. PHÁP LỆNH TỐI CAO
 - Tuân thủ nghiêm ngặt file `.agent/memory/constitution.md`.

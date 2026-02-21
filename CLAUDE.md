@@ -1,6 +1,6 @@
-# WB-Agent
+# wb-agent
 
-Dự án: WB-Agent
+Dự án: wb-agent
 
 ## 1. PHÁP LỆNH TỐI CAO
 - Tuân thủ nghiêm ngặt file `.agent/memory/constitution.md`.

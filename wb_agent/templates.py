@@ -335,7 +335,13 @@ def _core_rules_content(project_name="Project"):
 
 def doc_antigravity_rules_template(project_name="Project"):
     """Antigravity IDE (Google) — .agent/rules/wb-agent.md"""
-    return f"""# 🛡️ WB-Agent Workspace Rules
+    return f"""---
+trigger: always_on
+glob: "**/*"
+description: WB-Agent Workspace Rules cho {project_name} - ASF 3.3 Standard
+---
+
+# 🛡️ WB-Agent Workspace Rules
 
 {_core_rules_content(project_name)}
 """
