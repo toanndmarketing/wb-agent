@@ -252,6 +252,16 @@ SKILLS_REGISTRY = [
             {"label": "SEO Check", "agent": "speckit.seo", "prompt": "Validate SEO compliance of content"},
         ],
     },
+    {
+        "name": "speckit.uiux",
+        "description": "UI/UX Architect - Định nghĩa Design System, UI Components, Spacing, Typography, Responsive Patterns.",
+        "role": "UI/UX Architect",
+        "project_types": "web",
+        "depends_on": ["speckit.specify"],
+        "handoffs": [
+            {"label": "Update Plan", "agent": "speckit.plan", "prompt": "Integrate UI/UX specs into the technical plan"},
+        ],
+    },
 ]
 
 
@@ -376,6 +386,12 @@ WORKFLOWS_REGISTRY = [
         "command": "util-speckit.status",
         "description": "Hiển thị Progress Dashboard",
         "skills": ["speckit.status"],
+    },
+    {
+        "command": "util-speckit.uiux",
+        "description": "Thiết lập/cập nhật UI/UX Design System & Standards",
+        "skills": ["speckit.uiux"],
+        "project_types": "web",
     },
     {
         "command": "util-speckit.taskstoissues",

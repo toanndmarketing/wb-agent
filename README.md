@@ -6,9 +6,9 @@
 
 Tool này tự động tạo cấu trúc `.agent/` chuẩn cho Antigravity IDE, bao gồm:
 
-- **Skills** (22 skills) — Khả năng AI tự trị cho từng phase SDLC, mỗi skill có protocol chi tiết
-- **Workflows** (22 workflows) — Orchestration commands với pre-conditions, gate checks, success criteria
-- **Templates** — Spec, Plan, Tasks, Constitution, Infrastructure, SEO templates
+- **Skills** (23 skills) — Khả năng AI tự trị cho từng phase SDLC, thêm **UI/UX Pro Max Architect**
+- **Workflows** (25 workflows) — Orchestration commands với pre-conditions, gate checks, success criteria
+- **Templates** — Spec, Plan, Tasks, Constitution, Infrastructure, SEO, **UI/UX Standards** templates
 - **Scripts** — 4 bash utilities (create-feature, setup-plan, check-prerequisites, update-context)
 
 ## 📋 Requirements
@@ -28,7 +28,7 @@ pip install git+https://github.com/toanndmarketing/wb-agent.git
 
 # Kiểm tra
 wb-agent version
-# → wb-agent v1.0.0
+# → wb-agent v1.1.0
 ```
 
 ### Cách 2: `pipx install` (Isolated - Không ảnh hưởng system Python)
@@ -172,7 +172,7 @@ Bước 6: Implement     →  /07-speckit.implement
 wb-agent init --target /path/to/project --name "My Project"
 ```
 
-- Tạo cấu trúc `.agent/` (~60 files: 22 skills, 22 workflows, 6 templates, 4 scripts, identity, knowledge base, constitution, README)
+- Tạo cấu trúc `.agent/` (~60 files: 23 skills, 25 workflows, 7 templates, 4 scripts, identity, knowledge base, constitution, README)
 - Mở project trong Antigravity IDE — agent tự động nhận diện `.agent/` folder
 
 #### Bước 1 — `/01-speckit.constitution` ⚠️ BẮT BUỘC
@@ -371,9 +371,10 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 │   ├── speckit.validate/      # Implementation Validator
 │   ├── speckit.seo/           # Technical SEO (web projects)
 │   ├── speckit.geo/           # Generative Engine Optimization (web projects)
-│   └── speckit.content/       # Content Architect (web_public projects)
+│   ├── speckit.content/       # Content Architect (web_public projects)
+│   └── speckit.uiux/          # UI/UX Architect (web projects) - Pro Max Standard
 │
-├── workflows/                 # / Slash Commands — 22 Orchestrations
+├── workflows/                 # / Slash Commands — 25 Orchestrations
 │   ├── 00-speckit.all.md           # Full Pipeline (Specify→Clarify→Plan→Tasks→Analyze)
 │   ├── 01-speckit.constitution.md  # Constitution Setup
 │   ├── 02-speckit.specify.md       # Feature Specification
@@ -391,6 +392,7 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 │   ├── speckit.prepare.md          # Prep Pipeline (no implement)
 │   ├── util-speckit.checklist.md   # Requirements Checklist
 │   ├── util-speckit.content.md     # Content Audit (web_public)
+│   ├── util-speckit.uiux.md        # UI/UX Standards Setup (web projects) - Pro Max
 │   ├── util-speckit.diff.md        # Artifact Comparison
 │   ├── util-speckit.migrate.md     # Legacy Migration
 │   ├── util-speckit.quizme.md      # Red Team Quiz
@@ -403,7 +405,8 @@ Mỗi khi AI implement code, 4 protocols này được thực thi **bắt buộc
 │   ├── tasks-template.md      # Task Breakdown
 │   ├── constitution-template.md    # Constitution
 │   ├── infrastructure-template.md  # Infrastructure & Docker
-│   └── seo-standards-template.md   # SEO & GEO (web projects)
+│   ├── seo-standards-template.md   # SEO & GEO (web projects)
+│   └── ui-ux-standards-template.md # UI/UX Pro Max (web projects)
 │
 ├── scripts/bash/              # Shared Bash Utilities
 │   ├── create-new-feature.sh  # Create feature branch + specs directory

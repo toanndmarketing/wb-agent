@@ -19,6 +19,7 @@ from .templates import (
     DOCUMENT_TEMPLATE_MAP,
     doc_identity_template,
     doc_seo_standards_template,
+    doc_ui_ux_standards_template,
     doc_antigravity_rules_template,
     doc_cursor_rules_template,
     doc_windsurf_rules_template,
@@ -242,14 +243,22 @@ class ProjectGenerator:
                 self._write_file(os.path.join(base_path, name), content)
                 self.stats["knowledge"] += 1
 
-        # SEO Standards — CHỈ tạo cho Web projects
+        # SEO & UI/UX Standards — CHỈ tạo cho Web projects
         type_info = PROJECT_TYPES.get(self.project_type, {})
         allowed_skills = type_info.get("includes_skills", [])
+        
         if "web" in allowed_skills or "web_public" in allowed_skills:
+            # SEO
             seo_path = os.path.join(base_path, "seo_standards.md")
             self._write_file(seo_path, doc_seo_standards_template())
             self.stats["knowledge"] += 1
             print("  🔍 SEO & GEO Standards → knowledge_base/seo_standards.md")
+
+            # UI/UX
+            uiux_path = os.path.join(base_path, "ui_ux_standards.md")
+            self._write_file(uiux_path, doc_ui_ux_standards_template())
+            self.stats["knowledge"] += 1
+            print("  🎨 UI/UX Standards → knowledge_base/ui_ux_standards.md")
 
     def _create_skills(self):
         """Tạo SKILL.md cho mỗi skill — CHỈ tạo skills phù hợp project type."""
@@ -314,6 +323,8 @@ Bạn là **{skill['role']}**.
             type_info = PROJECT_TYPES.get(self.project_type, {})
             allowed_skills = type_info.get("includes_skills", [])
             if filename == "seo-standards-template.md" and "web" not in allowed_skills:
+                continue
+            if filename == "ui-ux-standards-template.md" and "web" not in allowed_skills:
                 continue
 
             filepath = os.path.join(self.agent_dir, "templates", filename)
