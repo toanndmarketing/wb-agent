@@ -54,7 +54,7 @@ SKILLS_REGISTRY = [
     {
         "name": "speckit.devops",
         "role": "DevOps Architect",
-        "description": "Chuyên gia hạ tầng Docker & Security Hardening theo dải port 8900-8999.",
+        "description": "Chuyên gia hạ tầng Docker & Security Hardening — Port ENV-first, dải 8900-8999.",
         "project_types": "all",
     },
     {
@@ -268,6 +268,16 @@ WORKFLOWS_REGISTRY = [
         "command": "01-speckit.constitution",
         "description": "Thiết lập/cập nhật Constitution (Source of Law)",
         "skills": ["speckit.constitution"],
+    },
+    {
+        "command": "speckit.identity",
+        "description": "Tạo/cập nhật Master Identity cho AI Agent",
+        "skills": ["speckit.identity"],
+    },
+    {
+        "command": "speckit.devops",
+        "description": "Docker Infrastructure & Port Allocation (ENV-first)",
+        "skills": ["speckit.devops"],
     },
     {
         "command": "02-speckit.specify",
