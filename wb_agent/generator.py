@@ -58,8 +58,29 @@ class ProjectGenerator:
 
     def generate(self):
         """Thực thi toàn bộ quá trình sinh cấu trúc."""
-        print("📁 Tạo cấu trúc thư mục (ASF 3.3 Standard)...")
+        from .registry import get_project_type_info
+        type_info = get_project_type_info(self.project_type)
+        self.use_docker = type_info.get("use_docker", True)
+        self.is_soft_rules = type_info.get("is_soft_rules", False)
+
+        print(f"📁 Tạo cấu trúc thư mục (ASF 3.3 Standard — {self.project_type})...")
         self._create_directories()
+
+        # ─── 0. Check Port (Chỉ cho dự án MỚI & dùng Docker) ───
+        project_config_path = os.path.join(self.agent_dir, "project.json")
+        is_new_project = not os.path.exists(project_config_path)
+
+        if is_new_project and self.use_docker:
+             ports = self._find_available_ports()
+             if ports:
+                 self.assigned_ports = ports
+                 print(f"📡 Port assigned (9XXX): Public:{ports[0]}, Admin:{ports[1]}, API:{ports[2]}")
+                 self._save_ports_to_env(ports)
+             else:
+                 print("⚠️  Không tìm thấy dải port 9xxx trống. Vui lòng kiểm tra lại hệ thống.")
+                 self.assigned_ports = (9000, 9001, 9002) # Fallback an toàn
+        else:
+             self.assigned_ports = None
 
         print("🎭 Thiết lập Identity & Soul...")
         self._create_identity()
@@ -95,7 +116,7 @@ class ProjectGenerator:
         # Path: .agent/rules/wb-agent.md
         self._write_file(
             os.path.join(self.agent_dir, "rules", "wb-agent.md"),
-            doc_antigravity_rules_template(name)
+            doc_antigravity_rules_template(name, self.use_docker, self.is_soft_rules)
         )
         print("  ✅ Antigravity  → .agent/rules/wb-agent.md")
 
@@ -105,7 +126,7 @@ class ProjectGenerator:
         os.makedirs(cursor_dir, exist_ok=True)
         self._write_file(
             os.path.join(cursor_dir, "wb-agent.mdc"),
-            doc_cursor_rules_template(name)
+            doc_cursor_rules_template(name, self.use_docker, self.is_soft_rules)
         )
         print("  ✅ Cursor       → .cursor/rules/wb-agent.mdc")
 
@@ -115,7 +136,7 @@ class ProjectGenerator:
         os.makedirs(windsurf_dir, exist_ok=True)
         self._write_file(
             os.path.join(windsurf_dir, "wb-agent.md"),
-            doc_windsurf_rules_template(name)
+            doc_windsurf_rules_template(name, self.use_docker, self.is_soft_rules)
         )
         print("  ✅ Windsurf     → .windsurf/rules/wb-agent.md")
 
@@ -125,7 +146,7 @@ class ProjectGenerator:
         os.makedirs(github_dir, exist_ok=True)
         self._write_file(
             os.path.join(github_dir, "copilot-instructions.md"),
-            doc_vscode_copilot_template(name)
+            doc_vscode_copilot_template(name, self.use_docker, self.is_soft_rules)
         )
         print("  ✅ VS Code      → .github/copilot-instructions.md")
 
@@ -135,7 +156,7 @@ class ProjectGenerator:
         os.makedirs(jb_dir, exist_ok=True)
         self._write_file(
             os.path.join(jb_dir, "wb-agent.md"),
-            doc_jetbrains_rules_template(name)
+            doc_jetbrains_rules_template(name, self.use_docker, self.is_soft_rules)
         )
         print("  ✅ JetBrains    → .aiassistant/rules/wb-agent.md")
 
@@ -145,7 +166,7 @@ class ProjectGenerator:
         os.makedirs(kiro_dir, exist_ok=True)
         self._write_file(
             os.path.join(kiro_dir, "tech.md"),
-            doc_kiro_steering_template(name)
+            doc_kiro_steering_template(name) # Kiro keeps original for now
         )
         print("  ✅ Kiro         → .kiro/steering/tech.md")
 
@@ -153,7 +174,7 @@ class ProjectGenerator:
         # Path: CLAUDE.md (root)
         self._write_file(
             os.path.join(self.target_dir, "CLAUDE.md"),
-            doc_claude_md_template(name)
+            doc_claude_md_template(name, self.use_docker, self.is_soft_rules)
         )
         print("  ✅ Claude Code  → CLAUDE.md")
 
@@ -161,7 +182,7 @@ class ProjectGenerator:
         # Path: AGENTS.md (root)
         self._write_file(
             os.path.join(self.target_dir, "AGENTS.md"),
-            doc_agents_md_template(name)
+            doc_agents_md_template(name, self.use_docker, self.is_soft_rules)
         )
         print("  ✅ GitHub Agent → AGENTS.md")
 
@@ -187,7 +208,7 @@ class ProjectGenerator:
     def _create_identity(self):
         """Tạo Master Identity — có nhận biết Project Type + thông tin scan."""
         filepath = os.path.join(self.agent_dir, "identity", "master-identity.md")
-        content = doc_identity_template(self.project_name, self.project_type)
+        content = doc_identity_template(self.project_name, self.project_type, self.use_docker)
 
         # Bổ sung context từ scanner
         if self.scan_profile and self.scan_profile.get("has_existing_code"):
@@ -334,7 +355,7 @@ Bạn là **{skill['role']}**.
     def _create_memory(self):
         filepath = os.path.join(self.agent_dir, "memory", "constitution.md")
         template_fn = DOCUMENT_TEMPLATE_MAP.get("constitution-template.md")
-        self._write_file(filepath, template_fn())
+        self._write_file(filepath, template_fn(self.use_docker, self.is_soft_rules))
 
     def _create_scripts(self):
         for filename, script_fn in SCRIPT_TEMPLATE_MAP.items():
@@ -400,6 +421,61 @@ Bạn là **{skill['role']}**.
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
+
+    def _find_available_ports(self, start_port=9000, end_port=9999):
+        """Tìm 3 port liên tiếp còn trống trong dải 9000-9999 (Windows)."""
+        import subprocess
+        try:
+            # Chạy lệnh netstat để tìm các port đang bận (quét dải :9)
+            output = subprocess.check_output("netstat -ano | findstr :9", shell=True).decode()
+            used_ports = set()
+            for line in output.splitlines():
+                parts = line.split()
+                if len(parts) > 1:
+                    port_part = parts[1].split(':')[-1]
+                    try:
+                        p_val = int(port_part)
+                        if start_port <= p_val <= end_port:
+                            used_ports.add(p_val)
+                    except: continue
+            
+            # Tìm 3 port liên tiếp (từ thấp đến cao)
+            for p in range(start_port, end_port - 1):
+                if p not in used_ports and (p+1) not in used_ports and (p+2) not in used_ports:
+                    return (p, p+1, p+2)
+        except Exception:
+            pass
+        return None
+
+    def _save_ports_to_env(self, ports):
+        """Ghi cấu hình port vào file .env (ENV-first)."""
+        env_path = os.path.join(self.target_dir, ".env")
+        lines = []
+        
+        # Nếu đã có file .env, đọc nội dung cũ để tránh ghi đè dữ liệu quan trọng
+        existing_content = ""
+        if os.path.exists(env_path):
+            with open(env_path, "r", encoding="utf-8") as f:
+                existing_content = f.read()
+
+        # Chuẩn bị dữ liệu port
+        port_vars = {
+            f"NEXT_PUBLIC_PORT_FE": ports[0],
+            f"ADMIN_PORT": ports[1],
+            f"API_PORT": ports[2],
+            f"NEXT_PUBLIC_API_URL": f"http://localhost:{ports[2]}"
+        }
+
+        # Tạo nội dung .env mới hoặc bổ sung
+        new_lines = [f"{k}={v}" for k, v in port_vars.items() if k not in existing_content]
+        
+        if new_lines:
+            with open(env_path, "a" if existing_content else "w", encoding="utf-8") as f:
+                if existing_content and not existing_content.endswith("\n"):
+                    f.write("\n")
+                f.write("\n# WB-Agent Port Configuration (Auto-generated)\n")
+                f.write("\n".join(new_lines) + "\n")
+            print("  🔐 Ports saved to .env")
 
     def _print_stats(self):
         type_info = PROJECT_TYPES.get(self.project_type, {})

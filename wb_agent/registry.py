@@ -37,6 +37,20 @@ PROJECT_TYPES = {
         "description": "Frontend Public + Backend API — Cần SEO + GEO + DevOps",
         "includes_skills": ["all", "web", "web_public"],
     },
+    "simple_script": {
+        "label": "Simple Script / Automation",
+        "description": "Python/Bash/JS scripts nhỏ — Không Docker, Không Next.js",
+        "includes_skills": ["all"],
+        "use_docker": False,
+        "is_soft_rules": True,
+    },
+    "custom_infra": {
+        "label": "Custom Infrastructure",
+        "description": "Dự án có hạ tầng riêng — Không ép Docker chuẩn 89XX",
+        "includes_skills": ["all"],
+        "use_docker": False,
+        "is_soft_rules": True,
+    },
 }
 
 
@@ -406,8 +420,18 @@ def get_skills_for_project_type(project_type):
     if project_type not in PROJECT_TYPES:
         return SKILLS_REGISTRY  # fallback: trả về tất cả
 
-    allowed = PROJECT_TYPES[project_type]["includes_skills"]
+    type_info = PROJECT_TYPES[project_type]
+    allowed = type_info["includes_skills"]
     return [s for s in SKILLS_REGISTRY if s.get("project_types", "all") in allowed]
+
+
+def get_project_type_info(project_type):
+    """Lấy metadata của project type."""
+    return PROJECT_TYPES.get(project_type, {
+        "label": "Unknown",
+        "use_docker": True,
+        "is_soft_rules": False
+    })
 
 
 def get_workflows_for_project_type(project_type):

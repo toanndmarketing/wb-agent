@@ -92,13 +92,15 @@ def doc_tasks_template():
 - [ ] T003 Error handling & edge cases
 """
 
-def doc_identity_template(project_name="Project", project_type="fullstack"):
+def doc_identity_template(project_name="Project", project_type="fullstack", use_docker=True):
     type_labels = {
         "web_public": "Web Public (B2C)",
         "web_saas": "Web SaaS (B2B)",
         "mobile_app": "Mobile App",
         "desktop_cli": "Desktop / CLI Tool",
         "fullstack": "Full-stack (Web + API)",
+        "simple_script": "Simple Script / Automation",
+        "custom_infra": "Custom Infrastructure",
     }
     label = type_labels.get(project_type, "Full-stack")
 
@@ -112,12 +114,16 @@ def doc_identity_template(project_name="Project", project_type="fullstack"):
 - Cung cấp file `llms.txt` tại root để AI crawlers hiểu cấu trúc site.
 """
 
+    docker_soul = "- Strictly follow Docker-First Policy." if use_docker else "- Flexibility-First: Infrastructure is project-specific."
+    docker_belief = "1. **Docker is the Law**: Everything runs in containers." if use_docker else "1. **Environment is Custom**: Run code as per direct requirements."
+
     return f"""# 🧠 Master Identity: {project_name} Agent
 
 ## 🎭 Persona
 You are the **Lead Architect & Senior Developer** for the **{project_name}** project.
 Project Type: **{label}**
-You strictly follow the **Docker-First Policy** and **ASF 3.3** standards.
+{docker_soul}
+You follow **ASF 3.3** standards.
 
 ## 🛠️ Core Capabilities
 - Internalizing complex business logic and mapping it to scalable code.
@@ -130,38 +136,47 @@ You strictly follow the **Docker-First Policy** and **ASF 3.3** standards.
 - Provide "Blast Radius Analysis" before any major refactoring.
 
 ## 📜 Soul (Core Beliefs)
-1. **Docker is the Law**: Everything runs in containers.
-2. **Security is non-negotiable**: Production containers must be hardened.
+{docker_belief}
+2. **Security is non-negotiable**: Production environments must be hardened.
 3. **Spec-Driven**: No code without a plan.
 4. **Context is King**: Never code without understanding the "Why".
 5. **WB-Agent First**: Mọi thay đổi và vận hành phải thông qua wb-agent workflows.
 """
 
-def doc_constitution_template():
-    return """# 📜 Project Constitution
+def doc_constitution_template(use_docker=True, is_soft_rules=False):
+    must_label = "BẮT BUỘC" if not is_soft_rules else "KHUYẾN NGHỊ"
+    shall_label = "PHẢI" if not is_soft_rules else "NÊN"
+    forbidden_label = "CẤM" if not is_soft_rules else "HẠN CHẾ"
 
-## §0 WB-Agent Protocol (MANDATORY)
-- **BẮT BUỘC**: Mọi hoạt động phát triển (Code), kiểm thử (Test), và triển khai (Deploy Production) PHẢI sử dụng `wb-agent`.
-- **Pipeline**: Tuân thủ nghiêm ngặt quy trình: Specify → Plan → Tasks → Implement.
-- **Tools**: Chỉ sử dụng các workflows trong `.agent/workflows` để thực hiện task.
-
+    docker_infra = f"""
 ## §1 Infrastructure (DOCKER-FIRST)
 - **Mặc định dùng Docker** cho cả Local và Production. KHÔNG chạy `npm`/`node`/`python` trực tiếp trên host.
 - **Local**: Dùng `docker-compose.yml` để dev.
 - **Production**: Dùng `docker-compose.prod.yml` kèm Security Hardening.
 - **Ports**: Chỉ dùng dải **8900-8999**.
   - Public FE: `N` | Admin FE: `N+1` | Backend API: `N+2`
-- **Lệnh PowerShell**: Dùng PowerShell 5.1+, ngăn cách lệnh bằng `;` (KHÔNG dùng `&&`).
+""" if use_docker else f"""
+## §1 Environment (CUSTOM)
+- **Hạ tầng dự án**: Được định nghĩa cụ thể theo từng nhu cầu, không nhất thiết chạy trong Docker.
+- **Port**: Tùy chọn dựa trên sự sẵn có của hệ thống mục tiêu.
+"""
 
+    return f"""# 📜 Project Constitution
+
+## §0 WB-Agent Protocol ({must_label})
+- **{must_label}**: Mọi hoạt động phát triển (Code), kiểm thử (Test), và triển khai (Deploy Production) {shall_label} sử dụng `wb-agent`.
+- **Pipeline**: Tuân thủ nghiêm ngặt quy trình: Specify → Plan → Tasks → Implement.
+- **Tools**: Chỉ sử dụng các workflows trong `.agent/workflows` để thực hiện task.
+{docker_infra}
 ## §2 Security & Production Safety
-- **CẤM**: `docker compose down -v` trên Production.
-- **CẤM**: Deploy thủ công (phải dùng workflows `/deploy-production` hoặc `/deploy-staging`).
+- **{forbidden_label}**: `docker compose down -v` trên Production.
+- **{forbidden_label}**: Deploy thủ công ({shall_label} dùng workflows `/deploy-production` hoặc `/deploy-staging`).
 - **Xác nhận**: Yêu cầu xác nhận trước khi Deep Clean, Deploy Prod, hoặc Delete Data.
 - **Runtime**: Production containers KHÔNG chạy quyền root.
 
 ## §3 Code Standards & ENV
-- **CẤM hard-code**: URLs, Tokens, Keys, Credentials, Endpoints, Default Text.
-- **Sensitive vars**: PHẢI dùng ENV (`.env` local, server ENV prod).
+- **{forbidden_label} hard-code**: URLs, Tokens, Keys, Credentials, Endpoints, Default Text.
+- **Sensitive vars**: {shall_label} dùng ENV (`.env` local, server ENV prod).
   - Prefix: `NEXT_PUBLIC_*`, `API_*`, `DB_*`.
 - **Validate**: 
   - Critical vars: `throw new Error()` nếu thiếu.
@@ -368,33 +383,45 @@ echo "✅ Context update complete"
 # Research date: 2026-02-21
 # =============================================================================
 
-def _core_rules_content(project_name="Project"):
+def _core_rules_content(project_name="Project", use_docker=True, is_soft_rules=False):
     """Nội dung rules chung — được tái sử dụng cho mọi IDE."""
+    must_label = "Tuân thủ" if not is_soft_rules else "Nên tuân thủ"
+    shall_label = "phải" if not is_soft_rules else "nên"
+    forbidden_label = "KHÔNG" if not is_soft_rules else "Hạn chế"
+    
+    docker_rule = f"- Docker-First: Mọi hoạt động code và chạy app {shall_label} diễn ra trong container. {forbidden_label} chạy node/python trên host." if use_docker else "- Flexibility: Chạy app trực tiếp hoặc qua Docker tùy nhu cầu dự án."
+    port_rule = f"- Ports: Sử dụng dải port 9000-9999. {must_label} lấy port từ biến môi trường (.env)." if use_docker else "- Ports: Sử dụng port khả dụng trên hệ thống."
+
     return f"""Dự án: {project_name}
 
 ## 1. PHÁP LỆNH TỐI CAO
-- Tuân thủ nghiêm ngặt file `.agent/memory/constitution.md`.
-- Docker-First: Mọi hoạt động code và chạy app phải diễn ra trong container. KHÔNG chạy node/python trên host.
-- Ports: Chỉ sử dụng dải port 8900-8999.
+- {must_label} nghiêm ngặt file `.agent/memory/constitution.md`.
+{docker_rule}
+{port_rule}
 
 ## 2. WB-AGENT PROTOCOL
-- Mọi task phải đi qua quy trình: Specify → Plan → Tasks → Implement.
+- Mọi task {shall_label} đi qua quy trình: Specify → Plan → Tasks → Implement.
 - Sử dụng Workflows trong `.agent/workflows/` và Skills trong `.agent/skills/`.
 
 ## 3. NGÔN NGỮ & CODE
 - Phản hồi developer hoàn toàn bằng Tiếng Việt.
-- 15-Minute Rule: Mỗi task phải atomic, ≤ 15 phút, ảnh hưởng ≤ 3 files.
-- PowerShell 5.1+, ngăn cách lệnh bằng dấu `;` (KHÔNG dùng `&&`).
-- KHÔNG hard-code URLs, Tokens, Keys. Dùng ENV vars (`.env`).
+- 15-Minute Rule: Mỗi task {shall_label} atomic, ≤ 15 phút, ảnh hưởng ≤ 3 files.
+- PowerShell 5.1+, ngăn cách lệnh bằng dấu `;` ({forbidden_label} dùng `&&`).
+- {forbidden_label} hard-code URLs, Tokens, Keys. Dùng ENV vars (`.env`).
 
 ## 4. AN TOÀN
-- KHÔNG chạy `docker compose down -v` trên Production.
+- {forbidden_label} chạy `docker compose down -v` trên Production.
 - Tạo script tự động (`.agent/scripts/`) cho lỗi lặp lại.
 - Kiểm tra logs ngay khi lỗi: `docker compose logs -f <service>`.
+
+## 5. AGENTIC MODE SYNC (Antigravity Only)
+- **Task Tracking**: Sử dụng `task_boundary` để đồng bộ trạng thái với `@speckit.tasks` (tasks.md).
+- **Planning Artifacts**: Luôn tạo `implementation_plan.md` khi thực hiện các thay đổi lớn (atomic > 3 files).
+- **Verification**: Sau khi hoàn thành task, sử dụng `walkthrough.md` để đối chiếu kết quả với `spec.md`.
 """
 
 
-def doc_antigravity_rules_template(project_name="Project"):
+def doc_antigravity_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
     """Antigravity IDE (Google) — .agent/rules/wb-agent.md"""
     return f"""---
 trigger: always_on
@@ -404,11 +431,11 @@ description: WB-Agent Workspace Rules cho {project_name} - ASF 3.3 Standard
 
 # 🛡️ WB-Agent Workspace Rules
 
-{_core_rules_content(project_name)}
+{_core_rules_content(project_name, use_docker, is_soft_rules)}
 """
 
 
-def doc_cursor_rules_template(project_name="Project"):
+def doc_cursor_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
     """Cursor IDE — .cursor/rules/wb-agent.mdc (YAML frontmatter + markdown)"""
     return f"""---
 description: WB-Agent project rules for {project_name}
@@ -418,23 +445,23 @@ alwaysApply: true
 
 # WB-Agent Rules
 
-{_core_rules_content(project_name)}
+{_core_rules_content(project_name, use_docker, is_soft_rules)}
 """
 
 
-def doc_windsurf_rules_template(project_name="Project"):
+def doc_windsurf_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
     """Windsurf IDE (Codeium) — .windsurf/rules/wb-agent.md"""
     return f"""# WB-Agent Rules
 
-{_core_rules_content(project_name)}
+{_core_rules_content(project_name, use_docker, is_soft_rules)}
 """
 
 
-def doc_vscode_copilot_template(project_name="Project"):
+def doc_vscode_copilot_template(project_name="Project", use_docker=True, is_soft_rules=False):
     """VS Code (GitHub Copilot) — .github/copilot-instructions.md"""
     return f"""# Copilot Instructions for {project_name}
 
-{_core_rules_content(project_name)}
+{_core_rules_content(project_name, use_docker, is_soft_rules)}
 
 ## References
 - Constitution: `.agent/memory/constitution.md`
@@ -444,11 +471,11 @@ def doc_vscode_copilot_template(project_name="Project"):
 """
 
 
-def doc_jetbrains_rules_template(project_name="Project"):
+def doc_jetbrains_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
     """JetBrains AI Assistant (PhpStorm, WebStorm, PyCharm) — .aiassistant/rules/wb-agent.md"""
     return f"""# WB-Agent Rules for {project_name}
 
-{_core_rules_content(project_name)}
+{_core_rules_content(project_name, use_docker, is_soft_rules)}
 """
 
 
@@ -458,7 +485,7 @@ def doc_kiro_steering_template(project_name="Project"):
 
 Project: {project_name}
 Build System: Docker (docker compose)
-Port Range: 8900-8999
+Port Range: 9000-9999
 Shell: PowerShell 5.1+ (Windows)
 
 ## Development Protocol
@@ -481,11 +508,11 @@ Shell: PowerShell 5.1+ (Windows)
 """
 
 
-def doc_claude_md_template(project_name="Project"):
+def doc_claude_md_template(project_name="Project", use_docker=True, is_soft_rules=False):
     """Claude Code — CLAUDE.md (root)"""
     return f"""# {project_name}
 
-{_core_rules_content(project_name)}
+{_core_rules_content(project_name, use_docker, is_soft_rules)}
 
 ## Project Structure
 - `.agent/memory/constitution.md` — Project Constitution (Source of Law)
@@ -497,22 +524,17 @@ def doc_claude_md_template(project_name="Project"):
 """
 
 
-def doc_agents_md_template(project_name="Project"):
+def doc_agents_md_template(project_name="Project", use_docker=True, is_soft_rules=False):
     """GitHub Copilot Coding Agent — AGENTS.md (root)"""
     return f"""# {project_name} — Agent Instructions
 
-{_core_rules_content(project_name)}
+{_core_rules_content(project_name, use_docker, is_soft_rules)}
 
 ## Build & Test
-- Build: `docker compose build`
-- Run: `docker compose up -d`
+- Build: `docker compose build` (Nếu dùng Docker)
+- Run: `docker compose up -d` (Nếu dùng Docker)
 - Logs: `docker compose logs -f <service>`
 - Stop: `docker compose down`
-
-## Project Context
-- Constitution: `.agent/memory/constitution.md`
-- Infrastructure: `.agent/knowledge_base/infrastructure.md`
-- Workflows: `.agent/workflows/`
 """
 
 
