@@ -373,7 +373,7 @@ Bạn là **{skill['role']}**.
             "project_name": self.project_name,
             "project_type": self.project_type,
             "asf_version": "3.3",
-            "wb_agent_version": "1.0.0",
+            "wb_agent_version": "1.1.0",
             "created_at": datetime.now().isoformat(),
             "skills_count": self.stats["skills"],
             "workflows_count": self.stats["workflows"],
