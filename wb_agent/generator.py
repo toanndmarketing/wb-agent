@@ -198,6 +198,8 @@ class ProjectGenerator:
             ".agent/templates",      # Tầng khuôn mẫu
             ".agent/memory",         # Tầng lưu trữ Constitution
             ".agent/rules",          # Tầng Rules cho Antigravity
+            ".agent/codebase",       # Tầng bản đồ cấu trúc (speckit.map)
+            ".agent/specs",          # Tầng Specification & Planning
         ]
 
         for d in dirs:

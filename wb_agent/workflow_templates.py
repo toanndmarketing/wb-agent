@@ -11,36 +11,28 @@ description: Full Pipeline (Specify → Clarify → Plan → Tasks → Analyze)
 
 # 🚀 Full Pipeline
 
-## Pre-conditions
-- `.agent/memory/constitution.md` đã tồn tại (chạy `/01-speckit.constitution` trước)
-
 ## Steps
 
-1. **@speckit.specify** — Tạo spec.md từ mô tả feature
-   - Input: Developer mô tả feature bằng ngôn ngữ tự nhiên
-   - Output: `.agent/specs/[feature]/spec.md`
+1. **@speckit.map** — (NẾU dự án cũ) Quét cấu trúc và hiểu codebase hiện tại.
+   - Output: `.agent/codebase/` docs.
 
-2. **GATE**: Kiểm tra spec.md có đủ User Scenarios + Success Criteria?
-   - Nếu THIẾU → quay lại step 1
+2. **@speckit.specify** — Tạo spec.md từ mô tả feature.
+   - Output: `.agent/specs/[feature]/spec.md`.
 
-3. **@speckit.clarify** — Giải quyết mơ hồ
-   - Output: Updated spec.md (mọi ambiguity resolved)
+3. **@speckit.clarify** — Giải quyết mơ hồ và chốt User Scenarios.
 
-4. **@speckit.plan** — Tạo kiến trúc kỹ thuật
-   - Output: plan.md, data-model.md, contracts/
+4. **@speckit.roadmap** — Cập nhật `.agent/ROADMAP.md` với Phase/Milestone mới.
 
-5. **GATE**: Plan có vi phạm Constitution?
-   - Nếu CÓ → báo lỗi, yêu cầu fix
+5. **@speckit.plan** — Tạo kiến trúc (Goal-Backward).
+   - Output: plan.md, must_haves.
 
-6. **@speckit.tasks** — Breakdown thành atomic tasks
-   - Output: tasks.md
+6. **@speckit.tasks** — Breakdown thành atomic tasks (Task Anatomy).
+   - Output: tasks.md.
 
-7. **@speckit.analyze** — Kiểm tra consistency
-   - Output: Coverage score + Gap analysis
+7. **@speckit.analyze** — Kiểm tra tính nhất quán 360 độ.
 
 ## Success Criteria
 - ✅ spec.md, plan.md, tasks.md tồn tại và nhất quán
-- ✅ Coverage score ≥ 90%
 - ✅ Không vi phạm Constitution
 """
 
@@ -124,24 +116,15 @@ description: Tạo Technical Plan (plan.md)
 
 # 🏗️ Technical Planning
 
-## Pre-conditions
-- `.agent/specs/[feature]/spec.md` tồn tại (đã clarified)
-- `.agent/memory/constitution.md` tồn tại
-
 ## Steps
 
 1. **@speckit.plan** — Chuyển spec (WHAT) → plan (HOW):
-   - Phase 0: Research unknowns → research.md
-   - Phase 1: Data model → data-model.md
-   - Phase 2: API contracts → contracts/*.md
-   - Phase 3: Architecture → plan.md
-2. **GATE**: So sánh plan vs constitution
-   - Vi phạm? → BÁO LỐI, yêu cầu fix
-
-## Success Criteria
-- ✅ plan.md có folder structure + component hierarchy
-- ✅ data-model.md có entity definitions
-- ✅ Không vi phạm constitution
+   - Phase 0: Research unknowns.
+   - Phase 1: Data model.
+   - Phase 2: API contracts.
+   - Phase 3: Architecture.
+   - Phase 4: **Must-Haves (Goal-Backward)**.
+2. **GATE**: So sánh plan vs constitution.
 """
 
 
@@ -203,32 +186,18 @@ description: Triển khai code theo tasks (Anti-Regression)
 
 # 🛠️ Implementation
 
-## Pre-conditions
-- tasks.md tồn tại với tasks chưa complete
-- plan.md tồn tại (kiến trúc)
-- constitution.md tồn tại (rules)
-
 ## Steps
 
-Cho MỖI task `- [ ]` trong tasks.md (theo thứ tự):
+Cho MỖI task `- [ ]` trong tasks.md:
 
 1. **@speckit.implement** — Thực thi IRONCLAD Protocols:
-   - P1: Blast Radius Analysis → đánh giá risk
-   - P2: Strategy Selection → inline edit hoặc Strangler Pattern
-   - P3: TDD → repro script fail → code → pass
-   - P4: Context Anchoring → re-read constitution mỗi 3 tasks
-   - P5: **Build Gate** → chạy `tsc --noEmit` hoặc `docker compose build`
-     - Nếu thêm/sửa component props → grep tất cả callers
-     - Nếu thêm/sửa type interface → grep tất cả usage
-     - Nếu đổi file structure → verify Dockerfile COPY paths
-2. Mark `- [X]` khi task pass **VÀ build gate pass**
-3. Repeat cho task tiếp theo
-
-## Success Criteria
-- ✅ Mọi tasks marked `[X]`
-- ✅ Docker build pass
-- ✅ Không regression trên tasks đã complete
-- ✅ Mọi build gates pass
+   - P1: Blast Radius Analysis.
+   - P2: Strategy Selection.
+   - P3: TDD (Repro fail first).
+   - P4: Context Anchoring.
+   - P5: Build Gate (tsc/build).
+   - P6: **Deviation Rules** (Auto-fix bugs/missing).
+2. Mark `- [X]` khi task pass **VÀ build gate pass**.
 """
 
 
@@ -763,8 +732,83 @@ description: Thiết lập/cập nhật UI/UX Design System & Standards
 """
 
 
+def wf_debug():
+    return """---
+description: Chẩn đoán và sửa lỗi hệ thống chuyên sâu (Systematic Debugging)
+---
+
+# 🐞 Systematic Debugging Pipeline
+
+## Steps
+1. **@speckit.debug** — Phân tích lỗi và tìm Root Cause.
+2. Tái hiện lỗi qua script/test.
+3. Đề xuất và thực hiện Fix Plan.
+"""
+
+
+def wf_backlog():
+    return """---
+description: Quản lý Ý tưởng (Backlog) và quét nợ kỹ thuật (TODO/FIXME)
+---
+
+# 📋 Backlog Management
+
+## Steps
+1. **@speckit.backlog** — Quét codebase và cập nhật danh sách việc cần làm.
+2. Phân loại và ưu tiên các hạng mục công việc.
+"""
+
+
+def wf_roadmap():
+    return """---
+description: Quản lý lộ trình cấp cao (Milestones) và chuyển giao giữa các Phase
+---
+
+# 🗺️ Project Roadmap
+
+## Steps
+1. **@speckit.roadmap** — Cập nhật và theo dõi các Phase/Milestone của dự án.
+"""
+
+
+def wf_map():
+    return """---
+description: Vẽ bản đồ kiến trúc và sơ đồ phụ thuộc của Codebase
+---
+
+# 🗺️ Codebase Mapping
+
+## Steps
+1. **@speckit.map** — Quét toàn bộ project và sinh tài liệu kiến trúc.
+"""
+
+
+def wf_uat():
+    return """---
+description: UAT Analyzer - Phân tích kết quả nghiệm thu thủ công và xử lý các khoảng cách (gaps) từ User.
+---
+
+# ✅ User Acceptance Testing (UAT)
+
+## Steps
+1. **@speckit.uat** — Thu thập feedback và tạo kế hoạch hoàn thiện tính năng.
+"""
+
+
+def wf_wordpress():
+    return """---
+description: WordPress Theme & Plugin Development Workflow
+---
+
+# WordPress Development
+
+## Steps
+1. **@speckit.wordpress** — Triển khai theme/plugin theo chuẩn WordPress chuyên nghiệp.
+"""
+
+
 # =============================================================================
-# WORKFLOW TEMPLATE MAP — Complete mapping cho tất cả 24 workflows
+# WORKFLOW TEMPLATE MAP — Complete mapping cho tất cả các workflows
 # =============================================================================
 WORKFLOW_TEMPLATE_MAP = {
     "00-speckit.all": wf_00_all,
@@ -792,4 +836,10 @@ WORKFLOW_TEMPLATE_MAP = {
     "util-speckit.status": wf_util_status,
     "util-speckit.taskstoissues": wf_util_taskstoissues,
     "util-speckit.uiux": wf_util_uiux,
+    "speckit.debug": wf_debug,
+    "speckit.backlog": wf_backlog,
+    "speckit.roadmap": wf_roadmap,
+    "speckit.map": wf_map,
+    "speckit.uat": wf_uat,
+    "speckit.wordpress": wf_wordpress,
 }

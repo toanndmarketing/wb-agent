@@ -276,6 +276,42 @@ SKILLS_REGISTRY = [
             {"label": "Update Plan", "agent": "speckit.plan", "prompt": "Integrate UI/UX specs into the technical plan"},
         ],
     },
+    {
+        "name": "speckit.debug",
+        "description": "Systematic Debugger - Chẩn đoán sự cố, tìm root cause độc lập và đề xuất fix plans.",
+        "role": "Debug Specialist",
+        "project_types": "all",
+    },
+    {
+        "name": "speckit.backlog",
+        "description": "Backlog Manager - Quản lý Ý tưởng, Yêu cầu chờ xử lý và quét TODO/FIXME từ codebase.",
+        "role": "Product Owner",
+        "project_types": "all",
+    },
+    {
+        "name": "speckit.roadmap",
+        "description": "Roadmap Strategist - Quản lý lộ trình cấp cao (Milestones) và chuyển giao giữa các Phase.",
+        "role": "Product Manager",
+        "project_types": "all",
+    },
+    {
+        "name": "speckit.map",
+        "description": "Codebase Mapper - Tự động phân tích cấu trúc dự án, vẽ biểu đồ phụ thuộc và viết tài liệu kiến trúc.",
+        "role": "Software Architect",
+        "project_types": "all",
+    },
+    {
+        "name": "speckit.uat",
+        "description": "UAT Analyzer - Phân tích kết quả nghiệm thu thủ công và xử lý các khoảng cách (gaps) từ User.",
+        "role": "QA Engineer",
+        "project_types": "all",
+    },
+    {
+        "name": "speckit.wordpress",
+        "description": "WordPress Theme Architect - Chuyên gia phát triển theme, plugin và tối ưu hóa ecosystem WordPress.",
+        "role": "WordPress Expert",
+        "project_types": "web",
+    },
 ]
 
 
@@ -411,6 +447,37 @@ WORKFLOWS_REGISTRY = [
         "command": "util-speckit.taskstoissues",
         "description": "Sync tasks.md → Issue Tracker",
         "skills": ["speckit.taskstoissues"],
+    },
+    {
+        "command": "speckit.debug",
+        "description": "Chẩn đoán và sửa lỗi hệ thống chuyên sâu (Systematic Debugging)",
+        "skills": ["speckit.debug"],
+    },
+    {
+        "command": "speckit.backlog",
+        "description": "Quản lý Ý tưởng (Backlog) và quét nợ kỹ thuật (TODO/FIXME)",
+        "skills": ["speckit.backlog"],
+    },
+    {
+        "command": "speckit.roadmap",
+        "description": "Quản lý lộ trình cấp cao (Milestones) và chuyển giao giữa các Phase",
+        "skills": ["speckit.roadmap"],
+    },
+    {
+        "command": "speckit.map",
+        "description": "Vẽ bản đồ kiến trúc và sơ đồ phụ thuộc của Codebase",
+        "skills": ["speckit.map"],
+    },
+    {
+        "command": "speckit.uat",
+        "description": "UAT Analyzer - Phân tích kết quả nghiệm thu thủ công và xử lý các khoảng cách (gaps) từ User.",
+        "skills": ["speckit.uat"],
+    },
+    {
+        "command": "speckit.wordpress",
+        "description": "WordPress Theme & Plugin Development Workflow",
+        "skills": ["speckit.wordpress"],
+        "project_types": "web",
     },
 ]
 
