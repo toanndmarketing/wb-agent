@@ -6,7 +6,7 @@ Mỗi workflow có: Pre-conditions, Steps với gate checks, Success criteria.
 
 def wf_00_all():
     return """---
-description: Full Pipeline (Specify → Clarify → Plan → Tasks → Analyze)
+description: Full Pipeline (Specify → Plan → Tasks → Analyze)
 ---
 
 # 🚀 Full Pipeline
@@ -16,20 +16,18 @@ description: Full Pipeline (Specify → Clarify → Plan → Tasks → Analyze)
 1. **@speckit.map** — (NẾU dự án cũ) Quét cấu trúc và hiểu codebase hiện tại.
    - Output: `.agent/codebase/` docs.
 
-2. **@speckit.specify** — Tạo spec.md từ mô tả feature.
+2. **@speckit.specify** — Tạo spec.md từ mô tả feature và giải quyết các điểm mơ hồ (Clarity Check).
    - Output: `.agent/specs/[feature]/spec.md`.
 
-3. **@speckit.clarify** — Giải quyết mơ hồ và chốt User Scenarios.
+3. **@speckit.roadmap** — Cập nhật `.agent/ROADMAP.md` với Phase/Milestone mới.
 
-4. **@speckit.roadmap** — Cập nhật `.agent/ROADMAP.md` với Phase/Milestone mới.
-
-5. **@speckit.plan** — Tạo kiến trúc (Goal-Backward).
+4. **@speckit.plan** — Tạo kiến trúc (Goal-Backward).
    - Output: plan.md, must_haves.
 
-6. **@speckit.tasks** — Breakdown thành atomic tasks (Task Anatomy).
+5. **@speckit.tasks** — Breakdown thành atomic tasks (Task Anatomy).
    - Output: tasks.md.
 
-7. **@speckit.analyze** — Kiểm tra tính nhất quán 360 độ.
+6. **@speckit.analyze** — Kiểm tra tính nhất quán 360 độ.
 
 ## Success Criteria
 - ✅ spec.md, plan.md, tasks.md tồn tại và nhất quán
@@ -65,10 +63,10 @@ description: Thiết lập/cập nhật Constitution (Source of Law)
 
 def wf_02_specify():
     return """---
-description: Tạo Feature Specification (spec.md)
+description: Tạo Feature Specification và giải quyết mơ hồ (spec.md)
 ---
 
-# 📝 Feature Specification
+# 📝 Feature Specification & Clarity
 
 ## Pre-conditions
 - `.agent/memory/constitution.md` tồn tại
@@ -77,35 +75,15 @@ description: Tạo Feature Specification (spec.md)
 
 1. Developer mô tả feature bằng ngôn ngữ tự nhiên
 2. **@speckit.specify** — Parse mô tả → tạo spec.md chuẩn hóa
-3. Review output: spec.md phải có Overview, User Scenarios, Requirements, Success Criteria
+3. Chạy Clarity Check để phát hiện các yếu tố mơ hồ:
+   - Đặt tối đa 3 câu hỏi CRITICAL dưới dạng bảng A/B/C options để developer lựa chọn.
+   - Tự động giải quyết các điểm MINOR và cập nhật lại spec.md với nhãn `[CLARIFIED]`.
 
 ## Success Criteria
 - ✅ spec.md có ≥1 User Scenario
 - ✅ Mỗi scenario có Actor + Action + Value
+- ✅ Không còn ngôn ngữ mơ hồ (vague language) trong spec.md
 - ✅ Success Criteria là testable
-"""
-
-
-def wf_03_clarify():
-    return """---
-description: Giải quyết mơ hồ trong Specification
----
-
-# 🔍 Ambiguity Resolution
-
-## Pre-conditions
-- `.agent/specs/[feature]/spec.md` tồn tại
-
-## Steps
-
-1. **@speckit.clarify** — Scan spec.md tìm ambiguity
-2. Hỏi developer tối đa 3 câu CRITICAL (bảng A/B/C options)
-3. Auto-fix MINOR issues
-4. Update spec.md với `[CLARIFIED]` markers
-
-## Success Criteria
-- ✅ Không còn vague language trong spec.md
-- ✅ Mọi boundary conditions defined
 """
 
 
@@ -371,53 +349,31 @@ description: Validate Implementation vs Spec
 """
 
 
-def wf_12_seo():
+def wf_12_seo_geo():
     return """---
-description: Technical SEO Audit & Optimization
+description: Technical SEO & GEO Audit & Optimization
 ---
 
-# 🔍 SEO Audit
+# 🔍 SEO & GEO Audit
 
 ## Pre-conditions
-- Public pages đã implement
-- `.agent/knowledge_base/seo_standards.md` tồn tại
+- Trang public đã được triển khai (ví dụ: landing page, blog, product pages).
+- `.agent/knowledge_base/seo_standards.md` tồn tại (khuyến nghị).
 
 ## Steps
 
-1. **@speckit.seo** — Audit:
-   - Meta tags, headings, canonical, structured data
-   - Core Web Vitals, crawlability
-2. Output: Score 0-100 + issues list
-3. Nếu score < 80 → fix issues → re-audit
+1. **@speckit.seo-geo** — Tiến hành audit toàn diện qua 3 Phase:
+   - **Phase 1: Content Audit**: Kiểm tra Heading structure, Readability, Multimodal (Alt text, video), Fact-density.
+   - **Phase 2: Technical SEO Audit**: Check Title/Meta description, Canonical URLs, JSON-LD Schema (Structured data), Sitemap & Robots.txt, Core Web Vitals.
+   - **Phase 3: GEO Audit (AI Search)**: Check file `llms.txt`, SSR/SSG, E-E-A-T signals, Direct Answer formatting (CẤM dùng Markdown Links trong các khối HTML protected như `.geo-direct-answer`).
+2. Output: Báo cáo chi tiết tại `.agent/memory/seo-geo-report.md` (bao gồm Score 0-100, danh sách các lỗi 🔴 Critical, 🟡 Warning, 🟢 Info và giải pháp fix).
+3. Nếu Score < 80 hoặc có lỗi 🔴 Critical → Fix các issues được phát hiện → Re-audit cho đến khi đạt yêu cầu.
 
 ## Success Criteria
-- ✅ SEO Score ≥ 80
-- ✅ 0 CRITICAL issues
-"""
-
-
-def wf_13_geo():
-    return """---
-description: GEO - Tối ưu cho AI Search (ChatGPT, Gemini, Perplexity)
----
-
-# 🤖 GEO Audit
-
-## Pre-conditions
-- SEO Audit đã pass (score ≥ 80)
-
-## Steps
-
-1. **@speckit.geo** — Audit:
-   - AI crawlability (llms.txt, SSR, JSON-LD)
-   - E-E-A-T compliance
-   - Content format, topic authority
-2. Output: GEO report
-
-## Success Criteria
-- ✅ llms.txt tồn tại
-- ✅ JSON-LD cho mọi content pages
-- ✅ E-E-A-T signals present
+- ✅ SEO-GEO Score ≥ 80
+- ✅ 0 lỗi 🔴 Critical
+- ✅ File `llms.txt` tồn tại ở root domain
+- ✅ Báo cáo `seo-geo-report.md` được khởi tạo thành công
 """
 
 
@@ -452,7 +408,7 @@ description: Tạo/cập nhật Master Identity cho AI Agent
 
 
 def wf_devops():
-    return """---
+    return r"""---
 description: Docker Infrastructure & Port Allocation (ENV-first)
 ---
 
@@ -547,7 +503,7 @@ netstat -ano | findstr 89
 
 def wf_prepare():
     return """---
-description: Prep Pipeline (Specify → Clarify → Plan → Tasks → Analyze) — không Implement
+description: Prep Pipeline (Specify → Plan → Tasks → Analyze) — không Implement
 ---
 
 # 📋 Prep Pipeline
@@ -556,12 +512,11 @@ description: Prep Pipeline (Specify → Clarify → Plan → Tasks → Analyze) 
 - constitution.md tồn tại
 
 ## Steps
-1. **@speckit.specify** — Tạo spec.md
-2. **@speckit.clarify** — Resolve ambiguity
-3. **@speckit.plan** — Tạo plan.md + data-model.md
-4. **GATE**: Constitution compliance check
-5. **@speckit.tasks** — Tạo tasks.md
-6. **@speckit.analyze** — Verify consistency
+1. **@speckit.specify** — Tạo spec.md và giải quyết mơ hồ (Clarity Check)
+2. **@speckit.plan** — Tạo plan.md + data-model.md
+3. **GATE**: Constitution compliance check
+4. **@speckit.tasks** — Tạo tasks.md
+5. **@speckit.analyze** — Verify consistency
 
 ## Success Criteria
 - ✅ spec.md + plan.md + tasks.md tồn tại
@@ -584,26 +539,6 @@ description: Tạo/validate Requirements Checklist
 
 ## Success Criteria
 - ✅ Mỗi requirement linked đến ≥1 task
-"""
-
-
-def wf_util_content():
-    return """---
-description: Content Strategy & Readability Audit
----
-
-# 📝 Content Audit
-
-## Pre-conditions
-- Content pages đã tạo
-
-## Steps
-1. **@speckit.content** — Audit heading, readability, multimodal, fact-density
-2. Output: content-guidelines.md
-
-## Success Criteria
-- ✅ Mỗi page có 1 H1, hierarchy đúng
-- ✅ Readability guidelines documented
 """
 
 
@@ -814,7 +749,6 @@ WORKFLOW_TEMPLATE_MAP = {
     "00-speckit.all": wf_00_all,
     "01-speckit.constitution": wf_01_constitution,
     "02-speckit.specify": wf_02_specify,
-    "03-speckit.clarify": wf_03_clarify,
     "04-speckit.plan": wf_04_plan,
     "05-speckit.tasks": wf_05_tasks,
     "06-speckit.analyze": wf_06_analyze,
@@ -823,13 +757,11 @@ WORKFLOW_TEMPLATE_MAP = {
     "09-speckit.tester": wf_09_tester,
     "10-speckit.reviewer": wf_10_reviewer,
     "11-speckit.validate": wf_11_validate,
-    "12-speckit.seo": wf_12_seo,
-    "13-speckit.geo": wf_13_geo,
+    "12-speckit.seo-geo": wf_12_seo_geo,
     "speckit.identity": wf_identity,
     "speckit.devops": wf_devops,
     "speckit.prepare": wf_prepare,
     "util-speckit.checklist": wf_util_checklist,
-    "util-speckit.content": wf_util_content,
     "util-speckit.diff": wf_util_diff,
     "util-speckit.migrate": wf_util_migrate,
     "util-speckit.quizme": wf_util_quizme,

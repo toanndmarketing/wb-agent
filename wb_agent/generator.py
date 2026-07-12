@@ -65,6 +65,7 @@ class ProjectGenerator:
 
         print(f"📁 Tạo cấu trúc thư mục (ASF 3.3 Standard — {self.project_type})...")
         self._create_directories()
+        self._clean_obsolete_assets()
 
         # ─── 0. Check Port (Chỉ cho dự án MỚI & dùng Docker) ───
         project_config_path = os.path.join(self.agent_dir, "project.json")
@@ -393,8 +394,7 @@ Bạn là **{skill['role']}**.
         if "web" in allowed_skills:
             seo_section = """
 ## 🔍 SEO & GEO
-- `@speckit.seo`: Audit Technical SEO (Meta, Sitemap, Core Web Vitals)
-- `@speckit.geo`: Tối ưu cho AI Search (llms.txt, E-E-A-T, Schema.org)
+- `@speckit.seo-geo`: Tối ưu Content Readability, Technical SEO & Generative Engine Optimization (AI Search)
 - `knowledge_base/seo_standards.md`: Checklist & JSON-LD templates
 """
 
@@ -490,3 +490,39 @@ Bạn là **{skill['role']}**.
         print(f"  🔄 Workflows: {self.stats['workflows']}")
         print(f"  📄 Templates: {self.stats['templates']}")
         print(f"{'─' * 50}\n")
+
+    def _clean_obsolete_assets(self):
+        """Dọn dẹp các skills/workflows cũ không còn trong registry (nhưng chỉ xóa system-prefixed)."""
+        import shutil
+        
+        # 1. Dọn dẹp obsolete skills
+        skills_dir = os.path.join(self.agent_dir, "skills")
+        if os.path.isdir(skills_dir):
+            active_skills = {s["name"] for s in self.filtered_skills}
+            for item in os.listdir(skills_dir):
+                item_path = os.path.join(skills_dir, item)
+                if os.path.isdir(item_path):
+                    # Chỉ xóa các core system skills (bắt đầu bằng speckit. hoặc util-speckit.)
+                    if (item.startswith("speckit.") or item.startswith("util-speckit.")) and item not in active_skills:
+                        print(f"  🧹 Dọn dẹp skill cũ: skills/{item}")
+                        shutil.rmtree(item_path, ignore_errors=True)
+
+        # 2. Dọn dẹp obsolete workflows
+        workflows_dir = os.path.join(self.agent_dir, "workflows")
+        if os.path.isdir(workflows_dir):
+            active_workflows = {f"{wf['command']}.md" for wf in self.filtered_workflows}
+            for item in os.listdir(workflows_dir):
+                item_path = os.path.join(workflows_dir, item)
+                if os.path.isfile(item_path) and item.endswith(".md"):
+                    # Check prefix
+                    is_system_wf = (
+                        item.startswith("speckit.") or 
+                        item.startswith("util-speckit.") or 
+                        (len(item) > 3 and item[0:2].isdigit() and item[2] == '-' and item[3:].startswith("speckit."))
+                    )
+                    if is_system_wf and item not in active_workflows:
+                        print(f"  🧹 Dọn dẹp workflow cũ: workflows/{item}")
+                        try:
+                            os.remove(item_path)
+                        except Exception:
+                            pass

@@ -100,16 +100,6 @@ SKILLS_REGISTRY = [
         "handoffs": [],
     },
     {
-        "name": "speckit.clarify",
-        "description": "Ambiguity Resolver - Phát hiện và giải quyết mơ hồ trong spec",
-        "role": "Clarity Engineer",
-        "project_types": "all",
-        "depends_on": ["speckit.specify"],
-        "handoffs": [
-            {"label": "Update Spec", "agent": "speckit.specify", "prompt": "Update spec with clarifications"},
-        ],
-    },
-    {
         "name": "speckit.constitution",
         "description": "Governance Manager - Thiết lập & quản lý Constitution (Source of Law)",
         "role": "Governance Architect",
@@ -179,13 +169,12 @@ SKILLS_REGISTRY = [
     },
     {
         "name": "speckit.specify",
-        "description": "Feature Definer - Tạo spec.md từ mô tả ngôn ngữ tự nhiên",
+        "description": "Feature Definer - Tạo spec.md từ mô tả ngôn ngữ tự nhiên và giải quyết mơ hồ",
         "role": "Domain Scribe",
         "project_types": "all",
         "depends_on": [],
         "handoffs": [
             {"label": "Build Technical Plan", "agent": "speckit.plan", "prompt": "Create a plan for the spec"},
-            {"label": "Clarify Requirements", "agent": "speckit.clarify", "prompt": "Clarify specification requirements"},
         ],
     },
     {
@@ -236,34 +225,13 @@ SKILLS_REGISTRY = [
 
     # --- WEB SKILLS (web + web_public projects) ---
     {
-        "name": "speckit.seo",
-        "description": "Technical SEO - Meta tags, Sitemap, Robots.txt, Canonical, Core Web Vitals, Schema.org",
-        "role": "SEO Technical Lead",
+        "name": "speckit.seo-geo",
+        "description": "SEO & GEO Lead - Tối ưu Content Readability, Technical SEO & Generative Engine Optimization (AI Search)",
+        "role": "SEO & GEO Strategist",
         "project_types": "web",
         "depends_on": ["speckit.implement"],
         "handoffs": [
-            {"label": "Audit GEO", "agent": "speckit.geo", "prompt": "Run GEO audit on the content"},
-            {"label": "Fix Issues", "agent": "speckit.implement", "prompt": "Fix SEO issues found"},
-        ],
-    },
-    {
-        "name": "speckit.geo",
-        "description": "Generative Engine Optimization - llms.txt, E-E-A-T, FAQ Schema, AI Citation, Topic Authority",
-        "role": "GEO Strategist",
-        "project_types": "web",
-        "depends_on": ["speckit.seo"],
-        "handoffs": [
-            {"label": "Update Content", "agent": "speckit.content", "prompt": "Optimize content for AI citation"},
-        ],
-    },
-    {
-        "name": "speckit.content",
-        "description": "Content Architect - Heading H1-H6, Readability, Multimodal (Image Alt, Video), Fact-density",
-        "role": "Content Strategist",
-        "project_types": "web_public",
-        "depends_on": ["speckit.specify"],
-        "handoffs": [
-            {"label": "SEO Check", "agent": "speckit.seo", "prompt": "Validate SEO compliance of content"},
+            {"label": "Fix Issues", "agent": "speckit.implement", "prompt": "Fix SEO/GEO issues found"},
         ],
     },
     {
@@ -321,8 +289,8 @@ SKILLS_REGISTRY = [
 WORKFLOWS_REGISTRY = [
     {
         "command": "00-speckit.all",
-        "description": "Full Pipeline (Specify → Clarify → Plan → Tasks → Analyze)",
-        "skills": ["speckit.specify", "speckit.clarify", "speckit.plan", "speckit.tasks", "speckit.analyze"],
+        "description": "Full Pipeline (Specify → Plan → Tasks → Analyze)",
+        "skills": ["speckit.specify", "speckit.plan", "speckit.tasks", "speckit.analyze"],
     },
     {
         "command": "01-speckit.constitution",
@@ -343,11 +311,6 @@ WORKFLOWS_REGISTRY = [
         "command": "02-speckit.specify",
         "description": "Tạo Feature Specification (spec.md)",
         "skills": ["speckit.specify"],
-    },
-    {
-        "command": "03-speckit.clarify",
-        "description": "Giải quyết mơ hồ trong Specification",
-        "skills": ["speckit.clarify"],
     },
     {
         "command": "04-speckit.plan",
@@ -390,32 +353,20 @@ WORKFLOWS_REGISTRY = [
         "skills": ["speckit.validate"],
     },
     {
-        "command": "12-speckit.seo",
-        "description": "Technical SEO Audit & Optimization",
-        "skills": ["speckit.seo"],
-        "project_types": "web",
-    },
-    {
-        "command": "13-speckit.geo",
-        "description": "GEO - Tối ưu cho AI Search (ChatGPT, Gemini, Perplexity)",
-        "skills": ["speckit.geo"],
+        "command": "12-speckit.seo-geo",
+        "description": "Technical SEO & GEO Audit & Optimization",
+        "skills": ["speckit.seo-geo"],
         "project_types": "web",
     },
     {
         "command": "speckit.prepare",
-        "description": "Prep Pipeline (Specify → Clarify → Plan → Tasks → Analyze)",
-        "skills": ["speckit.specify", "speckit.clarify", "speckit.plan", "speckit.tasks", "speckit.analyze"],
+        "description": "Prep Pipeline (Specify → Plan → Tasks → Analyze) — không Implement",
+        "skills": ["speckit.specify", "speckit.plan", "speckit.tasks", "speckit.analyze"],
     },
     {
         "command": "util-speckit.checklist",
         "description": "Tạo/validate Requirements Checklist",
         "skills": ["speckit.checklist"],
-    },
-    {
-        "command": "util-speckit.content",
-        "description": "Content Strategy & Readability Audit",
-        "skills": ["speckit.content"],
-        "project_types": "web_public",
     },
     {
         "command": "util-speckit.diff",

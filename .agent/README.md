@@ -2,7 +2,7 @@
 
 > **Project**: wb-agent
 > **Type**: Full-stack (Web + API)
-> **Generated**: 2026-02-23
+> **Generated**: 2026-07-12
 
 ## 🏗️ Architecture
 
@@ -13,8 +13,7 @@
 - `.agent/memory/`: Project Constitution (Luật dự án).
 
 ## 🔍 SEO & GEO
-- `@speckit.seo`: Audit Technical SEO (Meta, Sitemap, Core Web Vitals)
-- `@speckit.geo`: Tối ưu cho AI Search (llms.txt, E-E-A-T, Schema.org)
+- `@speckit.seo-geo`: Tối ưu Content Readability, Technical SEO & Generative Engine Optimization (AI Search)
 - `knowledge_base/seo_standards.md`: Checklist & JSON-LD templates
 
 ## 🚀 Quick Start

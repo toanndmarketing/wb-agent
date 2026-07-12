@@ -146,11 +146,10 @@ def cmd_init(args):
     print(f"  2. Chạy /01-speckit.constitution để cập nhật Tech Stack & Docker Ports")
 
     if project_type in ("web_public", "fullstack"):
-        print(f"  3. Chạy @speckit.seo để audit Technical SEO")
-        print(f"  4. Chạy @speckit.geo để tối ưu cho AI Search (ChatGPT, Gemini)")
-        print(f"  5. Kiểm tra '.agent/knowledge_base/seo_standards.md' cho SEO checklist")
+        print(f"  3. Chạy @speckit.seo-geo để audit Technical SEO & GEO")
+        print(f"  4. Kiểm tra '.agent/knowledge_base/seo_standards.md' cho SEO checklist")
     elif project_type == "web_saas":
-        print(f"  3. Chạy @speckit.seo cho Landing Page & Blog")
+        print(f"  3. Chạy @speckit.seo-geo cho Landing Page & Blog")
     else:
         print(f"  3. Chạy @speckit.devops để tạo Docker environment chuẩn Security")
 

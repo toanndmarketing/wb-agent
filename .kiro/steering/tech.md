@@ -2,7 +2,7 @@
 
 Project: wb-agent
 Build System: Docker (docker compose)
-Port Range: 8900-8999
+Port Range: 9000-9999
 Shell: PowerShell 5.1+ (Windows)
 
 ## Development Protocol

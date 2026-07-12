@@ -11,7 +11,8 @@ Dự án: wb-agent
 ## 1. PHÁP LỆNH TỐI CAO
 - Tuân thủ nghiêm ngặt file `.agent/memory/constitution.md`.
 - Docker-First: Mọi hoạt động code và chạy app phải diễn ra trong container. KHÔNG chạy node/python trên host.
-- Ports: Chỉ sử dụng dải port 8900-8999.
+- Ports: Sử dụng dải port 9000-9999. Tuân thủ lấy port từ biến môi trường (.env).
+- **NGUYÊN TẮC THIẾT KẾ BỘ KHUNG (GENERAL FRAMEWORK)**: Luôn luôn bóc tách mọi yêu cầu được cung cấp thành các tiêu chí/quy tắc mang tính khái quát để áp dụng đa dạng cho mọi dự án, tuyệt đối KHÔNG code cụ thể theo bất kỳ brand, domain hay site nào.
 
 ## 2. WB-AGENT PROTOCOL
 - Mọi task phải đi qua quy trình: Specify → Plan → Tasks → Implement.
@@ -27,4 +28,9 @@ Dự án: wb-agent
 - KHÔNG chạy `docker compose down -v` trên Production.
 - Tạo script tự động (`.agent/scripts/`) cho lỗi lặp lại.
 - Kiểm tra logs ngay khi lỗi: `docker compose logs -f <service>`.
+
+## 5. AGENTIC MODE SYNC (Antigravity Only)
+- **Task Tracking**: Sử dụng `task_boundary` để đồng bộ trạng thái với `@speckit.tasks` (tasks.md).
+- **Planning Artifacts**: Luôn tạo `implementation_plan.md` khi thực hiện các thay đổi lớn (atomic > 3 files).
+- **Verification**: Sau khi hoàn thành task, sử dụng `walkthrough.md` để đối chiếu kết quả với `spec.md`.
 

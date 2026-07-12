@@ -2,8 +2,8 @@
   "project_name": "wb-agent",
   "project_type": "fullstack",
   "asf_version": "3.3",
-  "wb_agent_version": "1.0.0",
-  "created_at": "2026-02-23T23:09:07.539428",
-  "skills_count": 23,
-  "workflows_count": 25
+  "wb_agent_version": "1.2.0",
+  "created_at": "2026-07-12T19:29:10.594782",
+  "skills_count": 26,
+  "workflows_count": 28
 }

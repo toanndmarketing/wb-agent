@@ -13,16 +13,15 @@ Chuyển plan.md thành danh sách tasks atomic, có thứ tự dependency, mỗ
 
 ## 📋 Protocol
 1. Đọc plan.md → breakdown mỗi component thành atomic tasks.
-2. Format giải phẫu BẮT BUỘC cho mỗi task (4 thành phần):
-   ```markdown
-   - [ ] T001 [P] Tiêu đề task
-     - Files: Đường dẫn các file bị ảnh hưởng
-     - Action: Lệnh thực thi chi tiết, rõ ràng (cấm mơ hồ)
-     - Verify: Lệnh kiểm chứng TỰ ĐỘNG (bắt buộc, ví dụ: `npm test`, `curl`)
-     - Done: Tiêu chí nghiệm thu cụ thể
+2. Format BẮT BUỘC cho mỗi task:
+   ```
+   - [ ] T001 [P] Setup project structure per plan.md
+   - [ ] T002 [P] Create database schema in prisma/schema.prisma
+   - [ ] T003 [P] [US1] Implement user registration API in src/api/auth.ts
    ```
    - `[P]`: Priority (blocking task)
    - `[US1]`: Link đến User Scenario
+   - Path: File chính bị ảnh hưởng
 3. Phase Structure BẮT BUỘC:
    - **Phase 1: Setup** — Project init, configs, boilerplate
    - **Phase 2: Foundation** — DB, auth, shared utilities (blocking)
