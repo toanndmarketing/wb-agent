@@ -39,6 +39,15 @@
 - [ ] **Vùng loại trừ**: Không chèn link trong tiêu đề (H1, H2, H3), Frontmatter, Code blocks, Schema, Table code.
 - [ ] **Mã nguồn an toàn**: Tuyệt đối không viết Markdown link `[text](url)` bên trong thẻ HTML thô, bắt buộc dùng `<a href="url">text</a>`.
 
+## 🛠️ Google Search Console (GSC) & Indexability Troubleshooting
+- [ ] **robots.txt Crawlability**: Đảm bảo robots.txt cho phép Googlebot và các AI bots crawl. `Crawl allowed` phải là "Yes".
+- [ ] **noindex Gating**: Đảm bảo các trang quan trọng không chứa `<meta name="robots" content="noindex">` hoặc header `X-Robots-Tag: noindex`.
+- [ ] **Canonical Alignment**: Khai báo thẻ `<link rel="canonical" href="...">` chính xác. Tránh trường hợp Google-selected canonical khác với User-declared canonical.
+- [ ] **Robots.txt Availability**: Đảm bảo file `/robots.txt` luôn trả về HTTP 200/404 ổn định. Nếu robots.txt bị lỗi server (HTTP 5xx) hoặc không thể truy cập, Googlebot sẽ dừng crawl toàn bộ site.
+- [ ] **DNS & SSL Health**: Tránh các lỗi DNS (unresponsive, private IP mapping) và đảm bảo chứng chỉ SSL hợp lệ. Googlebot sẽ không crawl trang HTTPS nếu chứng chỉ SSL không hợp lệ.
+- [ ] **Server Connectivity & Response**: Server phải phản hồi nhanh (LCP < 2.5s), không bị ngắt kết nối giữa chừng (truncated response/headers) hoặc cấu hình nén dữ liệu (compression) lỗi.
+- [ ] **Watch Page Video Indexing**: Nếu trang chứa video cần index, video đó phải nằm trên "Watch Page" (trang tập trung xem video, video chiếm vị trí nổi bật đầu trang HTML), có thẻ thumbnail và dữ liệu cấu trúc VideoObject chính xác.
+
 ## 📊 Schema.org (JSON-LD Templates)
 
 ### Article

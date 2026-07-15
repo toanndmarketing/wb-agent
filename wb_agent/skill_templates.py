@@ -945,14 +945,34 @@ role: SEO & GEO Strategist
 4. **Ngăn Chặn Liên Kết Tự Thân & Lồng Nhau (No Self-Linking & Nested Links)**: Tuyệt đối không tự liên kết hoặc lồng link tạo lỗi cú pháp.
 5. **MÃ NGUỒN AN TOÀN (No Markdown inside Raw HTML)**: Tuyệt đối KHÔNG viết mã Markdown link (dạng `[AnchorText](URL)`) bên trong các thẻ HTML thô. Phải sử dụng thẻ anchor HTML dạng `<a href="URL">AnchorText</a>` để các trình thông dịch Markdown và HTML có thể phân tích và hiển thị chính xác.
 
+### Phase 5: Google Search Console (GSC) & Indexability Troubleshooting
+1. **Kiểm tra trạng thái Indexability (Crawlability & GSC Alignment)**:
+   - **Crawl allowed**: Phải đảm bảo file `robots.txt` không chặn Googlebot/AI bots đối với các trang quan trọng cần SEO (Crawl allowed phải trả về Yes).
+   - **Indexing allowed**: Đảm bảo các trang đích không có thẻ `<meta name="robots" content="noindex">` hoặc header `X-Robots-Tag: noindex`.
+   - **Canonicalization**: Kiểm tra xem `canonical` URL khai báo có khớp hoàn toàn với URL thật và Google-selected canonical không. Tránh lỗi duplicate content hoặc Google tự chọn canonical khác.
+2. **Khắc phục lỗi hạ tầng (Site-wide/Server errors)**:
+   - **SSL & DNS stability**: Đảm bảo chứng chỉ SSL hợp lệ. Googlebot sẽ từ chối crawl và báo lỗi nếu SSL hỏng hoặc DNS trả về IP private (RFC 1918).
+   - **Robots.txt Availability**: File `robots.txt` phải luôn khả dụng (HTTP 200/404). Nếu server bị lỗi 5xx hoặc không thể fetch robots.txt, Googlebot sẽ dừng crawl toàn bộ trang để tránh vi phạm các vùng cấm.
+   - **Server load (Hostload exceeded)**: Theo dõi tải server để tránh Googlebot giảm tần suất crawl do server quá tải hoặc trả về response lỗi (truncated headers/compression error).
+3. **Video Indexing (Watch Page Rule)**:
+   - Đảm bảo video cần index nằm trên một Watch Page chuyên dụng (video là nội dung chính, xuất hiện sớm trong HTML, không bị che khuất).
+   - Cung cấp Schema VideoObject và thumbnail hợp lệ.
+
+### Phase 6: Automated SEO Audit Crawler
+1. **Chạy SEO Crawler**: Để thực hiện kiểm tra tự động Technical SEO trên môi trường local/docker, agent PHẢI chạy script `seo-audit-crawler.js` nằm trong thư mục `.agent/scripts/js/`:
+   `node .agent/scripts/js/seo-audit-crawler.js <URL>` (ví dụ: `http://localhost:8980` hoặc `http://web:80`).
+2. **Review kết quả**:
+   - Kiểm tra file báo cáo `.agent/memory/seo-audit-report.md` sau khi crawler chạy xong.
+   - Sửa mọi lỗi 🔴 Critical và tối ưu hóa các cảnh báo 🟡 Warning để đạt điểm SEO ≥ 90/100 trước khi hoàn thành task.
+
 ## 📤 Output
-- File: `.agent/memory/seo-geo-report.md`
+- File: `.agent/memory/seo-audit-report.md` (được tạo bởi crawler) hoặc `.agent/memory/seo-geo-report.md` (nếu phân tích nội dung thủ công).
 - Verdict: Verdict chung (Score 0-100, danh sách các lỗi 🔴 Critical, 🟡 Warning, 🟢 Info và giải pháp fix).
 
 ## 🚫 Guard Rails
 - KHÔNG tự động sửa đổi code trong bước audit này — chỉ tạo báo cáo và hướng dẫn sửa lỗi.
-- Đảm bảo mọi trang công khai được quét qua cả 4 Phase.
-- Nếu SEO-GEO Score < 80 hoặc có lỗi 🔴 Critical -> Đánh giá FAIL và block deploy.
+- Đảm bảo mọi trang công khai được quét qua cả 6 Phase.
+- Nếu SEO Score < 80 hoặc có lỗi 🔴 Critical -> Đánh giá FAIL và block deploy.
 """
 
 

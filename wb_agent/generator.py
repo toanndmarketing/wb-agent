@@ -196,6 +196,7 @@ class ProjectGenerator:
             ".agent/skills",         # Tầng kỹ năng (@skill)
             ".agent/workflows",      # Tầng điều hướng (/command)
             ".agent/scripts/bash",   # Tầng hạ tầng
+            ".agent/scripts/js",     # Tầng script javascript
             ".agent/templates",      # Tầng khuôn mẫu
             ".agent/memory",         # Tầng lưu trữ Constitution
             ".agent/rules",          # Tầng Rules cho Antigravity
@@ -368,6 +369,17 @@ Bạn là **{skill['role']}**.
                 os.chmod(filepath, os.stat(filepath).st_mode | stat.S_IEXEC)
             except: pass
             self.stats["scripts"] += 1
+
+        # js scripts (chỉ tạo cho Web projects)
+        from .registry import PROJECT_TYPES
+        type_info = PROJECT_TYPES.get(self.project_type, {})
+        allowed_skills = type_info.get("includes_skills", [])
+        if "web" in allowed_skills or "web_public" in allowed_skills:
+            from .templates import JS_SCRIPT_TEMPLATE_MAP
+            for filename, script_fn in JS_SCRIPT_TEMPLATE_MAP.items():
+                filepath = os.path.join(self.agent_dir, "scripts", "js", filename)
+                self._write_file(filepath, script_fn())
+                self.stats["scripts"] += 1
 
     def _create_project_config(self):
         """Lưu thông tin project type vào .agent/project.json."""

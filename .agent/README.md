@@ -2,7 +2,7 @@
 
 > **Project**: wb-agent
 > **Type**: Full-stack (Web + API)
-> **Generated**: 2026-07-12
+> **Generated**: 2026-07-16
 
 ## 🏗️ Architecture
 
