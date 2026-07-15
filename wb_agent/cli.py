@@ -244,9 +244,17 @@ def cmd_validate(args):
         print("❌ Một số kiểm tra FAILED. Xem chi tiết ở trên.\n")
 
 
+def cmd_learn_seo(args):
+    """Tải và chắt lọc tài liệu Google Search Central."""
+    from wb_agent.seo_learner import learn_google_seo
+    target = os.path.abspath(args.target or os.getcwd())
+    learn_google_seo(target)
+
+
 def cmd_version(args):
     """Hiển thị version."""
     print(f"wb-agent v{__version__}")
+
 
 
 def main():
@@ -261,10 +269,12 @@ Ví dụ:
   wb-agent init --name "My Project"          # Init với tên project
   wb-agent init --type web_public            # Init cho Web B2C (bật SEO/GEO)
   wb-agent init --force                      # Init và ghi đè không hỏi
+  wb-agent learn-seo                         # Tải & chắt lọc tài liệu Google SEO
   wb-agent list-skills                       # Xem danh sách skills
   wb-agent list-workflows                    # Xem danh sách workflows
   wb-agent validate                          # Validate cấu trúc .agent/
   wb-agent version                           # Xem phiên bản
+
 
 Loại dự án:
   web_public  — Blog, E-commerce, Landing Page (SEO + GEO + Content)
@@ -306,8 +316,13 @@ Quy trình dự án CÓ SẴN:
     validate_parser = subparsers.add_parser("validate", help="Validate cấu trúc .agent/")
     validate_parser.add_argument("--target", "-t", help="Thư mục đích (mặc định: thư mục hiện tại)")
 
+    # learn-seo
+    learn_seo_parser = subparsers.add_parser("learn-seo", help="Tải và chắt lọc tài liệu Google Search Central")
+    learn_seo_parser.add_argument("--target", "-t", help="Thư mục đích (mặc định: thư mục hiện tại)")
+
     # version
     subparsers.add_parser("version", help="Hiển thị phiên bản")
+
 
     args = parser.parse_args()
 
@@ -320,8 +335,10 @@ Quy trình dự án CÓ SẴN:
         "list-skills": cmd_list_skills,
         "list-workflows": cmd_list_workflows,
         "validate": cmd_validate,
+        "learn-seo": cmd_learn_seo,
         "version": cmd_version,
     }
+
 
     commands[args.command](args)
 

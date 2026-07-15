@@ -104,3 +104,16 @@
   ]
 }
 ```
+
+## 📖 Google Search Central Reference Library
+Tài liệu tham khảo chính thống từ Google (đã được chắt lọc tối ưu token):
+- [Google Search Essentials](file:///.agent/knowledge_base/google_search/search_essentials.md)
+- [Cơ chế cào & Index của Google](file:///.agent/knowledge_base/google_search/crawling_indexing.md)
+- [Quy chuẩn file robots.txt của Google](file:///.agent/knowledge_base/google_search/robots_txt.md)
+- [Tối ưu hóa thẻ Canonical](file:///.agent/knowledge_base/google_search/canonicalization.md)
+- [Quy chuẩn Sitemaps của Google](file:///.agent/knowledge_base/google_search/sitemaps.md)
+- [Dữ liệu cấu trúc Schema của Google](file:///.agent/knowledge_base/google_search/structured_data.md)
+- [Hệ thống nội dung hữu ích (Helpful Content)](file:///.agent/knowledge_base/google_search/helpful_content.md)
+- [Tiêu chuẩn đánh giá EEAT chất lượng cao](file:///.agent/knowledge_base/google_search/eeat_guide.md)
+- [Tối ưu hóa JavaScript Rendering SEO](file:///.agent/knowledge_base/google_search/javascript_seo.md)
+- [Xử lý mã lỗi HTTP & Crawl Errors](file:///.agent/knowledge_base/google_search/http_status_codes.md)
