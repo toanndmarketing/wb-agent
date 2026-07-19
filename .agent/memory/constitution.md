@@ -4,6 +4,7 @@
 - **BẮT BUỘC**: Mọi hoạt động phát triển (Code), kiểm thử (Test), và triển khai (Deploy Production) PHẢI sử dụng `wb-agent`.
 - **Pipeline**: Tuân thủ nghiêm ngặt quy trình: Specify → Plan → Tasks → Implement.
 - **Tools**: Chỉ sử dụng các workflows trong `.agent/workflows` để thực hiện task.
+- **Thiết kế Bộ khung mẫu (General Framework)**: Đối với kho mã nguồn của `wb-agent`, mục tiêu tối thượng là tối ưu hóa, huấn luyện và xây dựng bộ khung chung. Luôn luôn bóc tách các yêu cầu thành tiêu chí khái quát, tuyệt đối KHÔNG code cụ thể theo bất kỳ brand, domain hay dự án cá nhân nào tại đây.
 
 ## §1 Infrastructure (DOCKER-FIRST)
 - **Mặc định dùng Docker** cho cả Local và Production. KHÔNG chạy `npm`/`node`/`python` trực tiếp trên host.

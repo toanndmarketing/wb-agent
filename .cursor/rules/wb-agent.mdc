@@ -1,6 +1,6 @@
----
+﻿---
 description: WB-Agent project rules for wb-agent
-globs:
+globs: "*"
 alwaysApply: true
 ---
 
