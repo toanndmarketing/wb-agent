@@ -1024,8 +1024,209 @@ Thiết lập và quản lý tiêu chuẩn UI/UX "Pro Max" cho dự án, đảm 
 """
 
 
+def skill_debug():
+    return """---
+name: speckit.debug
+description: Systematic Debugger - Chẩn đoán sự cố, tìm root cause độc lập và đề xuất fix plans.
+role: Debug Specialist
+---
+
+## 🎯 Mission
+Chẩn đoán sự cố hệ thống, tìm nguyên nhân gốc rễ (Root Cause) một cách độc lập và thiết lập kế hoạch sửa lỗi (Fix Plan) an toàn, tránh gây lỗi mới (Anti-Regression).
+
+## 📋 Protocol
+
+### 🔍 Phase 1: Information Gathering & Diagnostics (Thu thập & Chẩn đoán)
+1. **Kiểm tra logs hệ thống**:
+   - Dùng lệnh `docker compose logs -f <service>` hoặc đọc log files trực tiếp để tìm exception, stack trace, hoặc error codes.
+2. **Xác định thời điểm xảy ra lỗi**:
+   - Dùng `git log -n 5` hoặc `git diff` để kiểm tra những thay đổi code gần đây.
+3. **Phân tích Blast Radius (Phạm vi ảnh hưởng)**:
+   - Xác định những modules, APIs, hoặc giao diện nào đang bị ảnh hưởng trực tiếp và gián tiếp bởi lỗi.
+
+### 🧪 Phase 2: Layered Verification Strategy & Reproduction (Tái hiện lỗi)
+Áp dụng chiến lược kiểm thử phân lớp từ nhẹ đến nặng để tái hiện lỗi:
+1. **Layer 1: Static Verification** (Kiểm tra tĩnh):
+   - Chạy các lệnh compile, lint (ví dụ: `npx tsc --noEmit` hoặc compiler check) để phát hiện lỗi kiểu dữ liệu (type mismatch), import sai, hoặc cú pháp.
+2. **Layer 2: Unit / Integration Tests**:
+   - Viết hoặc chạy test case cục bộ kiểm tra hàm nghi vấn để cô lập lỗi.
+3. **Layer 3: Network & HTTP Verification** (Kiểm tra mạng):
+   - Sử dụng `curl`, Postman, hoặc script nhỏ để gửi requests trực tiếp đến API endpoints để kiểm tra response.
+4. **Layer 4: UI/UX & Browser Verification** (Chỉ dùng khi bắt buộc):
+   - Chỉ sử dụng Playwright / Browser Subagent cho các lỗi giao diện phức tạp, hiệu ứng hover/animation hoặc flow đa bước của end-user. Tránh lạm dụng để giảm tải cho host.
+5. **Viết Repro Script**: Tạo file code chạy thử ở thư mục scratch (`artifacts/brain/<conversation-id>/scratch/`) để tái hiện lỗi 100% trước khi sửa.
+
+### 🧠 Phase 3: Root Cause Analysis (RCA - Phân tích nguyên nhân)
+1. Đọc code hiện tại xung quanh vùng lỗi.
+2. Vẽ sơ đồ luồng dữ liệu (data flow) từ input đến điểm phát sinh lỗi.
+3. Xác định chính xác lý do lỗi (do logic code sai, thiếu cấu hình ENV, lỗi database, hay tích hợp bên thứ ba).
+4. Phải chỉ rõ file và số dòng code (line number) bị lỗi.
+
+### 📝 Phase 4: Proposing Fix Plan & Risk Assessment (Đề xuất & Đánh giá rủi ro)
+1. Đề xuất phương án sửa lỗi chi tiết.
+2. Đánh giá rủi ro:
+   - Nếu sửa lỗi ảnh hưởng **≤ 3 files**: Có thể sửa trực tiếp.
+   - Nếu sửa lỗi ảnh hưởng **> 3 files** hoặc làm thay đổi cấu trúc database/kiến trúc hệ thống: **BẮT BUỘC** tạo `implementation_plan.md` và xin xác nhận của người dùng.
+3. Quy tắc an toàn: Không thay đổi các phần code không liên quan. Giữ nguyên các comments/docstrings cũ.
+
+### 🛠️ Phase 5: Implementation & Verification (Sửa lỗi & Xác thực lại)
+1. Thực thi việc sửa code theo kế hoạch.
+2. Chạy lại **Repro Script** để chứng minh lỗi đã được khắc phục hoàn toàn.
+3. Chạy build gate (`docker compose build` hoặc `tsc`) để đảm bảo không còn lỗi biên dịch.
+4. Kiểm tra lại logs hệ thống để đảm bảo không phát sinh exception mới.
+
+## 📤 Output
+- File: `.agent/memory/debug-report.md` chứa:
+  - Triệu chứng lỗi (Symptoms).
+  - Nguyên nhân gốc rễ (Root Cause) kèm file/line cụ thể.
+  - Repro Script (nếu có).
+  - Phương án xử lý (Fix Plan).
+  - Kết quả xác thực (Verification Results).
+
+## 🚫 Guard Rails
+- KHÔNG đoán mò lỗi — phải dựa trên logs, stack trace và thực tế chạy code.
+- KHÔNG sửa code trực tiếp khi chưa tìm ra nguyên nhân gốc rễ và có kế hoạch cụ thể.
+- KHÔNG lạm dụng Playwright/Browser Subagent cho các tác vụ kiểm tra API hoặc compile.
+- KHÔNG deploy code sửa lỗi nếu chưa vượt qua Build Gate.
+"""
+
+
+def skill_shopify():
+    return """---
+name: speckit.shopify
+description: Shopify Theme Developer - Chuyên gia Liquid Engine, Section Schema, GraphQL Admin API & Dockerized Shopify CLI.
+role: Shopify Expert
+---
+
+## 🎯 Mission
+Thiết lập, phát triển và tối ưu giao diện Shopify Storefront sử dụng Liquid, Section Schema (Online Store 2.0) và vận hành Shopify CLI qua Docker để đồng bộ và deploy an toàn.
+
+## 📥 Input
+- `.agent/specs/[feature]/spec.md` (Design requirements)
+- `.agent/specs/[feature]/plan.md` (Implementation details)
+- `.env` (Chứa các cấu hình: `SHOPIFY_FLAG_STORE`, `SHOPIFY_CLI_THEME_TOKEN`, `SHOPIFY_THEME_ID`)
+
+## 📋 Shopify Knowledge Base & Standards
+
+### 1. Liquid Engine Syntax & Best Practices
+- **Render vs Include**: Luôn dùng `{% render 'snippet-name' %}` thay vì `{% include %}` để cô lập scope biến và cải thiện hiệu năng load trang.
+- **Filters**: Sử dụng các filter tối ưu cho media và styling:
+  - Image: `{{ product.featured_image | image_url: width: 450 | image_tag: loading: 'lazy', alt: product.title }}`. Luôn chỉ định width/height và lazy load để tối ưu SEO LCP/CLS.
+  - CSS/JS: `{{ 'theme.css' | asset_url | stylesheet_tag }}` và `{{ 'theme.js' | asset_url | javascript_tag }}`.
+- **Loop Optimization**: Tránh lồng loops (`for` inside `for`). Sử dụng map hoặc lưu trữ mảng trung gian để giảm độ phức tạp tính toán O(N^2).
+- **Whitespace Control**: Dùng `{%-` và `-%}` để xóa khoảng trắng thừa trong HTML output.
+
+### 2. Online Store 2.0 Section Schema
+- Mỗi Custom Section phải đi kèm thẻ `{% schema %}` chuẩn JSON định dạng để hỗ trợ Shopify Theme Editor kéo thả:
+```json
+{
+  "name": "Custom Product Grid",
+  "tag": "section",
+  "class": "section-custom-grid",
+  "limit": 1,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading Title",
+      "default": "Sản phẩm nổi bật"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4,
+      "label": "Số lượng sản phẩm"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "Feature Column",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image Banner"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Action Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Product Grid",
+      "blocks": [
+        { "type": "column" },
+        { "type": "column" }
+      ]
+    }
+  ]
+}
+```
+
+### 3. Shopify Admin API / GraphQL Rules
+- Khi tương tác dữ liệu (ví dụ: lấy Metafields, tạo sản phẩm nháp), sử dụng GraphQL Admin API qua endpoints:
+  - Base URL: `https://{shop}.myshopify.com/admin/api/2026-07/graphql.json`
+  - Header: `X-Shopify-Access-Token: {api_password}`
+- **GraphQL Query Metafields Example**:
+```graphql
+query getProductMetafields($id: ID!) {
+  product(id: $id) {
+    title
+    metafields(first: 10) {
+      edges {
+        node {
+          namespace
+          key
+          value
+        }
+      }
+    }
+  }
+}
+```
+
+### 4. Dockerized Shopify CLI Protocol
+- **Định nghĩa Service Docker Compose**:
+  Để chạy Shopify CLI không phụ thuộc host, dự án phải định nghĩa service `shopify` trong file `docker-compose.yml` (hoặc `.agent/memory/docker-compose.shopify.yml`):
+  ```yaml
+  services:
+    shopify:
+      image: ghcr.io/shopify/cli:latest
+      volumes:
+        - .:/app
+      working_dir: /app
+      environment:
+        - SHOPIFY_CLI_THEME_TOKEN=${SHOPIFY_CLI_THEME_TOKEN}
+        - SHOPIFY_FLAG_STORE=${SHOPIFY_FLAG_STORE}
+  ```
+- **Lệnh CLI qua Docker (PowerShell syntax)**:
+  - **Login**: `docker compose run --rm shopify login --store=$env:SHOPIFY_FLAG_STORE`
+  - **Start Dev Preview**: `docker compose run --rm --service-ports shopify theme dev --store=$env:SHOPIFY_FLAG_STORE --theme=$env:SHOPIFY_THEME_ID`
+  - **Push Deploy Draft**: `docker compose run --rm shopify theme push --store=$env:SHOPIFY_FLAG_STORE --theme=$env:SHOPIFY_THEME_ID --development`
+  - **Pull Code**: `docker compose run --rm shopify theme pull --store=$env:SHOPIFY_FLAG_STORE --theme=$env:SHOPIFY_THEME_ID`
+
+## 📤 Output
+- Sinh cấu trúc theme Shopify chuẩn (`assets/`, `layout/`, `sections/`, `snippets/`, `templates/`, `config/`, `locales/`).
+- Các files JSON Section Schema và Liquid components hợp lệ.
+- Lệnh deploy/push thành công thông qua Dockerized Shopify CLI.
+
+## 🚫 Guard Rails
+- KHÔNG sử dụng legacy CSS/JS libs cồng kềnh; ưu tiên Vanilla CSS và Native JavaScript.
+- KHÔNG hardcode theme credentials hoặc tokens trực tiếp vào code; luôn luôn dùng biến môi trường.
+- KHÔNG thay đổi settings schema của các sections mặc định khi chưa phân tích Blast Radius.
+"""
+
+
 # =============================================================================
-# SKILL TEMPLATE MAP — Complete mapping cho tất cả 22 skills
+# SKILL TEMPLATE MAP — Complete mapping cho tất cả các skills
 # =============================================================================
 SKILL_TEMPLATE_MAP = {
     "speckit.identity": skill_identity,
@@ -1049,4 +1250,6 @@ SKILL_TEMPLATE_MAP = {
     "speckit.validate": skill_validate,
     "speckit.seo-geo": skill_seo_geo,
     "speckit.uiux": skill_uiux,
+    "speckit.debug": skill_debug,
+    "speckit.shopify": skill_shopify,
 }

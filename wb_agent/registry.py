@@ -51,6 +51,11 @@ PROJECT_TYPES = {
         "use_docker": False,
         "is_soft_rules": True,
     },
+    "shopify": {
+        "label": "Shopify Storefront & Theme",
+        "description": "Shopify Theme Development (Liquid, Section Schema, Dockerized Shopify CLI)",
+        "includes_skills": ["all", "web", "shopify"],
+    },
 }
 
 
@@ -280,6 +285,12 @@ SKILLS_REGISTRY = [
         "role": "WordPress Expert",
         "project_types": "web",
     },
+    {
+        "name": "speckit.shopify",
+        "description": "Shopify Theme Developer - Chuyên gia Liquid Engine, Section Schema, GraphQL Admin API & Dockerized Shopify CLI.",
+        "role": "Shopify Expert",
+        "project_types": "shopify",
+    },
 ]
 
 
@@ -429,6 +440,12 @@ WORKFLOWS_REGISTRY = [
         "description": "WordPress Theme & Plugin Development Workflow",
         "skills": ["speckit.wordpress"],
         "project_types": "web",
+    },
+    {
+        "command": "00-shopify.all",
+        "description": "Shopify Theme Development Pipeline (Analyze Page → Code Liquid → Push draft → Preview)",
+        "skills": ["speckit.specify", "speckit.plan", "speckit.tasks", "speckit.shopify"],
+        "project_types": "shopify",
     },
 ]
 

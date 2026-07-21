@@ -144,7 +144,7 @@ def validate_agent_structure(agent_dir: str) -> list:
         for fname in os.listdir(wf_dir):
             if fname.endswith(".md"):
                 fpath = os.path.join(wf_dir, fname)
-                with open(fpath, "r", encoding="utf-8") as f:
+                with open(fpath, "r", encoding="utf-8-sig") as f:
                     content = f.read()
                 if not content.startswith("---"):
                     invalid_frontmatter.append(fname)

@@ -83,6 +83,9 @@ class ProjectGenerator:
         else:
              self.assigned_ports = None
 
+        if self.project_type == "shopify":
+             self._save_shopify_config_to_env()
+
         print("🎭 Thiết lập Identity & Soul...")
         self._create_identity()
 
@@ -410,6 +413,14 @@ Bạn là **{skill['role']}**.
 - `knowledge_base/seo_standards.md`: Checklist & JSON-LD templates
 """
 
+        shopify_section = ""
+        if self.project_type == "shopify":
+            shopify_section = """
+## 🛍️ Shopify Integration
+- `/00-shopify.all`: Quy trình đồng bộ hóa Shopify Theme (Analyze → Code Liquid → Push → Preview)
+- `@speckit.shopify`: Chuyên gia Shopify Developer (Liquid, Section Schema, Docker CLI)
+"""
+
         content = f"""# 🤖 WB-Agent Configuration (ASF 3.3)
 
 > **Project**: {self.project_name}
@@ -423,7 +434,7 @@ Bạn là **{skill['role']}**.
 - `.agent/skills/`: Các kỹ năng AI chuyên biệt (@mentions).
 - `.agent/workflows/`: Các quy trình tự động hóa (/commands).
 - `.agent/memory/`: Project Constitution (Luật dự án).
-{seo_section}
+{seo_section}{shopify_section}
 ## 🚀 Quick Start
 1. Run `/01-speckit.constitution` để thiết lập luật dự án.
 2. Run `@speckit.identity` để tinh chỉnh Persona của AI.
@@ -490,6 +501,29 @@ Bạn là **{skill['role']}**.
                 f.write("\n# WB-Agent Port Configuration (Auto-generated)\n")
                 f.write("\n".join(new_lines) + "\n")
             print("  🔐 Ports saved to .env")
+
+    def _save_shopify_config_to_env(self):
+        """Ghi cấu hình shopify mặc định vào file .env."""
+        env_path = os.path.join(self.target_dir, ".env")
+        existing_content = ""
+        if os.path.exists(env_path):
+            with open(env_path, "r", encoding="utf-8") as f:
+                existing_content = f.read()
+
+        shopify_vars = {
+            "SHOPIFY_FLAG_STORE": "your-store.myshopify.com",
+            "SHOPIFY_CLI_THEME_TOKEN": "shptb_xxxxxxxxxxxxxx",
+            "SHOPIFY_THEME_ID": "1234567890"
+        }
+
+        new_lines = [f"{k}={v}" for k, v in shopify_vars.items() if k not in existing_content]
+        if new_lines:
+            with open(env_path, "a" if existing_content else "w", encoding="utf-8") as f:
+                if existing_content and not existing_content.endswith("\n"):
+                    f.write("\n")
+                f.write("\n# Shopify CLI Configuration (Auto-generated)\n")
+                f.write("\n".join(new_lines) + "\n")
+            print("  🔐 Shopify credentials added to .env")
 
     def _print_stats(self):
         type_info = PROJECT_TYPES.get(self.project_type, {})

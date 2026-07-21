@@ -742,6 +742,48 @@ description: WordPress Theme & Plugin Development Workflow
 """
 
 
+def wf_shopify():
+    return """---
+description: Shopify Theme Development Pipeline (Analyze Page → Code Liquid → Push draft → Preview)
+---
+
+# Shopify Development Workflow
+
+## Pre-conditions
+- Đã cấu hình Shopify Store URL, Token và Theme ID trong `.env`.
+- Service `shopify` (Dockerized Shopify CLI) đã được định nghĩa và khởi tạo trong `docker-compose.yml`.
+
+## Steps
+
+### Step 1: Analyze & Specify (Giai đoạn Đặc tả)
+- Đọc URL gốc (ví dụ: `paperandtea.com`) bằng browser subagent.
+- Trích xuất cấu trúc giao diện, thành phần UI, layout và sinh file `.agent/specs/[feature]/spec.md`.
+- **GATE**: Developer xác nhận cấu trúc giao diện và layout mong muốn trước khi tiếp tục.
+
+### Step 2: Implementation Plan & Code Creation (Giai đoạn Lập kế hoạch & Viết code)
+- Tạo file `.agent/specs/[feature]/plan.md` mô tả các Section/Snippet cần tạo và Schema settings JSON tương ứng.
+- Viết code các file `.liquid`, `.json` (Section Schema) và `assets/` (CSS/JS) cần thiết.
+- Đảm bảo tuân thủ Liquid Engine Syntax & Section Schema standards của Online Store 2.0.
+
+### Step 3: Sync & Deploy Draft (Giai đoạn Đồng bộ Code lên Store Nháp)
+- Sử dụng Dockerized Shopify CLI để đẩy code lên store nháp ở môi trường development:
+  ```bash
+  docker compose run --rm shopify theme push --development
+  ```
+- Lấy đường link Preview URL được trả về từ lệnh push.
+
+### Step 4: Verification & UAT (Giai đoạn Kiểm thử & Nghiệm thu)
+- Khởi động browser subagent để mở Preview URL đã nhận từ Step 3.
+- Thực hiện kiểm tra độ khớp giao diện, các tùy chọn chỉnh sửa trong Theme Editor và tính năng tương tác.
+- Chụp ảnh screenshot/video để xác minh UI/UX đã hoàn hảo.
+
+## Success Criteria
+- ✅ Code Liquid, JSON Schema hợp lệ và không có lỗi cú pháp.
+- ✅ CLI push thành công, preview URL hoạt động bình thường.
+- ✅ Kiểm tra visual qua Browser Agent khớp hoàn toàn với specs.
+"""
+
+
 # =============================================================================
 # WORKFLOW TEMPLATE MAP — Complete mapping cho tất cả các workflows
 # =============================================================================
@@ -774,4 +816,5 @@ WORKFLOW_TEMPLATE_MAP = {
     "speckit.map": wf_map,
     "speckit.uat": wf_uat,
     "speckit.wordpress": wf_wordpress,
+    "00-shopify.all": wf_shopify,
 }
