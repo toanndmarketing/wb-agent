@@ -27,6 +27,10 @@ obj/
 # IDE
 .vscode/
 .idea/
+.cursor/
+.windsurf/
+.kiro/
+.aiassistant/
 *.swp
 *.swo
 *~
@@ -45,14 +49,8 @@ Desktop.ini
 
 # Testing & Artifacts
 test-output*/
-.agent/temp/
-.agent/specs/
-.agent/brain/
-.agent/logs/
-#!/.agent/skills/
-#!/.agent/workflows/
-#!/.agent/identity/
-#!/.agent/memory/
+.agents/specs/
+.agents/skills/
 .pytest_cache/
 htmlcov/
 .coverage

@@ -424,7 +424,7 @@ class ProjectScanner:
     def _scan_source_structure(self):
         """Quét cấu trúc thư mục cấp 1-2 để hiểu kiến trúc."""
         ignore_dirs = {
-            "node_modules", ".git", ".next", ".agent", "__pycache__",
+            "node_modules", ".git", ".next", ".agents", "__pycache__",
             "dist", "build", ".cache", ".turbo", "coverage",
             "test-output", "test-output-deep", "test-output-infra",
         }
@@ -434,7 +434,7 @@ class ProjectScanner:
 
         for item in sorted(os.listdir(self.target_dir)):
             if item.startswith(".") and item not in (".env.example",):
-                if item == ".agent":
+                if item == ".agents":
                     self.profile["source_structure"].append(f"📁 {item}/ (Agent config)")
                 continue
             if item in ignore_dirs:
