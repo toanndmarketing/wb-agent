@@ -26,27 +26,35 @@
 
 ---
 
-## 📦 Cài đặt
+## 📦 Hướng dẫn Cài đặt & Tích hợp (Zero-Click)
 
-```bash
-# Cách 1: pip install từ GitHub (Khuyến nghị)
-pip install git+https://github.com/toanndmarketing/wb-agent.git
+Hệ thống wb-agent v2.0 bao gồm 2 phần độc lập nhưng cần hoạt động cùng nhau:
+1. **CLI Tool (`wb-agent`)**: Để tạo cấu trúc `.agents/` cho dự án.
+2. **Global Skills Plugin**: Để IDE của bạn sở hữu 26 Kỹ năng Agentic (Speckit).
 
-# Cách 2: pipx (isolated)
-pipx install git+https://github.com/toanndmarketing/wb-agent.git
+### Dành cho Nhân viên (Cài đặt Tự động 100%)
+Chỉ cần copy lệnh dưới đây và chạy bằng **PowerShell**, máy tính sẽ tự động kéo code, cài đặt phần mềm và bơm bộ kỹ năng vào IDE:
 
-# Cách 3: Development mode
-git clone https://github.com/toanndmarketing/wb-agent.git
-cd wb-agent && pip install -e .
-
-# Kiểm tra
-wb-agent version
-# → wb-agent v2.0.0
+```powershell
+git clone https://github.com/toanndmarketing/wb-agent.git; cd wb-agent; pip install -e .; .\install_plugin.ps1
 ```
+
+Sau khi chạy xong:
+1. Gõ `wb-agent version` để đảm bảo đã lên `v2.0.0`.
+2. Khởi động lại IDE (Antigravity/Cursor) để nhận toàn bộ 26 Global Skills.
+
+### Dành cho Cài đặt Từng phần (Manual)
+Nếu bạn chỉ muốn cài đặt một thành phần:
+- Cài đặt nguyên CLI Tool: 
+  ```bash
+  pip install git+https://github.com/toanndmarketing/wb-agent.git
+  ```
+- Cài đặt nguyên Plugin IDE (Phải có sẵn thư mục code): 
+  Click chuột phải vào file `install_plugin.ps1` -> Chọn **Run with PowerShell**.
 
 ---
 
-## 🚀 Cách sử dụng
+## 🚀 Cách sử dụng CLI
 
 ```bash
 # Smart-detect: quét codebase → tự chọn project type
@@ -138,12 +146,3 @@ wb-agent/
 ## 📄 License
 
 MIT
-
-
-## 3. Cài đặt IDE Global Plugin (Mới)
-
-Bộ não của hệ thống nằm ở **23 Kỹ năng (Skills)** tự động hóa chuyên sâu. Để cài đặt plugin này vào Antigravity IDE:
-
-1. Mở thư mục gốc của project này.
-2. Click chuột phải vào file `install_plugin.ps1` -> Chọn **Run with PowerShell**.
-3. Khởi động lại IDE để nhận bộ skills (ví dụ: `/speckit.specify`, `/speckit.seo-geo`...).
