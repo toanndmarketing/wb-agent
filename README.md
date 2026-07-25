@@ -138,3 +138,12 @@ wb-agent/
 ## 📄 License
 
 MIT
+
+
+## 3. Cài đặt IDE Global Plugin (Mới)
+
+Bộ não của hệ thống nằm ở **23 Kỹ năng (Skills)** tự động hóa chuyên sâu. Để cài đặt plugin này vào Antigravity IDE:
+
+1. Mở thư mục gốc của project này.
+2. Click chuột phải vào file `install_plugin.ps1` -> Chọn **Run with PowerShell**.
+3. Khởi động lại IDE để nhận bộ skills (ví dụ: `/speckit.specify`, `/speckit.seo-geo`...).
