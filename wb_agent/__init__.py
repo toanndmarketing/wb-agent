@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-⚡ WB-Agent - Spec-Driven Development CLI
-Entry point for the console script.
-"""
+"""WB-Agent v2.0 — Thin Agent CLI."""
 
-__version__ = "1.1.0"
-__app_name__ = "wb-agent"
+__version__ = "2.0.0"

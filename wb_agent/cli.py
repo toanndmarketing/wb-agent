@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """
-⚡ WB-Agent - Spec-Driven Development CLI
-Entry point cho console script `wb-agent`.
+⚡ WB-Agent v2.0 — Thin Agent CLI
+Sinh cấu trúc .agents/ tối giản, kế thừa Global Rules.
 
-Cài đặt global:
-    pip install wb-agent
-    wb-agent init --name "My Project"
-
-Hoặc chạy trực tiếp:
-    python -m wb_agent init --name "My Project"
+    wb-agent init                           # Smart-detect project type
+    wb-agent init --type fullstack          # Chỉ định type
+    wb-agent init --target /path/to/project # Chỉ định target
+    wb-agent validate                       # Validate cấu trúc .agents/
 """
 
 import argparse
@@ -18,16 +16,12 @@ import os
 from wb_agent import __version__
 from wb_agent.generator import ProjectGenerator
 from wb_agent.scanner import ProjectScanner
-from wb_agent.validators import validate_agent_structure
-from wb_agent.registry import (
-    SKILLS_REGISTRY, WORKFLOWS_REGISTRY, PROJECT_TYPES,
-    get_skills_for_project_type, get_workflows_for_project_type,
-)
+from wb_agent.registry import PROJECT_TYPES, auto_detect_project_type
 
 
 def _ask_project_type():
-    """Hỏi người dùng chọn loại dự án."""
-    print("🏗️  Loại dự án:")
+    """Hỏi người dùng chọn loại dự án (chỉ khi auto-detect thất bại)."""
+    print("\n🏗️  Không tự detect được loại dự án. Vui lòng chọn:")
     types_list = list(PROJECT_TYPES.items())
     for i, (key, info) in enumerate(types_list, 1):
         print(f"  [{i}] {info['label']} — {info['description']}")
@@ -37,95 +31,67 @@ def _ask_project_type():
             choice = input(f"\n  Chọn (1-{len(types_list)}): ").strip()
             idx = int(choice) - 1
             if 0 <= idx < len(types_list):
-                selected_key = types_list[idx][0]
-                selected_info = types_list[idx][1]
-                return selected_key, selected_info
+                return types_list[idx][0]
         except (ValueError, IndexError):
             pass
         print(f"  ⚠️  Vui lòng chọn số từ 1 đến {len(types_list)}")
 
 
 def cmd_init(args):
-    """Khởi tạo cấu trúc .agent/ cho project."""
+    """Khởi tạo cấu trúc .agents/ cho project."""
     target = os.path.abspath(args.target or os.getcwd())
     name = args.name or os.path.basename(target)
-    force = getattr(args, 'force', False)
-    project_type = getattr(args, 'type', None)
-    agent_dir = os.path.join(target, ".agent")
+    force = getattr(args, "force", False)
+    explicit_type = getattr(args, "type", None)
 
-    print(f"\n⚡ WB-Agent v{__version__} - Spec-Driven Development")
+    agents_dir = os.path.join(target, ".agents")
+
+    print(f"\n⚡ WB-Agent v{__version__} — Thin Agent")
     print(f"{'─' * 50}")
     print(f"  📁 Target:  {target}")
     print(f"  📛 Project: {name}")
     print(f"{'─' * 50}\n")
 
-    # MIGRATION AUDIT LOGIC
-    if os.path.exists(agent_dir) and not force:
-        print("🔍 Đang quét cấu trúc .agent/ hiện có...")
-        audit_report = _audit_existing_agent(agent_dir)
+    # Check existing
+    if os.path.exists(agents_dir) and not force:
+        response = input("⚠️  .agents/ đã tồn tại. Ghi đè? (y/N): ").strip().lower()
+        if response != "y":
+            print("❌ Đã hủy.")
+            return
 
-        if audit_report["is_legacy"]:
-            print("\n⚠️  PHÁT HIỆN CẤU TRÚC CŨ (LEGACY AGENT)\n")
-            print(f"  {'File/Folder':<25} {'Trạng thái':<15} {'Hướng xử lý'}")
-            print(f"  {'─' * 23}   {'─' * 13}   {'─' * 18}")
-
-            for item in audit_report["items"]:
-                print(f"  {item['name']:<25} {item['status']:<15} {item['action']}")
-
-            print("\n💡 Đề xuất tối ưu:")
-            print("  - Nâng cấp core skills & workflows lên bản v1.0.0 (chuẩn ASF 3.3)")
-            print("  - Thiết lập tầng Identity & Knowledge Base để 'gắn não' AI")
-            print("  - Di chuyển hiến pháp cũ vào memory/constitution.md")
-
-            response = input("\n🚀 Nâng cấp & Tối ưu hóa lên ASF 3.3 ngay? (y/N): ").strip().lower()
-            if response != 'y':
-                print("❌ Đã hủy.")
-                return
-        else:
-            print("✅ Cấu trúc hiện tại đã đúng chuẩn ASF 3.3.")
-            response = input("♻️  Bạn vẫn muốn cài đặt lại (Re-init)? (y/N): ").strip().lower()
-            if response != 'y':
-                print("❌ Đã hủy.")
-                return
-
-    # PROJECT TYPE SELECTION
-    if not project_type:
-        print()
-        project_type, type_info = _ask_project_type()
-        print(f"\n  ✅ Đã chọn: {type_info['label']}")
-    else:
-        type_info = PROJECT_TYPES.get(project_type, PROJECT_TYPES["fullstack"])
-        print(f"  🏗️ Project Type: {type_info['label']}")
-
-    # Lọc skills theo loại dự án
-    filtered_skills = get_skills_for_project_type(project_type)
-    filtered_workflows = get_workflows_for_project_type(project_type)
-
-    # Hiển thị skills được bật/tắt
-    all_skill_names = {s["name"] for s in SKILLS_REGISTRY}
-    active_skill_names = {s["name"] for s in filtered_skills}
-    skipped_skill_names = all_skill_names - active_skill_names
-
-    if skipped_skill_names:
-        print(f"\n  🟢 Bật:  {len(active_skill_names)} skills")
-        print(f"  🔴 Tắt:  {', '.join(sorted(skipped_skill_names))} (không phù hợp loại dự án)")
-    else:
-        print(f"\n  🟢 Bật:  {len(active_skill_names)} skills (tất cả)")
-
-    print()
-
-    # SCAN EXISTING CODEBASE
+    # ─── SCAN CODEBASE ───
     print("🔬 Đang quét codebase...")
     scanner = ProjectScanner(target)
     scan_profile = scanner.scan()
 
     if scan_profile["has_existing_code"]:
         print(scanner.generate_report())
-        print("  ✅ Sẽ auto-populate Knowledge Base từ dữ liệu thật!\n")
     else:
-        print("  📭 Dự án trống — sử dụng templates mặc định.\n")
+        print("  📭 Dự án trống — sử dụng template mặc định.\n")
 
-    # Generate
+    # ─── DETECT / SELECT PROJECT TYPE ───
+    if explicit_type:
+        project_type = explicit_type
+        if project_type not in PROJECT_TYPES:
+            print(f"❌ Type '{project_type}' không hợp lệ.")
+            print(f"   Các type có sẵn: {', '.join(PROJECT_TYPES.keys())}")
+            return
+        print(f"  🏗️ Project Type: {PROJECT_TYPES[project_type]['label']} (user specified)")
+    else:
+        detected = auto_detect_project_type(scan_profile)
+        if detected:
+            print(f"  🤖 Auto-detected: {PROJECT_TYPES[detected]['label']}")
+            confirm = input(f"  Đúng không? (Y/n): ").strip().lower()
+            if confirm == "n":
+                project_type = _ask_project_type()
+            else:
+                project_type = detected
+        else:
+            project_type = _ask_project_type()
+
+    print(f"\n  ✅ Project Type: {PROJECT_TYPES[project_type]['label']}\n")
+
+    # ─── GENERATE ───
     generator = ProjectGenerator(
         target_dir=target,
         project_name=name,
@@ -134,121 +100,44 @@ def cmd_init(args):
     )
     generator.generate()
 
-    print(f"\n✅ Khởi tạo/Nâng cấp thành công!")
-    print(f"  📂 .agent/ đã được tối ưu tại: {agent_dir}")
-    print(f"  🏗️ Type:      {type_info['label']}")
-    print(f"  🎯 Skills:    {len(filtered_skills)} skills (ASF 3.3 Standard)")
-    print(f"  🔄 Workflows: {len(filtered_workflows)} workflows")
-
-    # Hiển thị tips theo project type
-    print(f"\n💡 Bước tiếp theo:")
-    print(f"  1. Kiểm tra '.agent/identity/master-identity.md' để AI nhận diện dự án")
-    print(f"  2. Chạy /01-speckit.constitution để cập nhật Tech Stack & Docker Ports")
-
-    if project_type in ("web_public", "fullstack"):
-        print(f"  3. Chạy @speckit.seo-geo để audit Technical SEO & GEO")
-        print(f"  4. Kiểm tra '.agent/knowledge_base/seo_standards.md' cho SEO checklist")
-    elif project_type == "web_saas":
-        print(f"  3. Chạy @speckit.seo-geo cho Landing Page & Blog")
-    else:
-        print(f"  3. Chạy @speckit.devops để tạo Docker environment chuẩn Security")
-
-    print()
-
-
-def _audit_existing_agent(agent_dir):
-    """Quét và so sánh cấu trúc hiện có."""
-    report = {"is_legacy": False, "items": []}
-
-    # 1. Kiểm tra các thư mục mới (Chuẩn ASF 3.3)
-    standard_dirs = ["identity", "knowledge_base", "memory", "scripts/bash"]
-    for d in standard_dirs:
-        path = os.path.join(agent_dir, d)
-        if not os.path.exists(path):
-            report["is_legacy"] = True
-            report["items"].append({"name": d, "status": "THIẾU", "action": "Khởi tạo mới"})
-        else:
-            report["items"].append({"name": d, "status": "OK", "action": "Giữ lại"})
-
-    # 2. Kiểm tra files lẻ/thừa không thuộc chuẩn mới
-    for item in os.listdir(agent_dir):
-        if item in [".", "..", "skills", "workflows", "templates", "scripts", "identity", "knowledge_base", "memory", "README.md"]:
-            continue
-        report["is_legacy"] = True
-        report["items"].append({"name": item, "status": "NON-STANDARD", "action": "Backup & Di chuyển"})
-
-    # 3. Skills/Workflows luôn cần update core
-    report["is_legacy"] = True
-    report["items"].append({"name": "skills/", "status": "CẦN UPDATE", "action": "Nâng cấp Core"})
-    report["items"].append({"name": "workflows/", "status": "CẦN UPDATE", "action": "Nâng cấp Core"})
-
-    return report
-
-
-def cmd_list_skills(args):
-    """Liệt kê tất cả skills."""
-    print(f"\n🧠 WB-Agent - Skills Registry ({len(SKILLS_REGISTRY)} skills)")
-    print(f"{'─' * 85}")
-    print(f"  {'Skill':<25} {'Type':<12} {'Description'}")
-    print(f"  {'─' * 23}   {'─' * 10}   {'─' * 45}")
-
-    for skill in SKILLS_REGISTRY:
-        ptype = skill.get("project_types", "all")
-        print(f"  @{skill['name']:<23} {ptype:<12} {skill['description']}")
-
-    print(f"\n💡 Sử dụng: @speckit.<name> trong Antigravity để gọi skill")
-    print(f"   Type: all=mọi dự án, web=Web projects, web_public=Web B2C\n")
-
-
-def cmd_list_workflows(args):
-    """Liệt kê tất cả workflows."""
-    print(f"\n🔄 WB-Agent - Workflows Registry ({len(WORKFLOWS_REGISTRY)} workflows)")
-    print(f"{'─' * 70}")
-    print(f"  {'Command':<35} {'Description'}")
-    print(f"  {'─' * 33}   {'─' * 33}")
-
-    for wf in WORKFLOWS_REGISTRY:
-        print(f"  /{wf['command']:<33} {wf['description']}")
-
-    print(f"\n💡 Sử dụng: /<command> trong Antigravity để chạy workflow\n")
+    print(f"✅ Khởi tạo thành công! .agents/ tại: {agents_dir}")
 
 
 def cmd_validate(args):
-    """Validate cấu trúc .agent/ của project."""
+    """Validate cấu trúc .agents/ của project."""
     target = os.path.abspath(args.target or os.getcwd())
-    agent_dir = os.path.join(target, ".agent")
+    agents_dir = os.path.join(target, ".agents")
 
-    print(f"\n🔍 Validating .agent/ tại: {target}")
+    print(f"\n🔍 Validating .agents/ tại: {target}")
     print(f"{'─' * 50}\n")
 
-    if not os.path.exists(agent_dir):
-        print("❌ Không tìm thấy thư mục .agent/")
+    if not os.path.exists(agents_dir):
+        print("❌ Không tìm thấy thư mục .agents/")
         print("💡 Chạy: wb-agent init để khởi tạo\n")
         return
 
-    results = validate_agent_structure(agent_dir)
+    checks = [
+        (".agents/", os.path.isdir(agents_dir)),
+        (".agents/identity/master-identity.md", os.path.isfile(os.path.join(agents_dir, "identity", "master-identity.md"))),
+        (".agents/memory/constitution.md", os.path.isfile(os.path.join(agents_dir, "memory", "constitution.md"))),
+        (".agents/AGENTS.md", os.path.isfile(os.path.join(agents_dir, "AGENTS.md"))),
+        (".agents/project.json", os.path.isfile(os.path.join(agents_dir, "project.json"))),
+        (".agents/specs/", os.path.isdir(os.path.join(agents_dir, "specs"))),
+        (".agents/skills/", os.path.isdir(os.path.join(agents_dir, "skills"))),
+    ]
 
     all_passed = True
-    for check in results:
-        status = "✅" if check["passed"] else "❌"
-        print(f"  {status} {check['name']}")
-        if not check["passed"]:
+    for name, passed in checks:
+        status = "✅" if passed else "❌"
+        print(f"  {status} {name}")
+        if not passed:
             all_passed = False
-            for detail in check.get("details", []):
-                print(f"     ⚠️  {detail}")
 
     print()
     if all_passed:
         print("✅ Tất cả kiểm tra đều PASSED!\n")
     else:
-        print("❌ Một số kiểm tra FAILED. Xem chi tiết ở trên.\n")
-
-
-def cmd_learn_seo(args):
-    """Tải và chắt lọc tài liệu Google Search Central."""
-    from wb_agent.seo_learner import learn_google_seo
-    target = os.path.abspath(args.target or os.getcwd())
-    learn_google_seo(target)
+        print("❌ Một số file/thư mục thiếu. Chạy `wb-agent init` để tạo lại.\n")
 
 
 def cmd_version(args):
@@ -256,73 +145,55 @@ def cmd_version(args):
     print(f"wb-agent v{__version__}")
 
 
-
 def main():
     parser = argparse.ArgumentParser(
         prog="wb-agent",
-        description="⚡ WB-Agent - Spec-Driven Development CLI",
+        description="⚡ WB-Agent v2.0 — Thin Agent CLI",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ví dụ:
-  wb-agent init                              # Init tại thư mục hiện tại
+  wb-agent init                              # Smart-detect project type
   wb-agent init --target /path/to/project    # Init tại thư mục chỉ định
   wb-agent init --name "My Project"          # Init với tên project
-  wb-agent init --type web_public            # Init cho Web B2C (bật SEO/GEO)
-  wb-agent init --force                      # Init và ghi đè không hỏi
-  wb-agent learn-seo                         # Tải & chắt lọc tài liệu Google SEO
-  wb-agent list-skills                       # Xem danh sách skills
-  wb-agent list-workflows                    # Xem danh sách workflows
-  wb-agent validate                          # Validate cấu trúc .agent/
+  wb-agent init --type fullstack             # Chỉ định project type
+  wb-agent init --force                      # Ghi đè không hỏi
+  wb-agent validate                          # Validate cấu trúc .agents/
   wb-agent version                           # Xem phiên bản
 
-
 Loại dự án:
-  web_public  — Blog, E-commerce, Landing Page (SEO + GEO + Content)
-  web_saas    — Dashboard, Admin, API Service (SEO cho Landing/Blog)
-  mobile_app  — iOS/Android (Không cần SEO)
-  desktop_cli — Electron, WPF, CLI Tool (Không cần SEO)
-  fullstack   — Frontend Public + Backend API (SEO + GEO + DevOps)
-
-Quy trình dự án MỚI:
-  wb-agent init → /01-speckit.constitution → /02-speckit.specify → /04-speckit.plan → /07-speckit.implement
-
-Quy trình dự án CÓ SẴN:
-  wb-agent init → /01-speckit.constitution → /util-speckit.migrate → /02-speckit.specify → /07-speckit.implement
-        """
+  web_public  — Blog, E-commerce, Landing Page (SEO)
+  web_saas    — Dashboard, Admin, API Service
+  fullstack   — Frontend + Backend API (SEO + DevOps)
+  wordpress   — WordPress Theme/Plugin
+  mobile_app  — iOS/Android
+  script      — Python/Bash/JS scripts
+        """,
     )
 
     parser.add_argument(
-        "-v", "--version",
-        action="version",
-        version=f"%(prog)s {__version__}"
+        "-v", "--version", action="version", version=f"%(prog)s {__version__}"
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Lệnh cần thực thi")
 
     # init
-    init_parser = subparsers.add_parser("init", help="Khởi tạo cấu trúc .agent/ cho project")
-    init_parser.add_argument("--target", "-t", help="Thư mục đích (mặc định: thư mục hiện tại)")
-    init_parser.add_argument("--name", "-n", help="Tên project (mặc định: tên thư mục)")
-    init_parser.add_argument("--type", help="Loại dự án: web_public, web_saas, mobile_app, desktop_cli, fullstack")
-    init_parser.add_argument("--force", "-f", action="store_true", help="Ghi đè .agent/ nếu đã tồn tại")
-
-    # list-skills
-    subparsers.add_parser("list-skills", help="Liệt kê tất cả skills")
-
-    # list-workflows
-    subparsers.add_parser("list-workflows", help="Liệt kê tất cả workflows")
+    init_parser = subparsers.add_parser("init", help="Khởi tạo .agents/ cho project")
+    init_parser.add_argument("--target", "-t", help="Thư mục đích")
+    init_parser.add_argument("--name", "-n", help="Tên project")
+    init_parser.add_argument(
+        "--type",
+        help=f"Loại dự án: {', '.join(PROJECT_TYPES.keys())}",
+    )
+    init_parser.add_argument(
+        "--force", "-f", action="store_true", help="Ghi đè không hỏi"
+    )
 
     # validate
-    validate_parser = subparsers.add_parser("validate", help="Validate cấu trúc .agent/")
-    validate_parser.add_argument("--target", "-t", help="Thư mục đích (mặc định: thư mục hiện tại)")
-
-    # learn-seo
-    learn_seo_parser = subparsers.add_parser("learn-seo", help="Tải và chắt lọc tài liệu Google Search Central")
-    learn_seo_parser.add_argument("--target", "-t", help="Thư mục đích (mặc định: thư mục hiện tại)")
+    validate_parser = subparsers.add_parser("validate", help="Validate .agents/")
+    validate_parser.add_argument("--target", "-t", help="Thư mục đích")
 
     # version
     subparsers.add_parser("version", help="Hiển thị phiên bản")
-
 
     args = parser.parse_args()
 
@@ -332,13 +203,9 @@ Quy trình dự án CÓ SẴN:
 
     commands = {
         "init": cmd_init,
-        "list-skills": cmd_list_skills,
-        "list-workflows": cmd_list_workflows,
         "validate": cmd_validate,
-        "learn-seo": cmd_learn_seo,
         "version": cmd_version,
     }
-
 
     commands[args.command](args)
 

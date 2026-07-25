@@ -1,478 +1,103 @@
 """
-Registry - Định nghĩa tất cả Skills và Workflows cho WB-Agent.
-Đây là nguồn sự thật duy nhất (Single Source of Truth) cho metadata.
-
-Mỗi skill có trường `project_types`:
-  - "all"       → Áp dụng cho mọi loại dự án
-  - "web"       → Chỉ dự án Web (Public B2C, SaaS B2B, Full-stack)
-  - "web_public" → Chỉ dự án Web Public (B2C có end-user)
+Registry v2.0 — Project Types & Auto-Detection Logic.
+Skills/Workflows đã được chuyển sang Global Plugin (speckit).
+Registry giờ chỉ chịu trách nhiệm: Phân loại dự án + Auto-detect.
 """
 
+
 # ============================================================================
-# PROJECT TYPES
+# PROJECT TYPES (Simplified)
 # ============================================================================
 PROJECT_TYPES = {
     "web_public": {
         "label": "Web Public (B2C)",
-        "description": "Blog, E-commerce, Landing Page, News — Cần SEO + GEO",
-        "includes_skills": ["all", "web", "web_public"],
+        "description": "Blog, E-commerce, Landing Page — Cần SEO",
+        "needs_seo": True,
+        "needs_docker": True,
     },
     "web_saas": {
         "label": "Web SaaS (B2B)",
-        "description": "Dashboard, Admin Panel, API Service — SEO cho Landing/Blog",
-        "includes_skills": ["all", "web"],
-    },
-    "mobile_app": {
-        "label": "Mobile App",
-        "description": "iOS/Android — Không cần SEO, dùng ASO",
-        "includes_skills": ["all"],
-    },
-    "desktop_cli": {
-        "label": "Desktop / CLI Tool",
-        "description": "Electron, WPF, CLI — Không cần SEO",
-        "includes_skills": ["all"],
+        "description": "Dashboard, Admin Panel, API Service",
+        "needs_seo": False,
+        "needs_docker": True,
     },
     "fullstack": {
         "label": "Full-stack (Web + API)",
-        "description": "Frontend Public + Backend API — Cần SEO + GEO + DevOps",
-        "includes_skills": ["all", "web", "web_public"],
+        "description": "Frontend Public + Backend API — Cần SEO + DevOps",
+        "needs_seo": True,
+        "needs_docker": True,
     },
-    "simple_script": {
-        "label": "Simple Script / Automation",
-        "description": "Python/Bash/JS scripts nhỏ — Không Docker, Không Next.js",
-        "includes_skills": ["all"],
-        "use_docker": False,
-        "is_soft_rules": True,
+    "wordpress": {
+        "label": "WordPress",
+        "description": "WordPress Theme/Plugin Development",
+        "needs_seo": True,
+        "needs_docker": False,
     },
-    "custom_infra": {
-        "label": "Custom Infrastructure",
-        "description": "Dự án có hạ tầng riêng — Không ép Docker chuẩn 89XX",
-        "includes_skills": ["all"],
-        "use_docker": False,
-        "is_soft_rules": True,
+    "mobile_app": {
+        "label": "Mobile App",
+        "description": "iOS/Android — Không cần SEO",
+        "needs_seo": False,
+        "needs_docker": False,
     },
-    "shopify": {
-        "label": "Shopify Storefront & Theme",
-        "description": "Shopify Theme Development (Liquid, Section Schema, Dockerized Shopify CLI)",
-        "includes_skills": ["all", "web", "shopify"],
+    "script": {
+        "label": "Script / Automation",
+        "description": "Python/Bash/JS scripts — Không Docker",
+        "needs_seo": False,
+        "needs_docker": False,
     },
 }
 
 
-# ============================================================================
-# SKILLS REGISTRY
-# ============================================================================
-SKILLS_REGISTRY = [
-    # --- CORE SKILLS (all project types) ---
-    {
-        "name": "speckit.identity",
-        "role": "Persona Architect",
-        "description": "Quản lý nhân cách và định hướng hành vi của AI cho dự án.",
-        "project_types": "all",
-    },
-    {
-        "name": "speckit.devops",
-        "role": "DevOps Architect",
-        "description": "Chuyên gia hạ tầng Docker & Security Hardening — Port ENV-first, dải 8900-8999.",
-        "project_types": "all",
-    },
-    {
-        "name": "speckit.analyze",
-        "description": "Consistency Checker - Phân tích tính nhất quán giữa spec, plan, tasks",
-        "role": "Consistency Analyst",
-        "project_types": "all",
-        "depends_on": ["speckit.tasks"],
-        "handoffs": [
-            {"label": "Fix Issues", "agent": "speckit.implement", "prompt": "Fix the consistency issues found"},
-        ],
-    },
-    {
-        "name": "speckit.checker",
-        "description": "Static Analysis Aggregator - Chạy static analysis trên codebase",
-        "role": "Static Analyst",
-        "project_types": "all",
-        "depends_on": ["speckit.implement"],
-        "handoffs": [
-            {"label": "Fix Issues", "agent": "speckit.implement", "prompt": "Fix static analysis issues"},
-        ],
-    },
-    {
-        "name": "speckit.checklist",
-        "description": "Requirements Validator - Tạo và validate checklist từ spec",
-        "role": "Requirements Auditor",
-        "project_types": "all",
-        "depends_on": ["speckit.specify"],
-        "handoffs": [],
-    },
-    {
-        "name": "speckit.constitution",
-        "description": "Governance Manager - Thiết lập & quản lý Constitution (Source of Law)",
-        "role": "Governance Architect",
-        "project_types": "all",
-        "depends_on": [],
-        "handoffs": [
-            {"label": "Build Specification", "agent": "speckit.specify", "prompt": "Implement the feature specification based on the updated constitution"},
-        ],
-    },
-    {
-        "name": "speckit.diff",
-        "description": "Artifact Comparator - So sánh sự khác biệt giữa các artifacts",
-        "role": "Diff Analyst",
-        "project_types": "all",
-        "depends_on": [],
-        "handoffs": [],
-    },
-    {
-        "name": "speckit.implement",
-        "description": "Code Builder (Anti-Regression) - Triển khai code theo tasks với IRONCLAD protocols",
-        "role": "Master Builder",
-        "project_types": "all",
-        "depends_on": ["speckit.tasks"],
-        "handoffs": [
-            {"label": "Run Tests", "agent": "speckit.tester", "prompt": "Run tests for implemented code"},
-            {"label": "Review Code", "agent": "speckit.reviewer", "prompt": "Review the implementation"},
-        ],
-    },
-    {
-        "name": "speckit.migrate",
-        "description": "Legacy Code Migrator - Chuyển đổi legacy code sang chuẩn mới",
-        "role": "Migration Specialist",
-        "project_types": "all",
-        "depends_on": [],
-        "handoffs": [
-            {"label": "Create Spec", "agent": "speckit.specify", "prompt": "Create spec from migrated codebase"},
-        ],
-    },
-    {
-        "name": "speckit.plan",
-        "description": "Technical Planner - Tạo plan.md từ spec (data model, API contracts, research)",
-        "role": "System Architect",
-        "project_types": "all",
-        "depends_on": ["speckit.specify"],
-        "handoffs": [
-            {"label": "Create Tasks", "agent": "speckit.tasks", "prompt": "Break the plan into tasks"},
-            {"label": "Create Checklist", "agent": "speckit.checklist", "prompt": "Create a checklist"},
-        ],
-    },
-    {
-        "name": "speckit.quizme",
-        "description": "Logic Challenger (Red Team) - Đặt câu hỏi phản biện, tìm edge cases",
-        "role": "Red Team Analyst",
-        "project_types": "all",
-        "depends_on": ["speckit.specify"],
-        "handoffs": [],
-    },
-    {
-        "name": "speckit.reviewer",
-        "description": "Code Reviewer - Review code theo spec và best practices",
-        "role": "Code Reviewer",
-        "project_types": "all",
-        "depends_on": ["speckit.implement"],
-        "handoffs": [
-            {"label": "Fix Issues", "agent": "speckit.implement", "prompt": "Fix review issues"},
-        ],
-    },
-    {
-        "name": "speckit.specify",
-        "description": "Feature Definer - Tạo spec.md từ mô tả ngôn ngữ tự nhiên và giải quyết mơ hồ",
-        "role": "Domain Scribe",
-        "project_types": "all",
-        "depends_on": [],
-        "handoffs": [
-            {"label": "Build Technical Plan", "agent": "speckit.plan", "prompt": "Create a plan for the spec"},
-        ],
-    },
-    {
-        "name": "speckit.status",
-        "description": "Progress Dashboard - Hiển thị trạng thái tiến độ project",
-        "role": "Progress Tracker",
-        "project_types": "all",
-        "depends_on": ["speckit.tasks"],
-        "handoffs": [],
-    },
-    {
-        "name": "speckit.tasks",
-        "description": "Task Breaker - Tạo tasks.md atomic, có thứ tự dependency từ plan",
-        "role": "Execution Strategist",
-        "project_types": "all",
-        "depends_on": ["speckit.plan"],
-        "handoffs": [
-            {"label": "Analyze Consistency", "agent": "speckit.analyze", "prompt": "Run consistency analysis"},
-            {"label": "Implement", "agent": "speckit.implement", "prompt": "Start the implementation"},
-        ],
-    },
-    {
-        "name": "speckit.taskstoissues",
-        "description": "Issue Tracker Syncer - Đồng bộ tasks.md sang issue tracker",
-        "role": "Issue Syncer",
-        "project_types": "all",
-        "depends_on": ["speckit.tasks"],
-        "handoffs": [],
-    },
-    {
-        "name": "speckit.tester",
-        "description": "Test Runner & Coverage - Chạy tests và báo cáo coverage",
-        "role": "Test Engineer",
-        "project_types": "all",
-        "depends_on": ["speckit.implement"],
-        "handoffs": [
-            {"label": "Fix Failures", "agent": "speckit.implement", "prompt": "Fix test failures"},
-        ],
-    },
-    {
-        "name": "speckit.validate",
-        "description": "Implementation Validator - Validate implementation vs spec tổng thể",
-        "role": "Validation Oracle",
-        "project_types": "all",
-        "depends_on": ["speckit.implement"],
-        "handoffs": [],
-    },
-
-    # --- WEB SKILLS (web + web_public projects) ---
-    {
-        "name": "speckit.seo-geo",
-        "description": "SEO & GEO Lead - Tối ưu Content Readability, Technical SEO & Generative Engine Optimization (AI Search)",
-        "role": "SEO & GEO Strategist",
-        "project_types": "web",
-        "depends_on": ["speckit.implement"],
-        "handoffs": [
-            {"label": "Fix Issues", "agent": "speckit.implement", "prompt": "Fix SEO/GEO issues found"},
-        ],
-    },
-    {
-        "name": "speckit.uiux",
-        "description": "UI/UX Architect - Định nghĩa Design System, UI Components, Spacing, Typography, Responsive Patterns.",
-        "role": "UI/UX Architect",
-        "project_types": "web",
-        "depends_on": ["speckit.specify"],
-        "handoffs": [
-            {"label": "Update Plan", "agent": "speckit.plan", "prompt": "Integrate UI/UX specs into the technical plan"},
-        ],
-    },
-    {
-        "name": "speckit.debug",
-        "description": "Systematic Debugger - Chẩn đoán sự cố, tìm root cause độc lập và đề xuất fix plans.",
-        "role": "Debug Specialist",
-        "project_types": "all",
-    },
-    {
-        "name": "speckit.backlog",
-        "description": "Backlog Manager - Quản lý Ý tưởng, Yêu cầu chờ xử lý và quét TODO/FIXME từ codebase.",
-        "role": "Product Owner",
-        "project_types": "all",
-    },
-    {
-        "name": "speckit.roadmap",
-        "description": "Roadmap Strategist - Quản lý lộ trình cấp cao (Milestones) và chuyển giao giữa các Phase.",
-        "role": "Product Manager",
-        "project_types": "all",
-    },
-    {
-        "name": "speckit.map",
-        "description": "Codebase Mapper - Tự động phân tích cấu trúc dự án, vẽ biểu đồ phụ thuộc và viết tài liệu kiến trúc.",
-        "role": "Software Architect",
-        "project_types": "all",
-    },
-    {
-        "name": "speckit.uat",
-        "description": "UAT Analyzer - Phân tích kết quả nghiệm thu thủ công và xử lý các khoảng cách (gaps) từ User.",
-        "role": "QA Engineer",
-        "project_types": "all",
-    },
-    {
-        "name": "speckit.wordpress",
-        "description": "WordPress Theme Architect - Chuyên gia phát triển theme, plugin và tối ưu hóa ecosystem WordPress.",
-        "role": "WordPress Expert",
-        "project_types": "web",
-    },
-    {
-        "name": "speckit.shopify",
-        "description": "Shopify Theme Developer - Chuyên gia Liquid Engine, Section Schema, GraphQL Admin API & Dockerized Shopify CLI.",
-        "role": "Shopify Expert",
-        "project_types": "shopify",
-    },
-]
-
-
-# ============================================================================
-# WORKFLOWS REGISTRY
-# ============================================================================
-WORKFLOWS_REGISTRY = [
-    {
-        "command": "00-speckit.all",
-        "description": "Full Pipeline (Specify → Plan → Tasks → Analyze)",
-        "skills": ["speckit.specify", "speckit.plan", "speckit.tasks", "speckit.analyze"],
-    },
-    {
-        "command": "01-speckit.constitution",
-        "description": "Thiết lập/cập nhật Constitution (Source of Law)",
-        "skills": ["speckit.constitution"],
-    },
-    {
-        "command": "speckit.identity",
-        "description": "Tạo/cập nhật Master Identity cho AI Agent",
-        "skills": ["speckit.identity"],
-    },
-    {
-        "command": "speckit.devops",
-        "description": "Docker Infrastructure & Port Allocation (ENV-first)",
-        "skills": ["speckit.devops"],
-    },
-    {
-        "command": "02-speckit.specify",
-        "description": "Tạo Feature Specification (spec.md)",
-        "skills": ["speckit.specify"],
-    },
-    {
-        "command": "04-speckit.plan",
-        "description": "Tạo Technical Plan (plan.md)",
-        "skills": ["speckit.plan"],
-    },
-    {
-        "command": "05-speckit.tasks",
-        "description": "Tạo Task Breakdown (tasks.md)",
-        "skills": ["speckit.tasks"],
-    },
-    {
-        "command": "06-speckit.analyze",
-        "description": "Phân tích tính nhất quán giữa artifacts",
-        "skills": ["speckit.analyze"],
-    },
-    {
-        "command": "07-speckit.implement",
-        "description": "Triển khai code theo tasks (Anti-Regression)",
-        "skills": ["speckit.implement"],
-    },
-    {
-        "command": "08-speckit.checker",
-        "description": "Chạy Static Analysis",
-        "skills": ["speckit.checker"],
-    },
-    {
-        "command": "09-speckit.tester",
-        "description": "Chạy Tests & Coverage",
-        "skills": ["speckit.tester"],
-    },
-    {
-        "command": "10-speckit.reviewer",
-        "description": "Code Review",
-        "skills": ["speckit.reviewer"],
-    },
-    {
-        "command": "11-speckit.validate",
-        "description": "Validate Implementation vs Spec",
-        "skills": ["speckit.validate"],
-    },
-    {
-        "command": "12-speckit.seo-geo",
-        "description": "Technical SEO & GEO Audit & Optimization",
-        "skills": ["speckit.seo-geo"],
-        "project_types": "web",
-    },
-    {
-        "command": "speckit.prepare",
-        "description": "Prep Pipeline (Specify → Plan → Tasks → Analyze) — không Implement",
-        "skills": ["speckit.specify", "speckit.plan", "speckit.tasks", "speckit.analyze"],
-    },
-    {
-        "command": "util-speckit.checklist",
-        "description": "Tạo/validate Requirements Checklist",
-        "skills": ["speckit.checklist"],
-    },
-    {
-        "command": "util-speckit.diff",
-        "description": "So sánh Artifacts (Spec vs Implementation)",
-        "skills": ["speckit.diff"],
-    },
-    {
-        "command": "util-speckit.migrate",
-        "description": "Migrate Legacy Code",
-        "skills": ["speckit.migrate"],
-    },
-    {
-        "command": "util-speckit.quizme",
-        "description": "Red Team - Đặt câu hỏi phản biện tìm edge cases",
-        "skills": ["speckit.quizme"],
-    },
-    {
-        "command": "util-speckit.status",
-        "description": "Hiển thị Progress Dashboard",
-        "skills": ["speckit.status"],
-    },
-    {
-        "command": "util-speckit.uiux",
-        "description": "Thiết lập/cập nhật UI/UX Design System & Standards",
-        "skills": ["speckit.uiux"],
-        "project_types": "web",
-    },
-    {
-        "command": "util-speckit.taskstoissues",
-        "description": "Sync tasks.md → Issue Tracker",
-        "skills": ["speckit.taskstoissues"],
-    },
-    {
-        "command": "speckit.debug",
-        "description": "Chẩn đoán và sửa lỗi hệ thống chuyên sâu (Systematic Debugging)",
-        "skills": ["speckit.debug"],
-    },
-    {
-        "command": "speckit.backlog",
-        "description": "Quản lý Ý tưởng (Backlog) và quét nợ kỹ thuật (TODO/FIXME)",
-        "skills": ["speckit.backlog"],
-    },
-    {
-        "command": "speckit.roadmap",
-        "description": "Quản lý lộ trình cấp cao (Milestones) và chuyển giao giữa các Phase",
-        "skills": ["speckit.roadmap"],
-    },
-    {
-        "command": "speckit.map",
-        "description": "Vẽ bản đồ kiến trúc và sơ đồ phụ thuộc của Codebase",
-        "skills": ["speckit.map"],
-    },
-    {
-        "command": "speckit.uat",
-        "description": "UAT Analyzer - Phân tích kết quả nghiệm thu thủ công và xử lý các khoảng cách (gaps) từ User.",
-        "skills": ["speckit.uat"],
-    },
-    {
-        "command": "speckit.wordpress",
-        "description": "WordPress Theme & Plugin Development Workflow",
-        "skills": ["speckit.wordpress"],
-        "project_types": "web",
-    },
-    {
-        "command": "00-shopify.all",
-        "description": "Shopify Theme Development Pipeline (Analyze Page → Code Liquid → Push draft → Preview)",
-        "skills": ["speckit.specify", "speckit.plan", "speckit.tasks", "speckit.shopify"],
-        "project_types": "shopify",
-    },
-]
-
-
-def get_skills_for_project_type(project_type):
-    """Lọc skills phù hợp với loại dự án."""
-    if project_type not in PROJECT_TYPES:
-        return SKILLS_REGISTRY  # fallback: trả về tất cả
-
-    type_info = PROJECT_TYPES[project_type]
-    allowed = type_info["includes_skills"]
-    return [s for s in SKILLS_REGISTRY if s.get("project_types", "all") in allowed]
-
-
-def get_project_type_info(project_type):
+def get_project_type_info(project_type: str) -> dict:
     """Lấy metadata của project type."""
-    return PROJECT_TYPES.get(project_type, {
-        "label": "Unknown",
-        "use_docker": True,
-        "is_soft_rules": False
-    })
+    return PROJECT_TYPES.get(project_type, PROJECT_TYPES["fullstack"])
 
 
-def get_workflows_for_project_type(project_type):
-    """Lọc workflows phù hợp với loại dự án."""
-    if project_type not in PROJECT_TYPES:
-        return WORKFLOWS_REGISTRY
+def auto_detect_project_type(scan_profile: dict) -> str | None:
+    """
+    Tự động xác định project type từ kết quả scan.
+    Trả về None nếu không tự tin đủ → CLI sẽ hỏi user.
+    """
+    if not scan_profile or not scan_profile.get("has_existing_code"):
+        return None
 
-    allowed = PROJECT_TYPES[project_type]["includes_skills"]
-    return [w for w in WORKFLOWS_REGISTRY if w.get("project_types", "all") in allowed]
+    tech = scan_profile.get("tech_stack", [])
+    framework = scan_profile.get("framework")
+    has_docker = scan_profile.get("docker", {}).get("has_compose", False)
+    has_prisma = scan_profile.get("database", {}).get("has_prisma", False)
+    pages = scan_profile.get("pages", [])
+    api_routes = scan_profile.get("api", {}).get("routes", [])
+    language = scan_profile.get("language")
+
+    # WordPress detection
+    if _has_file_pattern(scan_profile, ["wp-content", "functions.php", "style.css"]):
+        return "wordpress"
+
+    # Next.js + API + Prisma = fullstack
+    if framework == "Next.js" and (has_prisma or api_routes) and has_docker:
+        return "fullstack"
+
+    # Next.js + pages (public facing) = web_public
+    if framework == "Next.js" and pages and not api_routes:
+        return "web_public"
+
+    # NestJS / Express API only = web_saas
+    if framework in ("NestJS", "Express.js", "FastAPI", "Django"):
+        return "web_saas"
+
+    # Pure React (no SSR pages) = web_saas
+    if framework == "React" and not pages:
+        return "web_saas"
+
+    # Python without web framework = script
+    if language == "Python" and framework is None:
+        return "script"
+
+    return None
+
+
+def _has_file_pattern(scan_profile: dict, patterns: list) -> bool:
+    """Check if source structure contains any of the patterns."""
+    structure = scan_profile.get("source_structure", [])
+    structure_str = " ".join(structure).lower()
+    return any(p.lower() in structure_str for p in patterns)

@@ -1,974 +1,188 @@
 """
-Templates - Aggregator cho Document, Skill, Workflow, Script templates.
-Skill và Workflow templates được tách ra file riêng để dễ maintain.
+Templates v2.0 — Chỉ sinh nội dung cho 4 files output + 3 IDE rules.
+Không còn skill_templates hay workflow_templates.
 """
 
 from datetime import datetime
-from .skill_templates import SKILL_TEMPLATE_MAP
-from .workflow_templates import WORKFLOW_TEMPLATE_MAP
 
 
-# =============================================================================
-# DOCUMENT TEMPLATES
-# =============================================================================
+# ============================================================================
+# 1. MASTER IDENTITY (core output file)
+# ============================================================================
+def render_master_identity(project_name: str, project_type: str, scan_context: str = "") -> str:
+    today = datetime.now().strftime("%Y-%m-%d")
+    return f"""# 🧠 Master Identity — {project_name}
 
-def doc_spec_template():
-    return """---
-title: Feature Specification
-status: DRAFT
-version: 1.0.0
+> **Generated**: {today} | **Type**: {project_type} | **wb-agent**: v2.0
+
+## Tên Dự Án
+{project_name}
+
+## Loại Dự Án
+{project_type}
+
+## Tech Stack
+<!-- Liệt kê tech stack chính: Next.js 15, Prisma, PostgreSQL, Docker... -->
+
+## Port Registry
+<!-- Quy định ports cho project này -->
+| Service | Port | Ghi chú |
+|---------|------|---------|
+| Frontend | | |
+| Admin | | |
+| API | | |
+| Database | | |
+
+## Server / Deploy
+<!-- IP, SSH port, deploy path -->
+- **Server**: 
+- **Deploy Path**: 
+- **SSH**: 
+
+## Credentials Mapping
+<!-- Chỉ ghi KEY NAME, không ghi giá trị thật -->
+- `DATABASE_URL`: PostgreSQL connection string
+- `NEXT_PUBLIC_API_URL`: API base URL
+
+{f"## 🔬 Auto-Detected Context{chr(10)}{scan_context}{chr(10)}" if scan_context else ""}
 ---
-
-# 📝 Specification: [FEATURE_NAME]
-
-## 1. Overview
-[Mô tả ngắn gọn về tính năng]
-
-## 2. User Scenarios (Stories)
-- **US1**: As a [user role], I want to [action], so that [value].
-
-## 3. Functional Requirements
-- FR01: [requirement cụ thể, measurable]
-
-## 4. Non-Functional Requirements
-- NFR01: Response time < 2s
-
-## 5. Success Criteria
-- [ ] SC01: [testable criterion]
-"""
-
-def doc_plan_template():
-    return """---
-title: Implementation Plan
-status: DRAFT
-depends_on: spec.md
----
-
-# 🏗️ Implementation Plan: [FEATURE_NAME]
-
-## 1. Technical Architecture
-[Mô tả cách tiếp cận kỹ thuật]
-
-## 2. Data Model Changes
-```prisma/sql
-```
-
-## 3. API Contracts
-- **Endpoint**: `POST /api/v1/...`
-- **Body**: `{ field: type }`
-- **Response**: `{ data: ..., meta: ... }`
-- **Errors**: `400 | 401 | 404 | 500`
-
-## 4. Folder Structure
-```
-src/
-├── app/
-├── components/
-├── lib/
-└── api/
-```
-
-## 5. Dependencies
-[Thư viện cần thêm — PHẢI có trong package.json]
-"""
-
-def doc_tasks_template():
-    return """# 📋 Task Registry
-
-## 📊 Progress Overview
-- [ ] Phase 1: Setup & Foundation (0%)
-- [ ] Phase 2: Core Features (0%)
-- [ ] Phase 3: Polish (0%)
-
-## 🛠️ Tasks
-
-### Phase 1: Setup
-- [ ] T001 [P] Setup project structure per plan.md
-
-### Phase 2: Core Features
-- [ ] T002 [P] [US1] Implement feature per spec.md
-
-### Phase 3: Polish
-- [ ] T003 Error handling & edge cases
-"""
-
-def doc_identity_template(project_name="Project", project_type="fullstack", use_docker=True):
-    type_labels = {
-        "web_public": "Web Public (B2C)",
-        "web_saas": "Web SaaS (B2B)",
-        "mobile_app": "Mobile App",
-        "desktop_cli": "Desktop / CLI Tool",
-        "fullstack": "Full-stack (Web + API)",
-        "simple_script": "Simple Script / Automation",
-        "custom_infra": "Custom Infrastructure",
-    }
-    label = type_labels.get(project_type, "Full-stack")
-
-    seo_section = ""
-    if project_type in ("web_public", "fullstack", "web_saas"):
-        seo_section = """
-## 🔍 SEO & GEO Awareness
-- Mọi page public phải có meta title, description, canonical URL.
-- Structured Data (JSON-LD) là BẮT BUỘC cho các trang sản phẩm, bài viết.
-- Tối ưu cho AI Search (GEO): Nội dung phải fact-dense, có nguồn trích dẫn.
-- Cung cấp file `llms.txt` tại root để AI crawlers hiểu cấu trúc site.
-"""
-
-    docker_soul = "- Strictly follow Docker-First Policy." if use_docker else "- Flexibility-First: Infrastructure is project-specific."
-    docker_belief = "1. **Docker is the Law**: Everything runs in containers." if use_docker else "1. **Environment is Custom**: Run code as per direct requirements."
-
-    return f"""# 🧠 Master Identity: {project_name} Agent
-
-## 🎭 Persona
-You are the **Lead Architect & Senior Developer** for the **{project_name}** project.
-Project Type: **{label}**
-{docker_soul}
-You follow **ASF 3.3** standards.
-
-## 🛠️ Core Capabilities
-- Internalizing complex business logic and mapping it to scalable code.
-- Enforcing the **Project Constitution** in every action.
-- Maintaining zero-regression standards through automated testing.
-{seo_section}
-## 🤝 Collaboration Style
-- Proactive but cautious.
-- Ask for clarification when ambiguity is detected.
-- Provide "Blast Radius Analysis" before any major refactoring.
-
-## 📜 Soul (Core Beliefs)
-{docker_belief}
-2. **Security is non-negotiable**: Production environments must be hardened.
-3. **Spec-Driven**: No code without a plan.
-4. **Context is King**: Never code without understanding the "Why".
-5. **WB-Agent First**: Mọi thay đổi và vận hành phải thông qua wb-agent workflows.
-"""
-
-def doc_constitution_template(use_docker=True, is_soft_rules=False):
-    must_label = "BẮT BUỘC" if not is_soft_rules else "KHUYẾN NGHỊ"
-    shall_label = "PHẢI" if not is_soft_rules else "NÊN"
-    forbidden_label = "CẤM" if not is_soft_rules else "HẠN CHẾ"
-
-    docker_infra = f"""
-## §1 Infrastructure (DOCKER-FIRST)
-- **Mặc định dùng Docker** cho cả Local và Production. KHÔNG chạy `npm`/`node`/`python` trực tiếp trên host.
-- **Local**: Dùng `docker-compose.yml` để dev.
-- **Production**: Dùng `docker-compose.prod.yml` kèm Security Hardening.
-- **Ports**: Chỉ dùng dải **8900-8999**.
-  - Public FE: `N` | Admin FE: `N+1` | Backend API: `N+2`
-""" if use_docker else f"""
-## §1 Environment (CUSTOM)
-- **Hạ tầng dự án**: Được định nghĩa cụ thể theo từng nhu cầu, không nhất thiết chạy trong Docker.
-- **Port**: Tùy chọn dựa trên sự sẵn có của hệ thống mục tiêu.
-"""
-
-    return f"""# 📜 Project Constitution
-
-## §0 WB-Agent Protocol ({must_label})
-- **{must_label}**: Mọi hoạt động phát triển (Code), kiểm thử (Test), và triển khai (Deploy Production) {shall_label} sử dụng `wb-agent`.
-- **Pipeline**: Tuân thủ nghiêm ngặt quy trình: Specify → Plan → Tasks → Implement.
-- **Tools**: Chỉ sử dụng các workflows trong `.agent/workflows` để thực hiện task.
-{docker_infra}
-## §2 Security & Production Safety
-- **{forbidden_label}**: `docker compose down -v` trên Production.
-- **{forbidden_label}**: Deploy thủ công ({shall_label} dùng workflows `/deploy-production` hoặc `/deploy-staging`).
-- **Xác nhận**: Yêu cầu xác nhận trước khi Deep Clean, Deploy Prod, hoặc Delete Data.
-- **Runtime**: Production containers KHÔNG chạy quyền root.
-
-## §3 Code Standards & ENV
-- **{forbidden_label} hard-code**: URLs, Tokens, Keys, Credentials, Endpoints, Default Text.
-- **Sensitive vars**: {shall_label} dùng ENV (`.env` local, server ENV prod).
-  - Prefix: `NEXT_PUBLIC_*`, `API_*`, `DB_*`.
-- **Validate**: 
-  - Critical vars: `throw new Error()` nếu thiếu.
-  - Optional vars: `console.error()` nếu thiếu.
-- **Documentation**: Phải có `.env.example` đầy đủ.
-
-## §4 Workflow & Scripting
-- **Tự động hóa**: Tạo script khi gặp lỗi hoặc task lặp lại.
-- **Git**: Lưu script vào `.agent/scripts`, commit vào hệ thống version control.
-- **Update**: Cập nhật workflow tương ứng sau khi tạo script mới.
-"""
-
-def doc_infrastructure_template():
-    return """# 🏗️ Infrastructure & Docker Standards
-
-## 📂 Environment Mapping
-- **Local**: `docker-compose.yml` (Hot-reload, Dev-tools)
-- **Production**: `docker-compose.prod.yml` (Standalone, Hardened)
-- **Beta/Staging**: [None - Create only on request]
-
-## 🔒 Security Protocol
-- Use `.env.example` for all sensitive variables.
-- Production images use Alpine/Slim versions.
-- Firewall rules: Only expose mapped ports 89XX.
-"""
-
-def doc_seo_standards_template():
-    return """# 🔍 SEO & GEO Standards
-
-## 📋 Technical SEO Checklist (Bắt buộc)
-- [ ] Mỗi page có `<title>` unique, độ dài ≤ 60 ký tự.
-- [ ] **Keyword-First Title**: Từ khóa chính được đặt càng gần đầu tiêu đề càng tốt.
-- [ ] **CTR Modifiers**: Sử dụng các từ bổ nghĩa tăng click-through-rate (như *tốt nhất, hướng dẫn, checklist, review, [năm hiện tại - ví dụ: 2026]*).
-- [ ] Mỗi page có `<meta description>` lôi cuốn, độ dài ≤ 160 ký tự.
-- [ ] Chỉ 1 `<h1>` duy nhất mỗi page, heading hierarchy chuẩn (H1 → H2 → H3, không nhảy cấp).
-- [ ] Canonical URL cho mọi page để tránh duplicate content.
-- [ ] `sitemap.xml` tự động generate và submit lên Google Search Console.
-- [ ] `robots.txt` cấu hình đúng (cho phép các AI search crawlers).
-- [ ] Image: có `alt` text mô tả chi tiết thực thể, sử dụng tên file ảnh chứa từ khóa chính (dạng `keyword.jpg`), lazy loading, format hiện đại WebP/AVIF.
-- [ ] URL slug: lowercase, dấu gạch ngang, không dấu tiếng Việt, ngắn gọn chứa từ khóa chính.
-- [ ] Mobile-first responsive design.
-- [ ] Core Web Vitals targets: LCP < 2.5s, INP < 200ms, CLS < 0.1.
-
-## ✍️ Helpful Content & SEO Copywriting (Backlinko Standard)
-- [ ] **Lồng ghép trải nghiệm thực tế**: Bài viết có case study, trải nghiệm thực chứng thay vì lý thuyết suông.
-- [ ] **Bypass AI Detectors**: Câu văn có nhịp điệu phong phú (burstiness), cấu trúc câu đa dạng, tránh dùng từ sáo rỗng thường thấy của AI.
-- [ ] **Tone giọng E-E-A-T**: Thể hiện rõ chuyên môn của chuyên gia/tác giả (định nghĩa trong `master-identity.md`).
-- [ ] **Keyword in first 100 words**: Từ khóa chính xuất hiện tối thiểu 1 lần trong 100-150 từ đầu tiên của trang.
-- [ ] **APP Formula (Agree, Promise, Preview)**: Phần mở đầu bài viết tuân thủ cấu trúc APP: Đồng ý (Agree) -> Hứa hẹn (Promise) -> Xem trước (Preview).
-- [ ] **Bucket Brigades**: Sử dụng các cụm từ chuyển tiếp (Ví dụ: *"Thực tế là...", "Nhưng đó chưa phải là tất cả...", "Bạn có muốn biết tại sao không?"...*) để tăng Dwell Time.
-- [ ] **Above the Fold UX**: Tiêu đề và dòng chữ đầu tiên phải xuất hiện ngay lập tức ở màn hình đầu tiên khi tải trang, không bị banner/ảnh header lớn che khuất.
-- [ ] **Độ sâu bài viết**: Độ dài từ 1000 - 3000 từ tùy từ khóa để bao quát chủ đề, giữ chân người dùng lâu nhất.
-
-## 🤖 GEO (Generative Engine Optimization)
-- [ ] File `llms.txt` tại root domain để định hướng cho AI crawlers.
-- [ ] Structured Data (JSON-LD) đầy đủ cho các trang công khai.
-- [ ] **Direct Answer Box**: Có box tóm tắt nhanh (2-3 câu, ≤ 80 từ, bôi đậm thực thể chính) ở ngay đầu bài viết.
-- [ ] **Semantic Chunking**: Chia nhỏ nội dung bằng H2/H3 có tính mô tả chi tiết, khớp với truy vấn đối thoại thực tế.
-- [ ] **Lead with the Answer**: Đưa câu trả lời/kết luận ngay câu đầu tiên dưới H2/H3 trước khi phân tích chi tiết.
-- [ ] **Quotable Statements & Statistics**: Sử dụng câu độc lập hoàn chỉnh, mang đầy đủ ngữ cảnh để LLM dễ trích xuất và trích dẫn trực tiếp. Lồng ghép số liệu thống kê hoặc quote từ chuyên gia (tăng 30-40% khả năng được AI Overviews trích dẫn).
-- [ ] **Fact-Dense & So sánh**: Có bảng so sánh hoặc list số liệu cụ thể để AI dễ trích xuất dữ liệu dạng bảng.
-
-## 🔗 Strict Internal Linking Rules
-- [ ] **Tần suất**: Tối đa 1 link/destination trên toàn bộ bài viết.
-- [ ] **Vị trí**: Chỉ chèn link ở từ khóa xuất hiện lần đầu tiên (First Occurrence Only).
-- [ ] **Vùng loại trừ**: Không chèn link trong tiêu đề (H1, H2, H3), Frontmatter, Code blocks, Schema, Table code.
-- [ ] **Mã nguồn an toàn**: Tuyệt đối không viết Markdown link `[text](url)` bên trong thẻ HTML thô, bắt buộc dùng `<a href="url">text</a>`.
-
-## 🛠️ Google Search Console (GSC) & Indexability Troubleshooting
-- [ ] **robots.txt Crawlability**: Đảm bảo robots.txt cho phép Googlebot và các AI bots crawl. `Crawl allowed` phải là "Yes".
-- [ ] **noindex Gating**: Đảm bảo các trang quan trọng không chứa `<meta name="robots" content="noindex">` hoặc header `X-Robots-Tag: noindex`.
-- [ ] **Canonical Alignment**: Khai báo thẻ `<link rel="canonical" href="...">` chính xác. Tránh trường hợp Google-selected canonical khác với User-declared canonical.
-- [ ] **Robots.txt Availability**: Đảm bảo file `/robots.txt` luôn trả về HTTP 200/404 ổn định. Nếu robots.txt bị lỗi server (HTTP 5xx) hoặc không thể truy cập, Googlebot sẽ dừng crawl toàn bộ site.
-- [ ] **DNS & SSL Health**: Tránh các lỗi DNS (unresponsive, private IP mapping) và đảm bảo chứng chỉ SSL hợp lệ. Googlebot sẽ không crawl trang HTTPS nếu chứng chỉ SSL không hợp lệ.
-- [ ] **Server Connectivity & Response**: Server phải phản hồi nhanh (LCP < 2.5s), không bị ngắt kết nối giữa chừng (truncated response/headers) hoặc cấu hình nén dữ liệu (compression) lỗi.
-- [ ] **Watch Page Video Indexing**: Nếu trang chứa video cần index, video đó phải nằm trên "Watch Page" (trang tập trung xem video, video chiếm vị trí nổi bật đầu trang HTML), có thẻ thumbnail và dữ liệu cấu trúc VideoObject chính xác.
-
-## 📊 Schema.org (JSON-LD Templates)
-
-### Article
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "[Tiêu đề bài viết]",
-  "image": "[URL hình ảnh đại diện]",
-  "datePublished": "[Ngày đăng ISO]",
-  "dateModified": "[Ngày cập nhật ISO]",
-  "author": {
-    "@type": "Person",
-    "name": "[Tên chuyên gia/Tác giả]"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "[Tên thương hiệu]"
-  }
-}
-```
-
-### Product
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "[Tên sản phẩm]",
-  "image": "[URL ảnh sản phẩm]",
-  "description": "[Mô tả ngắn]",
-  "offers": {
-    "@type": "Offer",
-    "price": "[Giá tiền]",
-    "priceCurrency": "VND",
-    "availability": "https://schema.org/InStock"
-  }
-}
-```
-
-### FAQ
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "[Câu hỏi 1]",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "[Câu trả lời 1]"
-      }
-    }
-  ]
-}
-```
-"""
-
-def doc_seo_crawler_js_template():
-    return """const cheerio = require('cheerio');
-const fs = require('fs');
-const path = require('path');
-
-// Config
-const DEFAULT_BASE_URL = 'http://localhost:8980';
-const MAX_PAGES = 50;
-const REPORT_PATH = path.resolve(__dirname, '../../memory/seo-audit-report.md');
-
-class SeoCrawler {
-  constructor(baseUrl) {
-    this.baseUrl = baseUrl.replace(/\/$/, '');
-    this.crawledUrls = new Set();
-    this.queue = [];
-    this.results = [];
-  }
-
-  async run() {
-    console.log(`🚀 Bắt đầu quét SEO cho: ${this.baseUrl}`);
-    console.log(`⚙️ Giới hạn quét tối đa: ${MAX_PAGES} trang\\n`);
-
-    this.queue.push(this.baseUrl);
-
-    while (this.queue.length > 0 && this.crawledUrls.size < MAX_PAGES) {
-      const url = this.queue.shift();
-      const normalizedUrl = url.replace(/\/$/, '');
-      if (this.crawledUrls.has(normalizedUrl)) continue;
-
-      this.crawledUrls.add(normalizedUrl);
-      console.log(`[${this.crawledUrls.size}/${MAX_PAGES}] Đang quét: ${url}`);
-
-      try {
-        const result = await this.auditPage(url);
-        if (result) {
-          this.results.push(result);
-        }
-      } catch (error) {
-        console.error(`❌ Lỗi khi quét ${url}:`, error.message);
-      }
-    }
-
-    this.generateReport();
-  }
-
-  async auditPage(url) {
-    const startTime = Date.now();
-    let response;
-
-    try {
-      response = await fetch(url, {
-        headers: { 'User-Agent': 'SEO-Audit-Crawler/1.0' },
-        signal: AbortSignal.timeout(10000),
-      });
-    } catch (e) {
-      return {
-        url,
-        status: 0,
-        title: { text: '', status: 'error', message: `Không thể kết nối: ${e.message}` },
-        description: { text: '', status: 'error', message: 'Không khả dụng' },
-        canonical: { text: '', status: 'error', message: 'Không khả dụng' },
-        headings: { h1Count: 0, headingsList: [], status: 'error', message: 'Không khả dụng' },
-        images: { total: 0, missingAlt: 0, missingAltList: [], status: 'error' },
-        links: { internalCount: 0, externalCount: 0 },
-        loadTimeMs: Date.now() - startTime,
-      };
-    }
-
-    const loadTimeMs = Date.now() - startTime;
-    const status = response.status;
-
-    if (status !== 200) {
-      return {
-        url,
-        status,
-        title: { text: '', status: 'error', message: `Mã phản hồi lỗi: ${status}` },
-        description: { text: '', status: 'error', message: 'Không khả dụng' },
-        canonical: { text: '', status: 'error', message: 'Không khả dụng' },
-        headings: { h1Count: 0, headingsList: [], status: 'error', message: 'Không khả dụng' },
-        images: { total: 0, missingAlt: 0, missingAltList: [], status: 'error' },
-        links: { internalCount: 0, externalCount: 0 },
-        loadTimeMs,
-      };
-    }
-
-    const html = await response.text();
-    const $ = cheerio.load(html);
-
-    // Title
-    const titleText = $('title').text().trim();
-    let titleStatus = 'passed';
-    let titleMsg = 'Đạt yêu cầu';
-    if (!titleText) {
-      titleStatus = 'error';
-      titleMsg = 'Thiếu thẻ <title>!';
-    } else if (titleText.length < 30) {
-      titleStatus = 'warning';
-      titleMsg = `Tiêu đề ngắn (${titleText.length} ký tự). Nên từ 30-60 ký tự.`;
-    } else if (titleText.length > 60) {
-      titleStatus = 'warning';
-      titleMsg = `Tiêu đề dài (${titleText.length} ký tự). Nên từ 30-60 ký tự.`;
-    }
-
-    // Description
-    const descText = $('meta[name="description"]').attr('content')?.trim() || '';
-    let descStatus = 'passed';
-    let descMsg = 'Đạt yêu cầu';
-    if (!descText) {
-      descStatus = 'error';
-      descMsg = 'Thiếu thẻ <meta name="description">!';
-    } else if (descText.length < 120) {
-      descStatus = 'warning';
-      descMsg = `Mô tả ngắn (${descText.length} ký tự). Nên từ 120-160 ký tự.`;
-    } else if (descText.length > 160) {
-      descStatus = 'warning';
-      descMsg = `Mô tả dài (${descText.length} ký tự). Nên từ 120-160 ký tự.`;
-    }
-
-    // Canonical
-    const canonical = $('link[rel="canonical"]').attr('href')?.trim() || '';
-    let canonicalStatus = 'passed';
-    let canonicalMsg = 'Đạt yêu cầu';
-    if (!canonical) {
-      canonicalStatus = 'error';
-      canonicalMsg = 'Thiếu thẻ canonical!';
-    } else {
-      try {
-        const absoluteCanonical = new URL(canonical, url).href;
-        const u1 = new URL(absoluteCanonical);
-        const u2 = new URL(url);
-        const pathsMatch = u1.pathname === u2.pathname && u1.search === u2.search;
-        
-        if (!pathsMatch) {
-          canonicalStatus = 'warning';
-          canonicalMsg = `Canonical trỏ về URL khác: ${canonical}`;
-        }
-      } catch (e) {
-        canonicalStatus = 'error';
-        canonicalMsg = `Thẻ canonical chứa URL không hợp lệ: ${canonical}`;
-      }
-    }
-
-    // Headings
-    const headingsList = [];
-    const h1s = $('h1');
-    const h1Count = h1s.length;
-    let headingStatus = 'passed';
-    let headingMsg = 'Đạt yêu cầu';
-
-    if (h1Count === 0) {
-      headingStatus = 'error';
-      headingMsg = 'Thiếu thẻ H1!';
-    } else if (h1Count > 1) {
-      headingStatus = 'warning';
-      headingMsg = `Có nhiều thẻ H1 (${h1Count} thẻ). Chỉ nên có 1 thẻ H1 duy nhất.`;
-    }
-
-    $('h1, h2, h3, h4, h5, h6').each((_, el) => {
-      headingsList.push({
-        tag: el.name.toUpperCase(),
-        text: $(el).text().trim().replace(/\\s+/g, ' '),
-      });
-    });
-
-    // Images alt Check
-    let totalImages = 0;
-    let missingAlt = 0;
-    const missingAltList = [];
-    $('img').each((_, el) => {
-      totalImages++;
-      const alt = $(el).attr('alt');
-      const src = $(el).attr('src') || '';
-      if (alt === undefined || alt.trim() === '') {
-        missingAlt++;
-        missingAltList.push(src);
-      }
-    });
-    const imageStatus = missingAlt > 0 ? 'warning' : 'passed';
-
-    // Link extraction
-    let internalCount = 0;
-    let externalCount = 0;
-
-    $('a').each((_, el) => {
-      const href = $(el).attr('href')?.trim();
-      if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-
-      try {
-        const resolvedUrl = new URL(href, url);
-        const isInternal = resolvedUrl.hostname === new URL(this.baseUrl).hostname;
-
-        if (isInternal) {
-          internalCount++;
-          const crawlUrl = resolvedUrl.origin + resolvedUrl.pathname;
-          const normalizedCrawl = crawlUrl.replace(/\/$/, '');
-          if (!this.crawledUrls.has(normalizedCrawl) && !this.queue.includes(crawlUrl) && this.crawledUrls.size + this.queue.length < MAX_PAGES * 2) {
-            this.queue.push(crawlUrl);
-          }
-        } else {
-          externalCount++;
-        }
-      } catch (e) {
-        // Ignore invalid URLs
-      }
-    });
-
-    return {
-      url,
-      status,
-      title: { text: titleText, status: titleStatus, message: titleMsg },
-      description: { text: descText, status: descStatus, message: descMsg },
-      canonical: { text: canonical, status: canonicalStatus, message: canonicalMsg },
-      headings: { h1Count, headingsList, status: headingStatus, message: headingMsg },
-      images: { total: totalImages, missingAlt, missingAltList, status: imageStatus },
-      links: { internalCount, externalCount },
-      loadTimeMs,
-    };
-  }
-
-  generateReport() {
-    console.log(`\\n📊 Đang biên soạn báo cáo SEO Audit...`);
-    console.log(`\n📊 Đang biên soạn báo cáo SEO Audit...`);
-
-    const totalPages = this.results.length;
-    let criticalErrors = 0;
-    let warnings = 0;
-    let totalLoadTime = 0;
-    let totalImages = 0;
-    let totalMissingAlt = 0;
-
-    let totalScore = 0;
-    this.results.forEach(r => {
-      totalLoadTime += r.loadTimeMs;
-      if (r.status !== 200) criticalErrors++;
-      if (r.title.status === 'error') criticalErrors++;
-      if (r.title.status === 'warning') warnings++;
-      if (r.description.status === 'error') criticalErrors++;
-      if (r.description.status === 'warning') warnings++;
-      if (r.canonical.status === 'error') criticalErrors++;
-      if (r.canonical.status === 'warning') warnings++;
-      if (r.headings.status === 'error') criticalErrors++;
-      if (r.headings.status === 'warning') warnings++;
-      
-      totalImages += r.images.total;
-      totalMissingAlt += r.images.missingAlt;
-      if (r.images.status === 'warning') warnings++;
-
-      let pScore = 100;
-      if (r.status !== 200) pScore -= 50;
-      if (r.title.status === 'error') pScore -= 25;
-      if (r.title.status === 'warning') pScore -= 5;
-      if (r.description.status === 'error') pScore -= 25;
-      if (r.description.status === 'warning') pScore -= 5;
-      if (r.canonical.status === 'error') pScore -= 15;
-      if (r.canonical.status === 'warning') pScore -= 5;
-      if (r.headings.status === 'error') pScore -= 15;
-      if (r.headings.status === 'warning') pScore -= 5;
-      if (r.images.status === 'warning') pScore -= 5;
-      totalScore += Math.max(0, pScore);
-    });
-
-    const avgLoadTime = totalPages > 0 ? (totalLoadTime / totalPages).toFixed(0) : '0';
-    const altPercentage = totalImages > 0 ? (((totalImages - totalMissingAlt) / totalImages) * 100).toFixed(1) : '100';
-
-    const score = totalPages > 0 ? Math.round(totalScore / totalPages) : 100;
-
-    let scoreEmoji = '🔴';
-    if (score >= 80) scoreEmoji = '🟢';
-    else if (score >= 50) scoreEmoji = '🟡';
-
-    const dir = path.dirname(REPORT_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    let md = `# 🔍 Báo cáo SEO Audit & Tối ưu hóa\n\n`;
-    md += `*   **Địa chỉ quét:** \`${this.baseUrl}\`\n`;
-    md += `*   **Thời gian thực hiện:** ${new Date().toLocaleString('vi-VN')}\n`;
-    md += `*   **Tổng số trang đã quét:** ${totalPages}\n`;
-    md += `*   **Tốc độ tải trang trung bình:** \`${avgLoadTime}ms\`\n`;
-    md += `*   **Điểm đánh giá SEO:** ${scoreEmoji} **${score}/100**\n\n`;
-
-    md += `## 📊 Chỉ số tổng quan\n\n`;
-    md += `| Chỉ số | Kết quả | Trạng thái |\n`;
-    md += `| :--- | :--- | :--- |\n`;
-    md += `| Lỗi nghiêm trọng (Critical) | **${criticalErrors}** | ${criticalErrors > 0 ? '🔴 Cần khắc phục ngay' : '🟢 Tuyệt vời'} |\n`;
-    md += `| Cảnh báo (Warnings) | **${warnings}** | ${warnings > 0 ? '🟡 Cần tối ưu thêm' : '🟢 Đạt chuẩn'} |\n`;
-    md += `| Tỷ lệ ảnh có thẻ Alt | **${altPercentage}%** (${totalImages - totalMissingAlt}/${totalImages} ảnh) | ${totalMissingAlt > 0 ? '🟡 Thiếu ' + totalMissingAlt + ' thẻ alt' : '🟢 Đạt chuẩn'} |\n\n`;
-
-    md += `## 📋 Chi tiết các trang đã quét\n\n`;
-
-    this.results.forEach((r, idx) => {
-      const pageScore = r.status === 200 && r.title.status !== 'error' && r.description.status !== 'error' && r.headings.status !== 'error' ? '🟢 Đạt' : '🔴 Lỗi';
-      md += `### ${idx + 1}. Trang: \`${r.url}\` (${pageScore})\n\n`;
-      md += `*   **Mã phản hồi HTTP:** \`${r.status}\` | **Tốc độ tải:** \`${r.loadTimeMs}ms\`\n`;
-      md += `*   **Meta Title:** ${r.title.status === 'passed' ? '🟢' : r.title.status === 'warning' ? '🟡' : '🔴'} \`${r.title.text || '(Trống)'}\` - *${r.title.message}*\n`;
-      md += `*   **Meta Description:** ${r.description.status === 'passed' ? '🟢' : r.description.status === 'warning' ? '🟡' : '🔴'} \`${r.description.text || '(Trống)'}\` - *${r.description.message}*\n`;
-      md += `*   **Thẻ Canonical:** ${r.canonical.status === 'passed' ? '🟢' : r.canonical.status === 'warning' ? '🟡' : '🔴'} \`${r.canonical.text || '(Trống)'}\` - *${r.canonical.message}*\n`;
-      md += `*   **Cấu trúc Headings (H1):** ${r.headings.status === 'passed' ? '🟢' : r.headings.status === 'warning' ? '🟡' : '🔴'} *${r.headings.message}* (Số lượng H1: ${r.headings.h1Count})\n`;
-      md += `*   **Hình ảnh:** ${r.images.status === 'passed' ? '🟢' : '🟡'} Có ${r.images.total} hình ảnh, thiếu ${r.images.missingAlt} thẻ mô tả Alt.\n`;
-      md += `*   **Liên kết nội bộ/ngoài:** \`${r.links.internalCount}\` links nội bộ / \`${r.links.externalCount}\` links ngoài.\n`;
-
-      if (r.images.missingAlt > 0) {
-        md += `    *   *Danh sách ảnh thiếu thẻ alt (Tối đa hiển thị 3):*\\n`;
-        r.images.missingAltList.slice(0, 3).forEach(img => {
-          md += `        *   \`${img}\`\\n`;
-        });
-      }
-
-      if (r.headings.headingsList.length > 0) {
-        md += `    *   *Danh mục cấu trúc Heading:*\\n`;
-        r.headings.headingsList.slice(0, 6).forEach(h => {
-          md += `        *   \`${h.tag}\`: ${h.text}\\n`;
-        });
-        if (r.headings.headingsList.length > 6) {
-          md += `        *   *...và ${r.headings.headingsList.length - 6} tiêu đề khác.*\\n`;
-        }
-      }
-      md += `\\n---\\n\\n`;
-    });
-
-    md += `\\n*Báo cáo được tạo tự động bởi SEO Audit Engine.*\\n`;
-
-    fs.writeFileSync(REPORT_PATH, md, 'utf8');
-    console.log(`\\n🎉 Đã ghi báo cáo SEO tại: \${REPORT_PATH}`);
-  }
-}
-
-const targetUrl = process.argv[2] || DEFAULT_BASE_URL;
-const crawler = new SeoCrawler(targetUrl);
-crawler.run().catch(err => {
-  console.error('Fatal crawler error:', err);
-  process.exit(1);
-});
-"""
-
-def doc_ui_ux_standards_template():
-    return """# 🎨 UI/UX Standards (Pro Max)
-
-## 🌈 Brand Palette
-```typescript
-colors: {
-  primary: {
-    DEFAULT: '#0048c4', // Update with brand primary
-    dark: '#003399',
-    light: '#3366ff',
-  },
-  accent: '#FFD700',
-  success: '#10B981',
-  error: '#EF4444',
-  gray: {
-    bg: '#f8fafc',
-    border: '#e2e8f0',
-  }
-}
-```
-
-## 🔡 Typography (Inter/Sans)
-- **H1 (Page Title)**: `text-3xl font-extrabold tracking-tight`
-- **H2 (Section)**: `text-2xl font-bold`
-- **H3 (Subtitle)**: `text-xl font-semibold`
-- **Body**: `text-base leading-relaxed`
-- **Small/Caption**: `text-sm text-gray-500`
-
-## 📏 Spacing & Layout
-- **Page Container**: `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`
-- **Section Spacing**: `py-12 md:py-20`
-- **Grid Gap**: `gap-6 md:gap-8`
-
-## 🧱 Core Components (Atomic)
-
-### Cards
-- **Style**: `bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden`
-- **Hover**: `hover:shadow-xl hover:-translate-y-1 transition-all duration-300`
-
-### Buttons
-- **Primary**: `bg-primary text-white px-6 py-3 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all`
-- **Ghost**: `bg-transparent border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors`
-
-### Inputs
-- **Style**: `w-full px-4 py-3 bg-gray-50 border-transparent focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary rounded-xl transition-all`
-
-## ✨ Micro-animations
-- Sử dụng `framer-motion` cho các chuyển cảnh.
-- Staggered children transitions (0.1s delay).
-- Hover scale effect: `whileHover={{ scale: 1.02 }}`.
-
-## ✅ UI/UX Checklist
-- [ ] Tailwind class-first (No inline CSS).
-- [ ] Mobile-first responsive grid.
-- [ ] Accessible color contrast.
-- [ ] Loading skeleton states cho async data.
-- [ ] Smooth transitions cho mọi tương tác hover/click.
+*Source of truth cho toàn bộ cấu hình dự án. AI agent BẮT BUỘC đọc file này trước khi làm bất kỳ task nào.*
 """
 
 
-# =============================================================================
-# SCRIPT TEMPLATES
-# =============================================================================
-
-def script_create_feature():
-    return """#!/bin/bash
-# Create new feature branch + specs directory
-set -e
-FEATURE_NAME=${1:?"Usage: ./create-new-feature.sh <feature-name>"}
-SPECS_DIR=".agent/specs/$FEATURE_NAME"
-mkdir -p "$SPECS_DIR"
-echo "✅ Created specs directory: $SPECS_DIR"
-echo "📋 Next: Run /02-speckit.specify to create spec.md"
+# ============================================================================
+# 2. CONSTITUTION (project law)
+# ============================================================================
+def render_constitution(project_name: str, needs_docker: bool) -> str:
+    docker_section = ""
+    if needs_docker:
+        docker_section = """
+## Docker & Infrastructure
+- Docker-First: Mọi service chạy trong container.
+- Port lấy từ biến môi trường (.env), KHÔNG hard-code.
+- Production dùng `docker-compose.prod.yml` với multi-stage builds.
+- Bind ports tới `127.0.0.1` (localhost only) cho proxied services.
 """
 
-def script_setup_plan():
-    return """#!/bin/bash
-# Locate feature spec for planning
-set -e
-FEATURE_NAME=${1:?"Usage: ./setup-plan.sh <feature-name>"}
-SPEC_FILE=".agent/specs/$FEATURE_NAME/spec.md"
-if [ ! -f "$SPEC_FILE" ]; then
-  echo "❌ spec.md not found at $SPEC_FILE"
-  echo "💡 Run /02-speckit.specify first"
-  exit 1
-fi
-echo "✅ Found spec: $SPEC_FILE"
-echo "📋 Next: Run /04-speckit.plan"
-"""
+    return f"""# 📜 Constitution — {project_name}
 
-def script_check_prerequisites():
-    return """#!/bin/bash
-# Verify prerequisite artifacts exist
-set -e
-FEATURE_NAME=${1:?"Usage: ./check-prerequisites.sh <feature-name>"}
-SPECS_DIR=".agent/specs/$FEATURE_NAME"
-ERRORS=0
-for f in spec.md plan.md tasks.md; do
-  if [ ! -f "$SPECS_DIR/$f" ]; then
-    echo "❌ Missing: $SPECS_DIR/$f"
-    ERRORS=$((ERRORS + 1))
-  else
-    echo "✅ Found: $SPECS_DIR/$f"
-  fi
-done
-if [ $ERRORS -gt 0 ]; then
-  echo "⚠️  $ERRORS prerequisite(s) missing"
-  exit 1
-fi
-echo "✅ All prerequisites met"
-"""
+> Source of Law cho dự án này. Mọi agent và workflow BẮT BUỘC tuân thủ.
 
-def script_update_context():
-    return """#!/bin/bash
-# Update agent context files after changes
-set -e
-echo "🔄 Updating agent context..."
-if [ -f ".agent/memory/constitution.md" ]; then
-  echo "✅ Constitution: OK"
-else
-  echo "⚠️  Constitution missing — run /01-speckit.constitution"
-fi
-if [ -d ".agent/identity" ]; then
-  echo "✅ Identity: OK"
-else
-  echo "⚠️  Identity missing — run wb-agent init"
-fi
-echo "✅ Context update complete"
+## Core Principles
+- **Spec trước Code**: WHAT trước, HOW sau.
+- **No Hard-code**: URLs, Tokens, Keys phải dùng ENV vars.
+- **Incremental**: Build incrementally, không bao giờ bắt đầu lại từ đầu.
+
+## Tech Stack
+<!-- Khai báo stack chính xác tại đây -->
+- Framework: 
+- Language: 
+- Database: 
+- ORM: 
+{docker_section}
+## Coding Standards
+- TypeScript strict mode (nếu dùng TS).
+- Functional programming style.
+- Không `any` type, không placeholder code.
+- File naming: kebab-case.
+
+## Non-Negotiables
+- Mọi destructive command (rm -rf, DROP TABLE, docker down -v) phải có user confirm.
+- Backup database trước khi migration.
+- Không import thư viện chưa được khai báo trong dependencies.
 """
 
 
-# =============================================================================
-# IDE RULES TEMPLATES — Chuẩn format cho từng IDE
-# Research date: 2026-02-21
-# =============================================================================
+# ============================================================================
+# 3. PROJECT-SCOPED AGENTS.MD (auto-loaded by Antigravity)
+# ============================================================================
+def render_agents_md(project_name: str, needs_docker: bool, needs_seo: bool) -> str:
+    docker_rules = ""
+    if needs_docker:
+        docker_rules = """- **Docker Protocol**: Chạy app trong container. Bind ports tới 127.0.0.1. Dùng multi-stage builds cho production.
+"""
 
-def _core_rules_content(project_name="Project", use_docker=True, is_soft_rules=False):
-    """Nội dung rules chung — được tái sử dụng cho mọi IDE."""
-    must_label = "Tuân thủ" if not is_soft_rules else "Nên tuân thủ"
-    shall_label = "phải" if not is_soft_rules else "nên"
-    forbidden_label = "KHÔNG" if not is_soft_rules else "Hạn chế"
-    
-    docker_rule = f"- Docker-First: Mọi hoạt động code và chạy app {shall_label} diễn ra trong container. {forbidden_label} chạy node/python trên host." if use_docker else "- Flexibility: Chạy app trực tiếp hoặc qua Docker tùy nhu cầu dự án."
-    port_rule = f"- Ports: Sử dụng dải port 9000-9999. {must_label} lấy port từ biến môi trường (.env)." if use_docker else "- Ports: Sử dụng port khả dụng trên hệ thống."
+    seo_rules = ""
+    if needs_seo:
+        seo_rules = """- **SEO**: Tuân thủ checklist SEO trong `.agents/knowledge/seo_standards.md` nếu có.
+"""
 
-    wb_agent_rule = ""
-    if project_name.lower() == "wb-agent":
-        wb_agent_rule = "\n- **NGUYÊN TẮC THIẾT KẾ BỘ KHUNG (GENERAL FRAMEWORK)**: Luôn luôn bóc tách mọi yêu cầu được cung cấp thành các tiêu chí/quy tắc mang tính khái quát để áp dụng đa dạng cho mọi dự án, tuyệt đối KHÔNG code cụ thể theo bất kỳ brand, domain hay site nào."
+    return f"""# {project_name} — Agent Rules
 
-    return f"""Dự án: {project_name}
+## 1. Context Loading (BẮT BUỘC)
+- Đọc `.agents/identity/master-identity.md` TRƯỚC KHI làm bất kỳ task nào.
+- Đọc `.agents/memory/constitution.md` để biết luật dự án.
+- KHÔNG suy diễn port, path, credentials từ memory hay dự án khác.
 
-## 1. PHÁP LỆNH TỐI CAO
-- {must_label} nghiêm ngặt file `.agent/memory/constitution.md`.
-{docker_rule}
-{port_rule}{wb_agent_rule}
+## 2. Project Rules
+- Tuân thủ constitution.md — đây là "Source of Law".
+{docker_rules}{seo_rules}- Mọi task ảnh hưởng > 3 files → phải tạo implementation_plan.md trước.
+- KHÔNG chạy destructive commands mà không có user confirm.
 
-## 2. WB-AGENT PROTOCOL
-- Mọi task {shall_label} đi qua quy trình: Specify → Plan → Tasks → Implement.
-- Sử dụng Workflows trong `.agent/workflows/` và Skills trong `.agent/skills/`.
+## 3. Code Style
+- Phản hồi developer bằng Tiếng Việt.
+- PowerShell 5.1+, ngăn cách lệnh bằng dấu `;`.
+- KHÔNG hard-code URLs, Tokens, Keys — dùng ENV vars (.env).
 
-## 3. NGÔN NGỮ & CODE
-- Phản hồi developer hoàn toàn bằng Tiếng Việt.
-- 15-Minute Rule: Mỗi task {shall_label} atomic, ≤ 15 phút, ảnh hưởng ≤ 3 files.
-- PowerShell 5.1+, ngăn cách lệnh bằng dấu `;` ({forbidden_label} dùng `&&`).
-- {forbidden_label} hard-code URLs, Tokens, Keys. Dùng ENV vars (`.env`).
+## 4. Workflow
+- Sử dụng SDD flow: Specify → Plan → Tasks → Implement.
+- Sau khi hoàn thành task, cập nhật trạng thái trong tasks.md.
 
-## 4. AN TOÀN
-- {forbidden_label} chạy `docker compose down -v` trên Production.
-- Tạo script tự động (`.agent/scripts/`) cho lỗi lặp lại.
-- Kiểm tra logs ngay khi lỗi: `docker compose logs -f <service>`.
-
-## 5. AGENTIC MODE SYNC (Antigravity Only)
-- **Task Tracking**: Sử dụng `task_boundary` để đồng bộ trạng thái với `@speckit.tasks` (tasks.md).
-- **Planning Artifacts**: Luôn tạo `implementation_plan.md` khi thực hiện các thay đổi lớn (atomic > 3 files).
-- **Verification**: Sau khi hoàn thành task, sử dụng `walkthrough.md` để đối chiếu kết quả với `spec.md`.
+## 5. Memorization Protocol (Quy tắc tự cập nhật)
+Khi User yêu cầu "ghi nhớ", "cập nhật" quy tắc, tiêu chuẩn hoặc bản phân tích, BẮT BUỘC phân loại và lưu vào đúng vị trí:
+- **Tiêu chuẩn Code / Tech Stack / Quy định nghiệp vụ**: Ghi vào `.agents/memory/constitution.md`.
+- **Hành vi / Agent Rules đặc thù dự án**: Cập nhật thẳng vào `.agents/AGENTS.md`.
+- **Bản phân tích dài hạn (SEO Plan, System Architecture, Spec)**: Tạo file markdown tại `.agents/specs/` (VD: `.agents/specs/seo-plan.md`).
+- **Scripts / Tự động hóa**: Tạo Skill mới tại `.agents/skills/`.
+TUYỆT ĐỐI KHÔNG lưu tài liệu, rule ra ngoài cấu trúc `.agents/`.
 """
 
 
-def doc_antigravity_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
-    """Antigravity IDE (Google) — .agent/rules/wb-agent.md"""
+# ============================================================================
+# 4. CURSOR RULES (.cursor/rules/wb-agent.mdc)
+# ============================================================================
+def render_cursor_rules(project_name: str, needs_docker: bool) -> str:
+    docker_note = "Docker-First: chạy app trong container." if needs_docker else ""
     return f"""---
-trigger: always_on
-glob: "**/*"
-description: WB-Agent Workspace Rules cho {project_name} - ASF 3.3 Standard
----
-
-# 🛡️ WB-Agent Workspace Rules
-
-{_core_rules_content(project_name, use_docker, is_soft_rules)}
-"""
-
-
-def doc_cursor_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
-    """Cursor IDE — .cursor/rules/wb-agent.mdc (YAML frontmatter + markdown)"""
-    return f"""---
-description: WB-Agent project rules for {project_name}
-globs:
+description: wb-agent rules for {project_name}
+globs: "**/*"
 alwaysApply: true
 ---
 
-# WB-Agent Rules
+# {project_name} — Cursor Rules
 
-{_core_rules_content(project_name, use_docker, is_soft_rules)}
+## Context
+- Đọc `.agents/identity/master-identity.md` trước mọi task.
+- Tuân thủ `.agents/memory/constitution.md`.
+{f"- {docker_note}" if docker_note else ""}
+
+## Code Style
+- Tiếng Việt responses.
+- No hard-coded URLs/Tokens/Keys.
+- SDD flow: Specify → Plan → Tasks → Implement.
 """
 
 
-def doc_windsurf_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
-    """Windsurf IDE (Codeium) — .windsurf/rules/wb-agent.md"""
-    return f"""# WB-Agent Rules
-
-{_core_rules_content(project_name, use_docker, is_soft_rules)}
-"""
-
-
-def doc_vscode_copilot_template(project_name="Project", use_docker=True, is_soft_rules=False):
-    """VS Code (GitHub Copilot) — .github/copilot-instructions.md"""
-    return f"""# Copilot Instructions for {project_name}
-
-{_core_rules_content(project_name, use_docker, is_soft_rules)}
-
-## References
-- Constitution: `.agent/memory/constitution.md`
-- Infrastructure: `.agent/knowledge_base/infrastructure.md`
-- Workflows: `.agent/workflows/`
-- Skills: `.agent/skills/`
-"""
-
-
-def doc_jetbrains_rules_template(project_name="Project", use_docker=True, is_soft_rules=False):
-    """JetBrains AI Assistant (PhpStorm, WebStorm, PyCharm) — .aiassistant/rules/wb-agent.md"""
-    return f"""# WB-Agent Rules for {project_name}
-
-{_core_rules_content(project_name, use_docker, is_soft_rules)}
-"""
-
-
-def doc_kiro_steering_template(project_name="Project"):
-    """Kiro IDE (AWS) — .kiro/steering/tech.md"""
-    return f"""# Technology & Development Standards
-
-Project: {project_name}
-Build System: Docker (docker compose)
-Port Range: 9000-9999
-Shell: PowerShell 5.1+ (Windows)
-
-## Development Protocol
-- Follow Spec-Driven Development (SDD): Specify → Plan → Tasks → Implement.
-- Specs directory: `.agent/specs/`
-- Constitution: `.agent/memory/constitution.md`
-- 15-Minute Rule: Each task must be atomic, ≤ 15 minutes, affecting ≤ 3 files.
-
-## Environment
-- Docker-First: All apps run inside containers. Never run npm/python on host directly.
-- ENV vars required for all sensitive config (`.env` files).
-- No hardcoded URLs, Tokens, Keys, or Credentials.
-
-## Language
-- Respond in Vietnamese (Tiếng Việt).
-
-## Safety
-- NEVER run `docker compose down -v` on Production.
-- Always check logs on error: `docker compose logs -f <service>`.
-"""
-
-
-def doc_claude_md_template(project_name="Project", use_docker=True, is_soft_rules=False):
-    """Claude Code — CLAUDE.md (root)"""
+# ============================================================================
+# 5. CLAUDE.MD (root)
+# ============================================================================
+def render_claude_md(project_name: str, needs_docker: bool) -> str:
+    docker_note = "\n- Docker-First: chạy app trong container. KHÔNG chạy node/python trên host." if needs_docker else ""
     return f"""# {project_name}
 
-{_core_rules_content(project_name, use_docker, is_soft_rules)}
+## Context
+- Đọc `.agents/identity/master-identity.md` trước mọi task.
+- Tuân thủ `.agents/memory/constitution.md`.
+
+## Rules
+- Phản hồi bằng Tiếng Việt.
+- No hard-coded URLs, Tokens, Keys — dùng ENV vars.{docker_note}
+- KHÔNG chạy destructive commands mà không có user confirm.
+- SDD flow: Specify → Plan → Tasks → Implement.
 
 ## Project Structure
-- `.agent/memory/constitution.md` — Project Constitution (Source of Law)
-- `.agent/identity/master-identity.md` — AI Persona & Soul
-- `.agent/knowledge_base/` — Domain knowledge (infrastructure, data, API)
-- `.agent/skills/` — AI skills (@mentions)
-- `.agent/workflows/` — Automation workflows (/commands)
-- `.agent/specs/` — Feature specifications
+- `.agents/identity/master-identity.md` — Project config (Source of Truth)
+- `.agents/memory/constitution.md` — Project Law
+- `.agents/specs/` — Feature specifications
+- `.agents/skills/` — Project-specific automation skills
 """
-
-
-def doc_agents_md_template(project_name="Project", use_docker=True, is_soft_rules=False):
-    """GitHub Copilot Coding Agent — AGENTS.md (root)"""
-    return f"""# {project_name} — Agent Instructions
-
-{_core_rules_content(project_name, use_docker, is_soft_rules)}
-
-## Build & Test
-- Build: `docker compose build` (Nếu dùng Docker)
-- Run: `docker compose up -d` (Nếu dùng Docker)
-- Logs: `docker compose logs -f <service>`
-- Stop: `docker compose down`
-"""
-
-
-# =============================================================================
-# TEMPLATE MAPS — Re-exported from sub-modules + local definitions
-# =============================================================================
-
-# Re-export from sub-modules (for backward compat)
-# SKILL_TEMPLATE_MAP imported from skill_templates
-# WORKFLOW_TEMPLATE_MAP imported from workflow_templates
-
-DOCUMENT_TEMPLATE_MAP = {
-    "spec-template.md": doc_spec_template,
-    "plan-template.md": doc_plan_template,
-    "tasks-template.md": doc_tasks_template,
-    "constitution-template.md": doc_constitution_template,
-    "infrastructure-template.md": doc_infrastructure_template,
-    "seo-standards-template.md": doc_seo_standards_template,
-    "ui-ux-standards-template.md": doc_ui_ux_standards_template,
-}
-
-SCRIPT_TEMPLATE_MAP = {
-    "create-new-feature.sh": script_create_feature,
-    "setup-plan.sh": script_setup_plan,
-    "check-prerequisites.sh": script_check_prerequisites,
-    "update-agent-context.sh": script_update_context,
-}
-
-JS_SCRIPT_TEMPLATE_MAP = {
-    "seo-audit-crawler.js": doc_seo_crawler_js_template,
-}
-
