@@ -1,14 +1,16 @@
-﻿---
+---
 name: speckit.seo-geo
 description: SEO Technical Audit, GEO Optimization, Helpful Content theo Backlinko 2026
 ---
 
 ## 🎯 Mission
-Đảm bảo mọi trang web công khai có nội dung dễ đọc, tuân thủ các quy tắc Technical SEO nghiêm ngặt, được tối ưu hóa xuất sắc cho Generative Engine Optimization (GEO - Backlinko 2026 Standard) và đạt chuẩn Helpful Content (độc nhất, văn phong chuyên gia E-E-A-T, không bị đánh dấu là AI-generated).
+Đảm bảo mọi trang web công khai đạt chuẩn Technical SEO vượt trội, tối ưu hóa CTR, giữ chân người dùng và sẵn sàng cho AI Search (GEO - Backlinko 2026 Standard). Đạt chuẩn Helpful Content (độc nhất, văn phong chuyên gia E-E-A-T, không bị đánh dấu là AI-generated).
 
 ## 📥 Input
 - Source code (pages, layouts, components, content files)
-- `.agent/knowledge_base/seo_standards.md` (nếu có)
+- `.agents/knowledge/seo_standards.md` (nếu có)
+
+---
 
 ## 📋 Protocol
 
@@ -28,67 +30,88 @@ description: SEO Technical Audit, GEO Optimization, Helpful Content theo Backlin
 ### Phase 2: Content Structure & GEO Layout (Seen & Trusted Framework)
 1. **Direct Answer Box (Trả lời trực diện cho AI Search)**:
    - Bắt đầu bài viết/trang bằng một khối "Tóm tắt nhanh" hoặc "Trả lời trực diện" (2-3 câu, tối đa 80 từ) nằm ở đầu bài viết (ngay sau lời dẫn mở đầu, trước tiêu đề H2 đầu tiên).
-   - Bôi đậm các từ khóa thực thể quan trọng liên quan đến chủ đề của trang (Ví dụ: **lắp đặt két sắt**, **mua sắm tại Phú Quốc**, **tìm nhà hàng Nepalese**).
+   - Bôi đậm các từ khóa thực thể quan trọng liên quan đến chủ đề của trang.
    - Định dạng hiển thị: Sử dụng box có viền nổi bật (CSS class `geo-direct-answer` với style viền trái tông màu nổi bật của website: `border-l-4 border-primary pl-4 py-2 bg-primary/5 italic` hoặc tương đương).
 2. **Semantic Chunking & Lead with the Answer**:
-   - Chia nhỏ nội dung thành các phần rõ ràng được đánh dấu bằng các thẻ H2/H3 có tính mô tả chi tiết, khớp với truy vấn thực tế hoặc câu hỏi dạng đối thoại của người dùng (Ví dụ thay vì "Bước 1", hãy viết: "Cách thiết lập Google Analytics 4 cho website").
+   - Chia nhỏ nội dung thành các phần rõ ràng được đánh dấu bằng các thẻ H2/H3 có tính mô tả chi tiết, khớp với truy vấn thực tế hoặc câu hỏi dạng đối thoại của người dùng.
    - Mỗi phần nội dung dưới H2/H3 phải **Lead with the Answer** - đưa câu trả lời/kết luận ngay câu đầu tiên dưới H2/H3 trước khi triển khai các chi tiết bổ trợ.
 3. **Quotable Statements, Statistics & Bảng so sánh (LLM Seeding)**:
-   - Viết các câu phát biểu ngắn gọn, mang đầy đủ ngữ cảnh để LLM dễ dàng trích xuất (Quotable Statements). Sử dụng số liệu thống kê hoặc trích dẫn từ nguồn tin cậy (statistics & quotes) để tăng 30-40% khả năng hiển thị trong AI Overviews.
+   - Viết các câu phát biểu ngắn gọn, mang đầy đủ ngữ cảnh để LLM dễ dàng trích xuất (Quotable Statements). Sử dụng số liệu thống kê hoặc trích dẫn từ nguồn tin cậy để tăng 30-40% khả năng hiển thị trong AI Overviews.
    - Phải có ít nhất 1 bảng so sánh chi tiết hoặc danh sách bullet point có số liệu/dữ liệu cụ thể để AI search engines (Gemini, ChatGPT, Perplexity) dễ cào và trích xuất dữ liệu dạng bảng.
 4. **Readability & Multimodal**:
    - Các đoạn văn ngắn gọn, súc tích (tối đa 3-4 câu).
-   - Mọi hình ảnh phải có thuộc tính `alt` mô tả chi tiết thực thể và sử dụng tên file ảnh chứa từ khóa chính (dạng `target-keyword.jpg`).
+   - Mọi hình ảnh phải có thuộc tính `alt` mô tả chi tiết thực thể và sử dụng tên file ảnh chứa từ khóa chính.
    - Các bảng dữ liệu (tables) phải responsive.
 
-### Phase 3: Technical SEO, Schema & CTR Audit
+### Phase 3: Anti-Spam, Anti-Thin Content & On-Page Structure Rules
+1. **Anti-Spam & Anti-Thin Content**:
+   - Title, Description, H1 phải đọc tự nhiên như người thật viết. Tuyệt đối **CẤM nhồi nhét từ khóa** (Keyword Stuffing).
+   - 🛑 **CẤM**: Dùng chung 1 mẫu văn bản rập khuôn cho hàng ngàn trang (Mass Homogeneous Content). Bắt buộc dùng **Dynamic Variational Injection** — mỗi trang phải có Unique Value Point riêng biệt.
+   - 🛑 **CẤM**: Cho phép Google index các trang rác, trang nghèo dữ liệu (<20 từ mô tả). Bắt buộc gắn `noindex` hoặc trả về 404/Redirect.
+   - Tránh **Keyword Cannibalization**: Trang cha và trang con không được ăn thịt từ khóa nhau. Duy trì mật độ từ khóa 1.5% - 2.5%.
+2. **On-Page Structure (H1-H2-H3)**:
+   - `H1`: `Best [Subject] in [Location]` — Không vướng số, khớp 100% Search Intent. 1 thẻ H1 duy nhất per page.
+   - `H2`: Khối Top list / Highlights / FAQ / Explore More Options.
+   - `H3`: Các thẻ từ khóa phụ LSI (Nguyên liệu, Chỗ ngồi, Giờ mở cửa, Giá cả, FAQ detail).
+   - Đặt bộ nút **Quick Filter Pills Navigation** cho 5 intent hot nhất ngay dưới H1.
+3. **Link Juice Rules**:
+   - 100% liên kết nội bộ không chứa `rel="nofollow"` (Dofollow Internal Link Rule).
+   - 100% link sinh ra từ các component bắt buộc phải có dấu gạch chéo cuối `/` (Trailing Slash Uniformity) để diệt sạch redirect 308.
+   - 🛑 **CẤM** tạo link nội bộ dạng query parameter (`?island=oahu`). 100% link bắt buộc là **Pure Silo Pretty URLs** (`/restaurants/oahu/`).
+   - **Entity-Rich Anchor Text**: Anchor text chứa tên thực thể rõ ràng. Cấm dùng *"View all"* hay *"Click here"*.
+   - **Quy tắc 3-Click**: Mọi trang đích đều có thể truy cập từ trang chủ trong ≤3 clicks để phân phối link equity tốt nhất.
+
+### Phase 4: Technical SEO, Schema & CTR Audit
 1. **On-Page Keyword Placement**:
    - **Keyword-First Title Tag**: Đặt từ khóa mục tiêu càng gần đầu thẻ tiêu đề càng tốt (Title Tag length ≤ 60 ký tự).
-   - **Keyword in first 100 words**: Phải xuất hiện từ khóa mục tiêu tối thiểu 1 lần trong 100-150 từ đầu tiên của trang.
-   - **CTR Modifiers**: Tích hợp các từ bổ nghĩa tăng tỷ lệ click vào thẻ Title (như *tốt nhất, hướng dẫn, checklist, review, [năm hiện tại - ví dụ: 2026]*).
+   - **Keyword in first 100 words**: Phải xuất hiện từ khóa mục tiêu tối thiểu 1 lần trong 100-150 từ đầu tiên.
+   - **CTR Modifiers**: Tích hợp các từ bổ nghĩa tăng tỷ lệ click vào thẻ Title (như *tốt nhất, hướng dẫn, checklist, review, [năm hiện tại]*).
    - **URL Optimization**: Tạo URL ngắn gọn, chứa từ khóa chính.
 2. **Structured Data (JSON-LD)**:
    - Khai báo JSON-LD đầy đủ và chuẩn xác theo chuẩn Schema.org:
-     *   **Trang chủ (`/`):** Service, SoftwareApplication, Product, LocalBusiness hoặc Restaurant Schema tùy lĩnh vực.
-     *   **Trang FAQ/Hỏi đáp:** FAQPage Schema khớp 100% nội dung hiển thị.
-     *   **Trang Blog bài viết (`/blog/[slug]`):** BlogPosting Schema với thông tin người viết (`author`), ngày đăng, ngày cập nhật, ảnh đại diện, và `publisher`.
-     *   **Breadcrumbs:** Tích hợp BreadcrumbList trên mọi trang con.
-3. **Crawlability & Performance**:
-   - File `sitemap.xml` và `robots.txt` tự động cập nhật và cho phép các bot tìm kiếm AI (`Google-Extended`, `GPTBot`, `PerplexityBot`, `Anthropic-ai`, `ClaudeBot`) crawl dữ liệu sạch.
-   - Tối ưu Core Web Vitals (LCP < 2.5s, INP < 200ms, CLS < 0.1).
+     * **Trang chủ (`/`):** Service, SoftwareApplication, Product, LocalBusiness hoặc Restaurant Schema tùy lĩnh vực.
+     * **Trang FAQ/Hỏi đáp:** FAQPage Schema khớp 100% nội dung hiển thị.
+     * **Trang Blog bài viết (`/blog/[slug]`):** BlogPosting Schema với thông tin người viết (`author`), ngày đăng, ngày cập nhật, ảnh đại diện, và `publisher`.
+     * **Breadcrumbs:** Tích hợp BreadcrumbList trên mọi trang con.
+3. **Core Web Vitals & Performance**:
+   - LCP < 2.5s, INP < 200ms, CLS < 0.1.
+   - Images: WebP/AVIF, lazy loading, explicit width/height. Ảnh hero/đầu tiên phải có `priority` hoặc `fetchpriority="high"`, cấm lazy load.
+   - Fonts: `font-display: swap`.
+4. **Crawlability & Sitemap**:
+   - `robots.txt` không block CSS/JS. Cho phép AI bots (`Google-Extended`, `GPTBot`, `PerplexityBot`, `Anthropic-ai`, `ClaudeBot`) crawl.
+   - `sitemap.xml` hoạt động theo cơ chế index sitemap, tự động phân mảnh (`sitemap-islands.xml`, `sitemap-cities.xml`...).
+   - Custom 404 page. Noindex hoặc redirect 301 các trang danh mục trống về trang cha gần nhất.
 
-### Phase 4: Strict Internal Linking Rules
-1. **Giới hạn Tần suất (Max 1 Link per Destination)**: Mỗi URL đích chỉ liên kết tối đa 1 lần trong toàn bộ nội dung của bài viết.
+### Phase 5: Internal Linking Strict Rules
+1. **Giới hạn Tần suất (Max 1 Link per Destination)**: Mỗi URL đích chỉ liên kết tối đa 1 lần trong toàn bộ nội dung bài viết.
 2. **Vị Trí Liên Kết (First Occurrence Only)**: Chỉ chèn liên kết vào từ khóa xuất hiện lần đầu tiên.
-3. **Vùng Loại Trừ (Exclusion Zones)**: Tuyệt đối không chèn liên kết trong các thẻ tiêu đề (H1, H2, H3), Frontmatter, Code blocks, thẻ Script JSON-LD, hoặc cấu trúc bảng biểu.
-4. **Ngăn Chặn Liên Kết Tự Thân & Lồng Nhau (No Self-Linking & Nested Links)**: Tuyệt đối không tự liên kết hoặc lồng link tạo lỗi cú pháp.
-5. **MÃ NGUỒN AN TOÀN (No Markdown inside Raw HTML)**: Tuyệt đối KHÔNG viết mã Markdown link (dạng `[AnchorText](URL)`) bên trong các thẻ HTML thô. Phải sử dụng thẻ anchor HTML dạng `<a href="URL">AnchorText</a>` để các trình thông dịch Markdown và HTML có thể phân tích và hiển thị chính xác.
+3. **Vùng Loại Trừ (Exclusion Zones)**: Tuyệt đối không chèn liên kết trong H1, H2, H3, Frontmatter, Code blocks, thẻ Script JSON-LD, hoặc cấu trúc bảng biểu.
+4. **Ngăn Chặn Liên Kết Tự Thân & Lồng Nhau (No Self-Linking & Nested Links)**: Tuyệt đối không tự liên kết hoặc lồng link.
+5. **MÃ NGUỒN AN TOÀN**: Tuyệt đối KHÔNG viết mã Markdown link bên trong các thẻ HTML thô. Phải sử dụng thẻ anchor HTML dạng `<a href="URL">AnchorText</a>`.
 
-### Phase 5: Google Search Console (GSC) & Indexability Troubleshooting
-1. **Kiểm tra trạng thái Indexability (Crawlability & GSC Alignment)**:
-   - **Crawl allowed**: Phải đảm bảo file `robots.txt` không chặn Googlebot/AI bots đối với các trang quan trọng cần SEO (Crawl allowed phải trả về Yes).
+### Phase 6: Google Search Console (GSC) & Indexability Troubleshooting
+1. **Kiểm tra trạng thái Indexability**:
+   - **Crawl allowed**: Phải đảm bảo file `robots.txt` không chặn Googlebot/AI bots đối với các trang quan trọng.
    - **Indexing allowed**: Đảm bảo các trang đích không có thẻ `<meta name="robots" content="noindex">` hoặc header `X-Robots-Tag: noindex`.
-   - **Canonicalization**: Kiểm tra xem `canonical` URL khai báo có khớp hoàn toàn với URL thật và Google-selected canonical không. Tránh lỗi duplicate content hoặc Google tự chọn canonical khác.
-2. **Khắc phục lỗi hạ tầng (Site-wide/Server errors)**:
-   - **SSL & DNS stability**: Đảm bảo chứng chỉ SSL hợp lệ. Googlebot sẽ từ chối crawl và báo lỗi nếu SSL hỏng hoặc DNS trả về IP private (RFC 1918).
-   - **Robots.txt Availability**: File `robots.txt` phải luôn khả dụng (HTTP 200/404). Nếu server bị lỗi 5xx hoặc không thể fetch robots.txt, Googlebot sẽ dừng crawl toàn bộ trang để tránh vi phạm các vùng cấm.
-   - **Server load (Hostload exceeded)**: Theo dõi tải server để tránh Googlebot giảm tần suất crawl do server quá tải hoặc trả về response lỗi (truncated headers/compression error).
-3. **Video Indexing (Watch Page Rule)**:
-   - Đảm bảo video cần index nằm trên một Watch Page chuyên dụng (video là nội dung chính, xuất hiện sớm trong HTML, không bị che khuất).
-   - Cung cấp Schema VideoObject và thumbnail hợp lệ.
+   - **Canonicalization**: Kiểm tra xem `canonical` URL khai báo có khớp hoàn toàn với URL thật và Google-selected canonical không. Tránh lỗi duplicate content.
+2. **Khắc phục lỗi hạ tầng**:
+   - **SSL & DNS stability**: Đảm bảo chứng chỉ SSL hợp lệ. Googlebot sẽ từ chối crawl nếu SSL hỏng hoặc DNS trả về IP private (RFC 1918).
+   - **Robots.txt Availability**: File `robots.txt` phải luôn khả dụng (HTTP 200/404). Nếu server bị lỗi 5xx, Googlebot sẽ dừng crawl toàn bộ trang.
 
-### Phase 6: Automated SEO Audit Crawler
-1. **Chạy SEO Crawler**: Để thực hiện kiểm tra tự động Technical SEO trên môi trường local/docker, agent PHẢI chạy script `seo-audit-crawler.js` nằm trong thư mục `.agent/scripts/js/`:
-   `node .agent/scripts/js/seo-audit-crawler.js <URL>` (ví dụ: `http://localhost:8980` hoặc `http://web:80`).
+### Phase 7: Automated SEO Audit Crawler
+1. **Chạy SEO Crawler**: Chạy script `seo-audit-crawler.js` nằm trong thư mục `.agents/skills/`:
+   `node .agents/skills/seo-audit-crawler.js <URL>` (ví dụ: `http://localhost:8980` hoặc `http://web:80`).
 2. **Review kết quả**:
-   - Kiểm tra file báo cáo `.agent/memory/seo-audit-report.md` sau khi crawler chạy xong.
+   - Kiểm tra file báo cáo `.agents/specs/seo-audit-report.md` sau khi crawler chạy xong.
    - Sửa mọi lỗi 🔴 Critical và tối ưu hóa các cảnh báo 🟡 Warning để đạt điểm SEO ≥ 90/100 trước khi hoàn thành task.
 
+---
+
 ## 📤 Output
-- File: `.agent/memory/seo-audit-report.md` (được tạo bởi crawler) hoặc `.agent/memory/seo-geo-report.md` (nếu phân tích nội dung thủ công).
-- Verdict: Verdict chung (Score 0-100, danh sách các lỗi 🔴 Critical, 🟡 Warning, 🟢 Info và giải pháp fix).
+- File: `.agents/specs/seo-audit-report.md` (được tạo bởi crawler) hoặc `.agents/specs/seo-geo-report.md` (nếu phân tích thủ công).
+- Verdict: Score 0-100, danh sách các lỗi 🔴 Critical, 🟡 Warning, 🟢 Info và giải pháp fix.
 
 ## 🚫 Guard Rails
 - KHÔNG tự động sửa đổi code trong bước audit này — chỉ tạo báo cáo và hướng dẫn sửa lỗi.
-- Đảm bảo mọi trang công khai được quét qua cả 6 Phase.
-- Nếu SEO Score < 80 hoặc có lỗi 🔴 Critical -> Đánh giá FAIL và block deploy.
+- Đảm bảo mọi trang công khai được quét qua cả 7 Phase.
+- Nếu SEO Score < 85 hoặc có lỗi 🔴 Critical → Đánh giá FAIL và block deploy.
