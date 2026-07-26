@@ -32,4 +32,37 @@ Quản trị hệ thống PC Windows 11, tối ưu phần cứng/phần mềm, t
 - **Script dùng 1 lần (Temp Scripts):** Nếu quy trình tạm thời phải viết script `.ps1` / `.bat`, chỉ ghi vào thư mục tạm `tmp/` (`<project-root>/tmp/` hoặc `~/.gemini/tmp/`).
 - **Script tự động hóa dùng thường xuyên (Reusable Scripts):** Khi tạo các script dùng nhiều lần (Deploy, Clear Cache Cloudflare, Tối ưu Core Web Vitals...), **BẮT BUỘC lưu vào thư mục `.agent/scripts/`** (hoặc `agentic/`) để quản lý và tái sử dụng lâu dài.
 
+### 5. Docker Production Standards (BẮT BUỘC)
+
+#### 5.1 — Health Endpoint Rule
+- Bất kỳ service nào trong `docker-compose.prod.yml` có khai báo `healthcheck` gọi HTTP endpoint (VD: `curl http://localhost:PORT/health`), **BẮT BUỘC** backend service đó phải implement route `/health` phản hồi HTTP 200. Ví dụ Express.js:
+  ```ts
+  app.get('/health', (_, res) => res.json({ status: 'ok', uptime: process.uptime() }));
+  ```
+  Nếu thiếu route này, container sẽ báo `unhealthy` vĩnh viễn và downstream services không khởi động được.
+
+#### 5.2 — No Hardcode Internal Service URLs
+- **CẤM hard-code URL nội bộ Docker** (VD: `http://api:9012`) trực tiếp trong source code. Bắt buộc đọc từ ENV var:
+  ```ts
+  // ✅ ĐÚNG
+  destination: `${process.env.INTERNAL_API_URL || 'http://api:9012'}/api/:path*`
+  // ❌ SAI
+  destination: 'http://api:9012/api/:path*'
+  ```
+  Khai báo fallback default trong code nhưng server production **PHẢI** set ENV đúng.
+
+#### 5.3 — 2-Phase Deploy Pattern
+Mọi dự án Docker production BẮT BUỘC tách thành 2 script riêng biệt trong `.agents/scripts/`:
+- **`deploy-initial.sh`**: Chạy 1 lần đầu — `build --no-cache`, init DB, kiểm tra `.env`.
+- **`deploy-update.sh`**: Rolling update hằng ngày — `build` (cache), `up -d --no-deps`, health check, auto-log, `image prune`.
+  - `docker compose up -d --no-deps <service>` để chỉ restart service thay đổi, **giữ nguyên DB** không restart.
+  - Tuyệt đối KHÔNG chạy `docker compose down -v` trên Production.
+
+#### 5.4 — `docker-compose.prod.yml` Security Hardening
+Khi tạo file `docker-compose.prod.yml`, bắt buộc áp dụng:
+- `user: "1000:1000"` (Non-root) cho tất cả app containers.
+- `expose` thay vì `ports` cho service nội bộ (DB, API) — chỉ `ports` cho service public frontend.
+- `ports: "127.0.0.1:PORT:PORT"` (bind localhost-only) cho frontend, không bind `0.0.0.0`.
+- `healthcheck` với `test`, `interval`, `retries`, `start_period` đầy đủ cho mọi service.
+- Tách `networks: internal` (DB, API) và `external` (public frontend) để DB không có internet egress.
 

@@ -58,6 +58,7 @@ description: SEO Technical Audit, GEO Optimization, Helpful Content theo Backlin
    - 100% liên kết nội bộ không chứa `rel="nofollow"` (Dofollow Internal Link Rule).
    - 100% link sinh ra từ các component bắt buộc phải có dấu gạch chéo cuối `/` (Trailing Slash Uniformity) để diệt sạch redirect 308.
    - 🛑 **CẤM** tạo link nội bộ dạng query parameter (`?island=oahu`). 100% link bắt buộc là **Pure Silo Pretty URLs** (`/restaurants/oahu/`).
+   - **Pillar-based Accordion Link Juice Boxes (`BoxLinkJuice`)**: Phân tách riêng biệt từng Pillar thành từng thẻ Accordion HTML (`<details>` & `<summary>`) độc lập, tuyệt đối không tống toàn bộ luồng link vào 1 box. Tiêu đề và badge tag phải dùng ngôn ngữ tự nhiên giàu giá trị SEO (VD: `Explore [Tool] Reviews & Deals`, `[Tool] Head-to-Head Comparisons`). 🛑 CẤM hiển thị các thuật ngữ kỹ thuật nội bộ trên UI như *"Internal Silo"*, *"Silo Links"*, *"Silo Directories"*, *"Intent Pages"*.
    - **Entity-Rich Anchor Text**: Anchor text chứa tên thực thể rõ ràng. Cấm dùng *"View all"* hay *"Click here"*.
    - **Quy tắc 3-Click**: Mọi trang đích đều có thể truy cập từ trang chủ trong ≤3 clicks để phân phối link equity tốt nhất.
 
@@ -77,10 +78,15 @@ description: SEO Technical Audit, GEO Optimization, Helpful Content theo Backlin
    - LCP < 2.5s, INP < 200ms, CLS < 0.1.
    - Images: WebP/AVIF, lazy loading, explicit width/height. Ảnh hero/đầu tiên phải có `priority` hoặc `fetchpriority="high"`, cấm lazy load.
    - Fonts: `font-display: swap`.
-4. **Crawlability & Sitemap**:
+4. **Crawlability, Canonical & Modular Sub-Sitemaps Architecture (Tastehi Standard)**:
    - `robots.txt` không block CSS/JS. Cho phép AI bots (`Google-Extended`, `GPTBot`, `PerplexityBot`, `Anthropic-ai`, `ClaudeBot`) crawl.
-   - `sitemap.xml` hoạt động theo cơ chế index sitemap, tự động phân mảnh (`sitemap-islands.xml`, `sitemap-cities.xml`...).
-   - Custom 404 page. Noindex hoặc redirect 301 các trang danh mục trống về trang cha gần nhất.
+   - 🚨 **Trailing Slash & Canonical Synchronicity**: Khi hệ thống bật `trailingSlash: true` trong `next.config.ts` hoặc Astro config, BẮT BUỘC tất cả thẻ `canonical`, `openGraph.url`, thẻ Schema (`BreadcrumbList`, `item`, `url`), thẻ `<Link href="...">` và danh sách URL trong `sitemap` PHẢI ĐỒNG BỘ 100% có dấu `/` ở cuối (`https://domain.com/silo/location/`). Tuyệt đối KHÔNG khai báo canonical thiếu `/` vì sẽ khiến Googlebot nhận HTTP 308 Redirect và báo lỗi "Canonical points to a redirect target" trên GSC.
+    - 🚨 **Modular Sub-Sitemaps Architecture (Chuẩn SEO & pSEO 2026)**:
+      * Bắt buộc phải tạo **Sitemap Index Mẹ (`/sitemap.xml`)** kết nối tới các Sub-Sitemaps con.
+      * **1. Core Sitemap (`/sitemap/core.xml`)**: Chứa toàn bộ các trang khung xương cốt lõi (Trang chủ, Pages cố định, Categories, Khối lớp, Môn học, Sitemap Tra Cứu A-Z...). CẤM xé lẻ trang Core thành các file siêu nhỏ (<20 URLs) gây lãng phí Crawl Budget.
+      * **2. Pillar-Silo Group Sitemaps (`/sitemap/lessons.xml` hoặc `/sitemap/[entity].xml`)**: Chứa các trang nội dung chi tiết theo từng Pillar/Silo. Khi số lượng bài trong một group vượt quá ngưỡng (>50,000 URLs hoặc dung lượng >50MB), tự động phân tách tiếp thành các file con hợp lý (`lessons-1.xml`, `lessons-2.xml`...).
+    - **Tác dụng kĩ thuật bắt buộc**: Giúp phân lập báo cáo Coverage trên Google Search Console (GSC) rạch ròi giữa nhóm Core Pages (bắt buộc index 100%) và nhóm Content Pages, ngăn ngừa lỗi Timeout trên Cloudflare Worker khi số lượng URL lên hàng ngàn, và tối ưu hóa Crawl Budget của Googlebot.
+    - Custom 404 page. Noindex hoặc redirect 301 các trang danh mục trống về trang cha gần nhất.
 
 ### Phase 5: Internal Linking Strict Rules
 1. **Giới hạn Tần suất (Max 1 Link per Destination)**: Mỗi URL đích chỉ liên kết tối đa 1 lần trong toàn bộ nội dung bài viết.
@@ -104,6 +110,21 @@ description: SEO Technical Audit, GEO Optimization, Helpful Content theo Backlin
 2. **Review kết quả**:
    - Kiểm tra file báo cáo `.agents/specs/seo-audit-report.md` sau khi crawler chạy xong.
    - Sửa mọi lỗi 🔴 Critical và tối ưu hóa các cảnh báo 🟡 Warning để đạt điểm SEO ≥ 90/100 trước khi hoàn thành task.
+
+---
+
+### Phase 8: Global English AI Content Generation Rules (V3.2 Prompt Standard)
+Khi viết script hoặc điều phối AI tự động sinh bài viết cho thị trường Global (Tiếng Anh), BẮT BUỘC tuân thủ 10 quy tắc Prompt V3.2:
+1. **100% English Output**: Toàn bộ bài viết, H2/H3, bảng biểu đều bằng Tiếng Anh chuẩn chuyên nghiệp.
+2. **GEO Direct Answer Box**: Luôn bắt đầu bài bằng `<div class="geo-direct-answer">` (2-3 câu bôi đậm, <80 từ) trả lời trực diện cho Google AI Overviews.
+3. **LLM Seeding Table**: Phải có ít nhất 1 thẻ `<table>` HTML chứa dữ liệu thật (tính năng, giá cả) cho ChatGPT/Perplexity cào data.
+4. **Anti-Hallucination Guardrails**: CẤM bịa thông tin giá cả, gói cước, hoặc tỷ lệ hoa hồng affiliate không có trong dữ liệu thật.
+5. **Editorial Voice**: Xưng danh với tư cách Ban biên tập độc lập (*"We researched..."*), CẤM giả xưng *"Tôi đã trải nghiệm 2 tuần"*.
+6. **End-User Value Focus**: Tập trung vào người mua/dùng phần mềm, CẤM nhắc tới chương trình affiliate hay hoa hồng giới thiệu.
+7. **Anti-Template Headings**: CẤM dùng các thẻ H2 nhàm chán (*Overview, Features, Pricing, Conclusion*). Giật tít H2/H3 sáng tạo theo thương hiệu phần mềm.
+8. **Honest Drawbacks Analysis**: Nếu dữ liệu Cons rỗng, phải phân tích trung thực rào cản thực tế (rào cản học sử dụng, cạnh tranh, độ sâu tính năng).
+9. **Aggressive Burstiness**: Xen kẽ câu phân tích dài và câu ngắn 2-5 từ để tạo nhịp điệu đọc tự nhiên, tránh bị AI Detector phát hiện.
+10. **Dynamic Year Context**: Luôn nhúng năm hiện tại (`${CURRENT_YEAR}`) vào Prompt (VD: *2026 Edition*).
 
 ---
 
