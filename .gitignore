@@ -69,3 +69,5 @@ pip-log.txt
 
 # Distribution
 *.tar.gz
+tmp/
+
