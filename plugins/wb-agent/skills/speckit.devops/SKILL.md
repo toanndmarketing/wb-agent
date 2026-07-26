@@ -58,6 +58,8 @@ docker compose ps --format json 2>$null
 - **Mạng Container (DNS/EAI_AGAIN)**: Sử dụng explicit `networks` (ví dụ: `internal` và `external`) để tránh lỗi phân giải DNS khi container gọi API lẫn nhau.
 - **Volume Permissions**: Cẩn trọng khi set cứng `user: 999:999` (như Postgres) với host bind-mounts. Nếu gặp lỗi `Operation not permitted`, cân nhắc gỡ bỏ để fallback về user mặc định của image, hoặc set quyền chuẩn trên host.
 - **Package Managers**: Nếu dùng pnpm qua Corepack trong Docker bị lỗi quyền, cân nhắc fallback về `npm` cho môi trường build an toàn hơn hoặc set quyền root cho build phase.
+- **Alpine Healthcheck (LỖI IPv6)**: Các image dựa trên Alpine (như `node:20-alpine`) KHÔNG có sẵn `curl` và có lỗi resolve `localhost` ra IPv6. BẮT BUỘC dùng `wget -qO- http://127.0.0.1:<port>` thay cho `localhost` và `curl` trong lệnh healthcheck.
+- **Port Collision (Xung đột Port trên Server)**: CẤM hard-code Host Port trong `docker-compose.prod.yml` (vd: `127.0.0.1:9011:3000`). BẮT BUỘC sử dụng biến môi trường (vd: `127.0.0.1:${PUBLIC_PORT:-9051}:3000`) để dễ dàng đổi port khi deploy chung nhiều web trên 1 VPS.
 
 ### 5. Deployment Strategies (BẮT BUỘC TÁCH BẠCH)
 Luôn bóc tách quy trình deploy thành 2 kịch bản (2 script riêng):
