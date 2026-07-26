@@ -1,4 +1,4 @@
-﻿---
+---
 name: speckit.devops
 description: DevOps automation: Docker, CI/CD, deploy scripts, server config
 ---
@@ -51,12 +51,24 @@ docker compose ps --format json 2>$null
 - Alpine/Slim base images
 - Ports đọc từ ENV (KHÔNG hard-code)
 
-### 4. Security Checklist:
+### 4. Security & Production Robustness Checklist:
 - `.dockerignore`: block `.env`, `.git`, `node_modules`
 - Không hard-code secrets trong Dockerfile
 - Chỉ EXPOSE ports cần thiết
+- **Mạng Container (DNS/EAI_AGAIN)**: Sử dụng explicit `networks` (ví dụ: `internal` và `external`) để tránh lỗi phân giải DNS khi container gọi API lẫn nhau.
+- **Volume Permissions**: Cẩn trọng khi set cứng `user: 999:999` (như Postgres) với host bind-mounts. Nếu gặp lỗi `Operation not permitted`, cân nhắc gỡ bỏ để fallback về user mặc định của image, hoặc set quyền chuẩn trên host.
+- **Package Managers**: Nếu dùng pnpm qua Corepack trong Docker bị lỗi quyền, cân nhắc fallback về `npm` cho môi trường build an toàn hơn hoặc set quyền root cho build phase.
 
-### 5. Documentation:
+### 5. Deployment Strategies (BẮT BUỘC TÁCH BẠCH)
+Luôn bóc tách quy trình deploy thành 2 kịch bản (2 script riêng):
+1. **Initial Deploy (`deploy-initial.sh`)**: Dùng cho lần đầu (hoặc sau khi clean data). 
+   - Sử dụng `--no-deps` khi `docker compose run` (đặc biệt khi chạy Next.js SSG build) để ngăn Docker tự động kích hoạt container liên quan quá sớm, tránh race-conditions làm treo tiến trình.
+   - Luôn khởi động và chờ Database (`docker compose up -d db`) -> Wait 10s -> Build App.
+2. **Update Deploy (`deploy-update.sh`)**: Dùng khi chỉ cập nhật code/tính năng thường xuyên.
+   - Pull code nhanh, chỉ rebuild những image bị đổi, và `up -d` nhẹ nhàng để giảm downtime.
+3. **Next.js SSG ở quy mô lớn**: Nếu dự án có hàng chục nghìn trang tĩnh (ví dụ: tra cứu địa lý), build time rất lâu (5-10 phút). Tiến trình deploy phải đảm bảo KHÔNG làm ngắt kết nối SSH hoặc timeout.
+
+### 6. Documentation:
 - Cập nhật `.agent/knowledge_base/infrastructure.md` với kết quả
 - Cập nhật `.env.example` với tất cả port vars
 
