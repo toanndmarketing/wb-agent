@@ -68,23 +68,27 @@ Rủi ro thấp, quota thấp:
 **3 Subagent song song:**
 ```
 Sub-A1: SEO Analyst
-  Skills: speckit.seo-geo, speckit.checklist
-  Job: Audit Metadata → Schema → Silo → Internal Linking → GEO
-  Output: seo_[YYYYMMDD].md
+  Skills: speckit.seo-technical, speckit.checklist
+  Job: Quét → Phân Tích → ĐỀ XUẤT FIX trực tiếp. Xử lý Metadata, Schema, Silo.
+  + Soi Header/Footer: Đảm bảo sạch link rác (no `#`), link volume cao ở vị trí ưu tiên.
+  + Soi Homepage/Pillar: Đảm bảo chia H2 theo Section (Vùng miền, Cụm logic).
+  Output: seo_[YYYYMMDD].md (Kèm checklist lệnh/file cần sửa để Main Agent tự Fix)
 
 Sub-A2: Bug Hunter (Puppeteer)
   Skills: speckit.debug-crawler, speckit.qa-audit
-  Job: Crawl 5-10 URL đại diện → JS Errors → Network 404 → Hydration
-  + Scan nhanh ALL URLs (chỉ HTTP status)
-  Output: bugs_[YYYYMMDD].md
+  Job: Crawl đại diện → Tìm JS Errors, 404, Hydration → TÌM ROOT CAUSE & ĐỀ XUẤT FIX.
+  + Scan nhanh ALL URLs (HTTP status).
+  Output: bugs_[YYYYMMDD].md (Kèm giải pháp fix triệt để)
 
 Sub-A3: Content Auditor
   Skills: speckit.analyze
-  Job: Sample data real vs mock → word count → duplicate pattern → alt text
+  Job: Quét Thin Content, Spam Key, Spam Link, Duplicate Pattern, Alt Text.
+  + Tự động lên danh sách các điểm cần xóa/viết lại trên Home, Pillar, Cluster.
   Output: content_[YYYYMMDD].md
 ```
 
-**Main Agent tổng hợp:** `audit_full_[YYYYMMDD].md` + Priority Action List
+**Main Agent tổng hợp:** `audit_full_[YYYYMMDD].md`.
+⚠️ **Bắt buộc:** Sau khi quét xong, Agent phải hỏi user: *"Em đã tìm ra X lỗi, anh có muốn em tự động CHẠY FIX các lỗi này luôn không?"*
 **Lưu tại:** `D:\Project\[du-an]\.agent\reports\`
 **Thời gian mục tiêu:** < 5 phút
 
@@ -119,10 +123,12 @@ Sub-C3: Monitor (gemini-2.5-flash-lite)
 ```
 Phase 1 (Song song):
   Sub-B1: Spec Writer (Pro) — speckit.specify → spec.md → CHỜ DUYỆT
+  (⚠️ Bắt buộc: Spec phải bao gồm chuẩn SEO Onpage: H2, Internal Link ngang/dọc, Header/Footer sạch)
   Sub-B2: Codebase Researcher (flash) — speckit.analyze → research_notes.md
 
 Phase 2 (Sau duyệt):
   Sub-B3: Implementer (flash) — speckit.implement → code theo tasks.md
+  (⚠️ Bắt buộc: Lúc code phải tự động tuân thủ chuẩn SEO, schema, không nhồi nhét spam)
   Sub-B4: Tester (flash) — speckit.tester → test → feedback → B3 fix
   [B3 và B4 trao đổi tự động, loop đến khi PASS]
 

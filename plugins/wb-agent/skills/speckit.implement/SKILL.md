@@ -29,8 +29,14 @@ Implement code theo tasks.md, tuân thủ IRONCLAD Protocols và **Deviation Rul
 - **Blocker**: Nếu kẹt, tự thực hiện "Root Cause Analysis" trước khi hỏi người dùng.
 - **Arch Change**: Nếu cần đổi kiến trúc, PHẢI hỏi người dùng.
 
+### Strict Web Vitals & SEO Enforcement (Bắt buộc với Front-End)
+- **Diệt Soft 404**: Trong SSR (Next.js/Astro), tuyệt đối không render trang UI rỗng kèm HTTP 200 khi API trả về rỗng/lỗi. Bắt buộc gọi `notFound()` hoặc ném HTTP 404/500.
+- **LCP & Tốc độ**: Ảnh banner/hero luôn dùng `<Image priority>` (Next.js) hoặc preload. Không dùng lazy loading cho ảnh Above-the-fold.
+- **Tối ưu GEO/Schema**: Đặt tóm tắt (Direct Answer) lên đầu. Các meta tag `og:image`, `twitter:image`, `url` trong SEO Schema JSON-LD 100% phải dùng Absolute URL (`https://...`), tuyệt đối cấm Relative URL.
+
 ### Self-Check Protocol
 - Mọi task chỉ hoàn thành khi vượt qua Build Gate (không lỗi Type, không lỗi Docker).
+- **SEO & Layout Check**: Phải đối chiếu nhanh DOM/Component sinh ra đã thỏa mãn các thẻ H1, meta title và Schema JSON-LD yêu cầu hay chưa.
 
 ## 🚫 Guard Rails
 - KHÔNG commit code lỗi build.
