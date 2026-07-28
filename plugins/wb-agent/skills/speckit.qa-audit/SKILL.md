@@ -8,6 +8,12 @@ Kiểm tra toàn diện mọi URL thực tế của project theo **2 chiến lư
 - **Chiến lược A — Quét Nhanh Toàn Bộ**: Chạy qua 100% URL để phát hiện thiếu data, 404, thin content.
 - **Chiến lược B — Scan Sâu 5-10 URL Đại Diện**: Puppeteer kiểm tra cấu trúc SEO, UI/UX, Schema, Console errors.
 
+## 🪄 CUSTOM SLASH COMMANDS (TRIGGER ALIAS)
+Agent **BẮT BUỘC** tự động kích hoạt các kịch bản tương ứng nếu User bắt đầu câu chat bằng các lệnh sau:
+- `/scan-static`: (Quét Tĩnh) Không cần build, chỉ đọc cấu trúc source code, kiểm tra lỗ hổng Hardcode Secrets, Component Reusability, Zod Validation, và Techstack Mismatch. Báo cáo ra `code-audit-report.md`.
+- `/scan-dynamic`: (Quét Động) Khởi chạy quy trình QA Audit (Fast Scan + Deep Scan bằng Puppeteer). Chấm điểm SEO, Schema, Core Web Vitals. Báo cáo ra `qa-audit-report.md`.
+- `/scan-hunter`: (Đội Đặc Nhiệm) Triệu hồi toàn bộ `hunter-team` chạy ngầm (Background). Quét rà soát Orphan Pages, Redirect Chains và Audit diện rộng trên hệ thống lớn. Lên Checklist cần sửa.
+
 ---
 
 ## 📥 Pre-flight (BẮT BUỘC ĐỌC TRƯỚC)
@@ -179,6 +185,11 @@ await page.screenshot({ path: `tmp/screenshots/${slug}.png`, fullPage: true })
 ## 🛠 Action Items + Code Snippet Fix
 1. Fix logic sinh sitemap: `code snippet`
 2. Fix BreadcrumbList JSON-LD: `code snippet`
+
+---
+## 📝 Living Documentation Check
+- [ ] So khớp logic code thực tế với `spec.md`. Có sự sai lệch (Drift) nào không?
+- [ ] BẮT BUỘC yêu cầu Agent Dev cập nhật ngược (Reverse Update) `spec.md` nếu phát hiện sai lệch trước khi duyệt Release.
 ```
 
 **Scoring:**

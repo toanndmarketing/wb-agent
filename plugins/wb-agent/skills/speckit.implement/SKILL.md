@@ -1,4 +1,4 @@
-﻿---
+---
 name: speckit.implement
 description: Implement code theo tasks.md với IRONCLAD Protocols và TDD
 ---
@@ -15,6 +15,14 @@ Implement code theo tasks.md, tuân thủ IRONCLAD Protocols và **Deviation Rul
 4. **Context Anchoring**: Re-read constitution mỗi 3 tasks.
 5. **Build Gate**: LUÔN chạy tsc/build sau mỗi task.
 
+### Component Discovery (Chống Reinvent the Wheel) ⭐
+- TRƯỚC KHI tạo UI Component mới (như Button, Card), BẮT BUỘC rà soát `src/components/` hoặc `src/ui/`.
+- Nếu đã có component tương tự, PHẢI import và xài lại. Chỉ viết mới khi không thể extend component cũ.
+
+### Living Documentation Loop (Chống Drift) ⭐
+- Khi code xong và chuẩn bị pass task, PHẢI đối chiếu lại code thực tế với `spec.md` gốc.
+- Nếu có sự thay đổi về luồng logic, DB schema, hay tham số API so với Spec ban đầu, BẮT BUỘC update ngược (Reverse Update) thay đổi đó vào file `spec.md`. Đảm bảo Spec luôn đúng với Code.
+
 ### Deviation Rules (Tự xử trí khi lệch hướng) ⭐
 - **Bug detected**: Tự động sửa nếu nằm trong scope, hoặc tạo task mới nếu nghiêm trọng.
 - **Missing Critical**: Nếu thiếu config/file quan trọng, tự động bổ sung ngay.
@@ -26,4 +34,5 @@ Implement code theo tasks.md, tuân thủ IRONCLAD Protocols và **Deviation Rul
 
 ## 🚫 Guard Rails
 - KHÔNG commit code lỗi build.
-- KHÔNG hard-code sensitive info.
+- **ZERO-TRUST SECRETS**: KHÔNG hard-code sensitive info (API Key, DB URL, Token) vào bất kỳ file code nào. Mọi cấu hình nhạy cảm BẮT BUỘC dùng biến môi trường (`process.env.VAR` hoặc `import.meta.env`). Chỉ được sinh file `.env.example` với giá trị rỗng.
+- KHÔNG tạo component UI trùng lặp nếu hệ thống đã có sẵn (Ví dụ: Không tạo `BlogCard` nếu `Card` đã thỏa mãn).
