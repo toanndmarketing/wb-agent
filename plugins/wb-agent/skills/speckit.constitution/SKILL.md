@@ -1,4 +1,4 @@
-﻿---
+---
 name: speckit.constitution
 description: Tạo và quản lý constitution.md — bộ luật dự án
 ---
@@ -43,5 +43,6 @@ Tạo và duy trì constitution.md — "luật tối cao" mà mọi agent phải
 - File: `.agent/memory/constitution.md`
 
 ## 🚫 Guard Rails
+- **CẤM HARDCODE KHI HỌC & CẬP NHẬT RULE VÀO SKILL**: Khi tiếp thu/học thêm quy tắc mới (viết rule mới, sửa rule cũ, hoặc bổ sung skill mới), BẮT BUỘC phải trừu tượng hóa rule thành nguyên lý/chuẩn tổng quát (Generic Standard). TUYỆT ĐỐI CẤM hardcode tên miền cụ thể, URL cố định, API Keys, Emails, IPs, Ports hay câu chữ gán cứng cho 1 dự án riêng lẻ vào các file Global Skill (`plugins/wb-agent/skills/*`). Mọi tham chiếu dự án BẮT BUỘC phải đọc động từ `.env`, biến môi trường hoặc `master-identity.md`.
 - Constitution KHÔNG chứa implementation details (HOW) — chỉ chứa rules (WHAT).
 - Mỗi rule phải testable (có thể verify bằng code/check).

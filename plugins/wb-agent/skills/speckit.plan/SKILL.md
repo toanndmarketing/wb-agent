@@ -8,7 +8,9 @@ Chuyển spec.md (WHAT) thành plan.md (HOW). Sử dụng tư duy **Goal-Backwar
 
 ## 📋 Protocol
 
-### Phase 0: Research
+### Phase 0: Research & Deep Context Scan ⭐
+- **Deep Context Scan**: BẮT BUỘC rà soát triệt để các file Báo cáo Audit gần nhất (`seo_*.md`, `debug-report.md`), tài liệu workflow dự án (ví dụ `12-seo-geo.md`), kiến trúc hiện tại, và spec trong `.agent/specs/`.
+- **Anti-Surface Fix**: Đảm bảo Plan giải quyết triệt để nguyên nhân gốc rễ và chuẩn hóa kiến trúc tổng thể (ví dụ: Sitemap Index, Router hierarchy), KHÔNG lên kế hoạch sửa bề nổi/tạm bợ.
 - Scan spec → liệt kê unknowns ("NEEDS CLARIFICATION").
 - Nghiên cứu giải pháp → ghi vào `research.md`.
 

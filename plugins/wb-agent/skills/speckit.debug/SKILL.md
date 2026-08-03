@@ -1,4 +1,4 @@
-﻿---
+---
 name: speckit.debug
 description: Debug lỗi hệ thống: phân tích log, trace root cause, đề xuất fix
 ---
@@ -9,11 +9,17 @@ Chẩn đoán sự cố hệ thống, tìm nguyên nhân gốc rễ (Root Cause)
 ## 📋 Protocol
 
 ### 🔍 Phase 1: Information Gathering & Diagnostics (Thu thập & Chẩn đoán)
-1. **Kiểm tra logs hệ thống**:
+1. **🚨 MANDATORY: Deep Context Scan (Nạp Sâu Context & Báo cáo Audit)**:
+   - TRƯỚC KHI kết luận nguyên nhân lỗi, BẮT BUỘC rà soát triệt để các file Báo cáo Audit mới nhất (`seo_*.md`, `debug-report.md`, `.agent/specs/`, `docs/`, các file workflow markdown như `12-seo-geo.md`...) và `master-identity.md` / `workflow_config.json` để nắm vững quy chuẩn kiến trúc của dự án.
+   - CẤM đọc lướt rồi suy diễn.
+2. **Anti-Surface Fix Protocol (Chống Sửa Nông / Sửa Triệu Chứng Bề Nổi)**:
+   - CẤM chỉ fix lỗi bề nổi/triệu chứng trước mắt (ví dụ: thấy port bận, cache lỗi, syntax crash thì sửa tạm mà bỏ qua quy chuẩn kiến trúc tổng thể sitemap index, router structure, API contract trong doc).
+   - Mọi phương án fix lỗi phải đối chiếu với Architecture Specs & Audit Reports của dự án. Nếu phát hiện code hiện tại sai kiến trúc chuẩn, BẮT BUỘC phải đề xuất refactor chuẩn hóa kiến trúc.
+3. **Kiểm tra logs hệ thống**:
    - Dùng lệnh `docker compose logs -f <service>` hoặc đọc log files trực tiếp để tìm exception, stack trace, hoặc error codes.
-2. **Xác định thời điểm xảy ra lỗi**:
+4. **Xác định thời điểm xảy ra lỗi**:
    - Dùng `git log -n 5` hoặc `git diff` để kiểm tra những thay đổi code gần đây.
-3. **Phân tích Blast Radius (Phạm vi ảnh hưởng)**:
+5. **Phân tích Blast Radius (Phạm vi ảnh hưởng)**:
    - Xác định những modules, APIs, hoặc giao diện nào đang bị ảnh hưởng trực tiếp và gián tiếp bởi lỗi.
 
 ### 🧪 Phase 2: Layered Verification Strategy & Reproduction (Tái hiện lỗi)

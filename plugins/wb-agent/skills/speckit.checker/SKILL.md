@@ -1,4 +1,4 @@
-﻿---
+---
 name: speckit.checker
 description: Kiểm tra tính nhất quán giữa spec, code, và cấu hình dự án
 ---
@@ -13,6 +13,10 @@ Quét codebase phát hiện vi phạm coding standards, security issues, perform
 - `Dockerfile`, `docker-compose*.yml`
 
 ## 📋 Protocol
+
+### Phase 0: 🚨 MANDATORY Deep Context Scan & Anti-Surface-Fix Protocol ⭐
+- **Deep Context Scan**: BẮT BUỘC đọc và đối chiếu các Báo cáo Audit gần nhất (`seo_*.md`, `debug-report.md`), tài liệu workflow dự án (`12-seo-geo.md`), kiến trúc dự án, và `master-identity.md`.
+- **Anti-Surface Fix**: Khi kiểm tra code, không chỉ bắt lỗi syntax/type trước mắt mà PHẢI kiểm tra tính tuân thủ với Kiến trúc Quy chuẩn trong tài liệu dự án (ví dụ Sitemap Index vs Single Sitemap).
 
 ### Phase 1: TypeScript Compile Check (CRITICAL)
 Đây là bước quan trọng nhất, PHẢI chạy trước mọi deploy:
@@ -78,6 +82,7 @@ grep -rn "await api\.\|await fetchApi" apps/*/src/app/sitemap.ts apps/*/src/app/
   ```
 
 ## 🚫 Guard Rails
+- **CẤM HARDCODE TRONG GLOBAL SKILL**: Kiểm tra tất cả các file Global Skill (`plugins/wb-agent/skills/*`), đảm bảo 100% không chứa domain, IP, credentials, hay config cố định riêng của bất kỳ dự án nào.
 - CHỈ báo cáo — KHÔNG tự sửa code.
 - Mỗi finding phải có file path + line number cụ thể.
 - **PHẢI chạy `tsc --noEmit` hoặc `docker compose build`** — scan bằng mắt KHÔNG ĐỦ.

@@ -71,3 +71,6 @@ pip-log.txt
 *.tar.gz
 tmp/
 
+
+service-account.json
+*.json

@@ -29,7 +29,7 @@ Quản trị hệ thống PC Windows 11, tối ưu phần cứng/phần mềm, t
 
 ### 4. Direct Chaining & Script Storage Policy
 - **Ưu tiên nối lệnh 1 dòng (Single-line Chaining):** Dùng dấu phân cách `;` để gom nhiều lệnh trong 1 tool call `run_command` (ví dụ: `docker ps; netstat -ano; Get-Process`). Anh chỉ bấm Approve **1 lần** mà **KHÔNG cần sinh ra file script rác**.
-- **Script dùng 1 lần (Temp Scripts):** Nếu quy trình tạm thời phải viết script `.ps1` / `.bat`, chỉ ghi vào thư mục tạm `tmp/` (`<project-root>/tmp/` hoặc `~/.gemini/tmp/`).
+- **Script dùng 1 lần (Temp Scripts):** Nếu quy trình tạm thời phải viết script `.ps1` / `.bat`, chỉ ghi vào thư mục tạm `tmp/` (`C:\Users\Opengate\.gemini\tmp\`).
 - **Script tự động hóa dùng thường xuyên (Reusable Scripts):** Khi tạo các script dùng nhiều lần (Deploy, Clear Cache Cloudflare, Tối ưu Core Web Vitals...), **BẮT BUỘC lưu vào thư mục `.agent/scripts/`** (hoặc `agentic/`) để quản lý và tái sử dụng lâu dài.
 
 ### 5. Docker Production Standards (BẮT BUỘC)

@@ -1,4 +1,4 @@
-﻿---
+---
 name: speckit.analyze
 description: Phân tích codebase, tech stack, architecture để đánh giá hiện trạng dự án
 ---
@@ -12,6 +12,7 @@ description: Phân tích codebase, tech stack, architecture để đánh giá hi
 - `.agent/specs/[feature]/tasks.md`
 
 ## 📋 Protocol
+0. **🚨 MANDATORY: Deep Context Scan & Anti-Surface-Fix**: BẮT BUỘC rà soát triệt để các Báo cáo Audit gần nhất (`seo_*.md`, `debug-report.md`), tài liệu workflow dự án (`12-seo-geo.md`), và `master-identity.md`. Đảm bảo phân tích kiến trúc sitemap index, route structure, NFRs chứ không chỉ phân tích bề nổi.
 1. **Coverage Check**: Mỗi User Scenario trong spec → phải có task(s) trong tasks.md.
 2. **Conflict Check**: Plan nói dùng tech A nhưng tasks lại reference tech B → BÁO LỖI.
 3. **Constitution Check**: So plan.md với constitution.md → phát hiện violations.

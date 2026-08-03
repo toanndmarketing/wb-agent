@@ -11,7 +11,10 @@ Chuyển mô tả ngôn ngữ tự nhiên → spec.md chuẩn hóa (WHAT, không
 - `.agent/memory/constitution.md` (constraints)
 
 ## 📋 Protocol
-1. Đọc mô tả → trích xuất:
+1. **🚨 MANDATORY: Deep Context Scan (Nạp Sâu Context & Báo cáo Audit)**:
+   - TRƯỚC KHI lập Spec, BẮT BUỘC rà soát các Báo cáo Audit mới nhất (`seo_*.md`, `debug-report.md`), tài liệu workflow dự án (`12-seo-geo.md`), và `master-identity.md` để nắm rõ quy chuẩn kiến trúc hiện tại của dự án.
+   - **Anti-Surface Fix**: Spec phải giải quyết bài toán ở cấp độ kiến trúc hệ thống (ví dụ sitemap index architecture, router convention), CẤM tạo spec sửa đổi tạm bợ bề nổi.
+2. Đọc mô tả → trích xuất:
    - **Actors**: Ai tương tác? (User, Admin, System, Guest)
    - **Actions**: Làm gì? (CRUD, search, filter, export)
    - **Data**: Dữ liệu gì? (entities, fields, relationships)

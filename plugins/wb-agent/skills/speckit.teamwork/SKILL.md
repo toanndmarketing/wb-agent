@@ -1,30 +1,74 @@
 ---
 name: speckit.teamwork
-description: Hệ thống Multi-Agent Routing — Tự động phân tích ngữ cảnh, chọn phương án tối ưu (Single Skill / Subagent / Team), đề xuất và chờ user xác nhận trước khi thực thi. Kèm blueprint chi tiết 4 đội chuyên biệt: HUNTER (SEO/QA), SPIDER (Crawler), BUILDER (Dev), DEPLOYER (DevOps).
+description: Hệ thống Multi-Agent Routing & Intent Recognition — Tự động nhận diện ý định ngôn ngữ tự nhiên, kích hoạt và đọc ngầm các Rule & Skill phù hợp (speckit.devops, studio-media, cloudflare-infra, speckit.seo-technical, v.v.), đề xuất và chờ user xác nhận trước khi thực thi.
 ---
 
-# 🤖 SPECKIT.TEAMWORK — Multi-Agent Routing & Orchestration
+# 🤖 SPECKIT.TEAMWORK — Natural Language Intent Recognition & Routing
 
 ## 🎯 Mission
-Đảm bảo agent luôn **chọn đúng công cụ, đúng quy mô** cho từng yêu cầu — không over-engineer, không under-deliver — và **luôn xác nhận với user** trước khi triển khai tốn tài nguyên.
+Đảm bảo agent **luôn tự động nhận diện ý định từ câu chat của User**, lập tức gọi và tuân thủ đúng Rule/Skill tương ứng mà **không cần chờ User phải nhắc tên file hay gõ slash command**.
+
+---
+
+## ⚡ 3 QUICK COMMANDS — Lệnh Tắt Cho 3 Case Thường Dùng
+
+Agent **BẮT BUỘC** tự động kích hoạt kịch bản tương ứng khi User gõ:
+
+| Command | Mô tả | Skill Chain Kích Hoạt |
+|---|---|---|
+| **`/new-site`** | Khởi tạo dự án pSEO mới từ đầu | `speckit.specify` → `speckit.seo-content` → `speckit.plan` → `speckit.implement` + `seo-preflight-card` → `speckit.qa-audit` |
+| **`/add-module`** | Thêm module/trang mới vào dự án sẵn có | `speckit.implement` + `seo-preflight-card` (Pre-code A1-A3 → Post-code B1-B19) |
+| **`/audit-seo`** | Audit SEO + UI/UX (3 cấp: static → dynamic → hunter) | `speckit.qa-audit` + `seo-preflight-card` (Section C Scoring) |
+
+### `/new-site` — Khởi Tạo Dự Án Mới
+- **Cú pháp**: `/new-site [Mô tả dự án]. Tech: [stack]. Keywords: [nguồn dữ liệu]`
+- **Ví dụ**: `/new-site Dự án pSEO dịch vụ sửa điện nước TP.HCM. Tech: Next.js + PostgreSQL. Keywords: file CSV Ahrefs đính kèm`
+- **Luồng**: Full SDD 5 bước. Agent DỪNG 2 trạm chờ anh duyệt (sau Spec + sau QA).
+
+### `/add-module` — Thêm Module / Trang Mới
+- **Cú pháp**: `/add-module [Tên module]. Keyword: "[keyword]". Silo: [route cha]`
+- **Ví dụ**: `/add-module Trang chi tiết Blog. Keyword: "hướng dẫn sửa ống nước". Silo: /blog/`
+- **Luồng**: Agent đọc `seo-preflight-card` → check Anti-Cannibalization (A2) → code → tự kiểm 19 mục.
+
+### `/audit-seo` — Audit SEO + UI/UX (Linh hoạt 3 cấp)
+- **Cú pháp**: `/audit-seo [URL hoặc tên dự án] [--level 1|2|3] [--batch]`
+- **Ví dụ**:
+  - `/audit-seo http://localhost:8920` → Mặc định cấp 2 (dynamic)
+  - `/audit-seo https://example.com --level 3` → Full hunter scan
+  - `/audit-seo --batch` → Quét tất cả dự án trong workspace
+- **3 cấp độ**:
+  - `--level 1` (static): Quét source code, không build. Check hardcode, thiếu alt, `href="#"`, `<a>` bọc div.
+  - `--level 2` (dynamic): Build + Puppeteer test. DOM check, Console errors, CWV, Schema, navigation.
+  - `--level 3` (hunter): Full audit + Lighthouse + Sitemap cross-check + Orphan pages + Cannibalization.
+- **`--batch` mode**: Quét đồng loạt nhiều dự án. Agent tự scan thư mục workspace, phát hiện các project có `package.json` / `next.config.ts` / `astro.config.mjs`, build lần lượt, audit từng site và xuất **1 báo cáo tổng hợp `batch-audit-summary.md`**.
+
+---
+
+## 🧠 BẢNG NHẬN DIỆN Ý ĐỊNH NGÔN NGỮ TỰ NHIÊN (AUTO-TRIGGER INTENT MATRIX)
+
+Khi User gõ câu lệnh bằng văn bản tự nhiên (không dùng Quick Commands), Agent **BẮT BUỘC phải tự động đối chiếu từ khóa để KÍCH HOẠT VÀ ĐỌC NGẦM các Skill & Rule tương ứng**:
+
+| Từ khóa / Ý định của User | Skill & Rule Tự Động Kích Hoạt | Quy Trình Bắt Buộc Agent Phải Tuân Thủ |
+|---|---|---|
+| *"tạo logo"*, *"thiết kế logo"*, *"làm favicon"* | [studio-media](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/studio-media/SKILL.md) | Bắt buộc sinh **3 BẢN CONCEPT LOGO KHÁC NHAU** (Modern Tech, Dynamic Energy, Monogram) theo chuẩn tỷ lệ ngang 3:1, SVG Vector, Màu Thủy-Mộc để User chọn 1 bản ưng ý nhất. |
+| *"deploy dev"*, *"chạy local"*, *"up docker local"* | [speckit.devops (DEV)](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.devops/SKILL.md) | Hot-reload code, dùng `.env`, bind 127.0.0.1, quét port 8900-8999 local. |
+| *"deploy prod"*, *"deploy vps"*, *"đưa lên server"*, *"deploy lần đầu"* | [speckit.devops (PROD-A)](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.devops/SKILL.md) + [first_time_deployment_rule.md](file:///C:/Users/Opengate/.gemini/config/rules/first_time_deployment_rule.md) | PROD Lần Đầu: Hỏi IP VPS, quét port collision `ss -tulpn`, Nginx Proxy, Cloudflare API, Certbot SSL. |
+| *"deploy update"*, *"cập nhật code lên vps"*, *"push bản mới lên server"* | [speckit.devops (PROD-B)](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.devops/SKILL.md) + [deployer-team.md](file:///C:/Users/Opengate/.gemini/config/subagents/deployer-team.md) | Smart Deploy: Project isolation `cd /home/[domain]`, Smart Rebuild (`--no-deps`), Zero Downtime, flush cache an toàn. |
+| *"cấu hình cloudflare"*, *"trỏ domain"*, *"bật ssl"*, *"bật đám mây cam"* | [cloudflare-infra](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/cloudflare-infra/SKILL.md) + [cloudflare_automation_rule.md](file:///C:/Users/Opengate/.gemini/config/rules/cloudflare_automation_rule.md) | Cloudflare 100%: Tự lấy API Key từ Windows Env, trỏ A Record, áp Security Rules tự động. |
+| *"audit"*, *"check seo"*, *"scan tổng thể site"*, *"soi lỗi web"* | [speckit.qa-audit](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.qa-audit/SKILL.md) + [seo-preflight-card](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/seo-preflight-card/SKILL.md) | HUNTER Team: Scan SEO, Schema, Link rác, CWV, UI/UX & lập báo cáo audit. |
+| *"cào data"*, *"crawl"*, *"scrape site"* | [speckit.debug-crawler](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.debug-crawler/SKILL.md) | SPIDER Team: Stealth Puppeteer, chống bot, retry batching. |
+| *"lập cấu trúc dự án"*, *"lập kế hoạch pillar silo"*, *"cấu trúc pillar silo"*, *"phân tích keyword seo"*, *"route url seo"* | [speckit.seo-content](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.seo-content/SKILL.md) + [speckit.nextjs-pseo](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.nextjs-pseo/SKILL.md) | Bắt buộc thiết kế **Cấu trúc Pillar-Silo Public Frontend chuẩn Technical SEO 5 cấp** trước khi code. |
+| *"thêm tính năng X"*, *"viết code module Y"*, *"fix bug Z"* | [speckit.specify](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.specify/SKILL.md) + [speckit.implement](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.implement/SKILL.md) | BUILDER Team: Đánh giá SDD 3 bước (Spec -> Code -> Test Loop). |
+| *"học cái này đi"*, *"lưu rule này lại"*, *"nhớ nhé"* | [ai_self_learning_directive.md](file:///C:/Users/Opengate/.gemini/config/rules/ai_self_learning_directive.md) | Tự phân tích bối cảnh, trích xuất bài học và ghi file memory local (`.agent/`) hoặc global (`.gemini/config/rules/`). |
 
 ---
 
 ## 📋 QUY TRÌNH BẮT BUỘC — 4 Bước
 
 ### Bước 1: Phân Tích Ngữ Cảnh (Ngầm)
-
-Agent tự hỏi:
-| Tiêu chí | Câu hỏi |
-|---|---|
-| **Phạm vi** | 1 file / 1 module / toàn dự án? |
-| **Độ phức tạp** | Giải quyết < 5 bước? Hay cần nhiều luồng? |
-| **Rủi ro** | Deploy production / xóa data / thay đổi lớn? |
-| **Song song** | Nhiều việc độc lập cần chạy cùng lúc không? |
-| **Thời gian** | User cần ngay (< 1 phút) hay OK chờ vài phút? |
+Agent tự động nhận diện từ khóa theo ma trận Intent phía trên.
 
 ### Bước 2: Chọn Phương Án (Nhẹ nhất đủ dùng)
-
 ```
 A) Trả lời thẳng    → câu hỏi lý thuyết, giải thích, so sánh
 B) Dùng 1 Skill     → 1 lĩnh vực, < 5 bước, không cần parallel
@@ -32,135 +76,79 @@ C) 1 Subagent ngầm  → tác vụ dài, đơn luồng, cần chạy background
 D) Spawn Team       → THỰC SỰ cần song song (>50% tiết kiệm thời gian)
 ```
 
-> ⚠️ **Nguyên tắc tối giản:** Không dùng D nếu B hoặc C đã đủ.
-
 ### Bước 3: Trình Bày Đề Xuất
-
 ```
-🎯 [Tóm tắt mục tiêu] | 📊 [Đơn giản/Trung bình/Phức tạp] | ⏱️ [X phút]
+🎯 [Tóm tắt mục tiêu] | 📊 [Đơn giản/Trung bình/Phức tạp] | ⏱️ [Ước tính thời gian]
 💡 Đề xuất: Phương án [X] — [Lý do 1 câu]
 ✋ Anh xác nhận không? (hoặc muốn cách khác?)
 ```
 
 ### Bước 4: Chờ Xác Nhận → Thực Thi
-- `"ok"` / `"làm đi"` → Thực thi theo đề xuất
-- `"dùng X thay"` → Chuyển phương án
-- `"giải thích thêm"` → Phân tích chi tiết hơn
 
 ---
 
-## ⚡ EXCEPTIONS — Tự Làm Ngay Không Cần Hỏi
+## 🏗️ QUY CHUẨN TEAMWORK SDD (PROJECT LIFECYCLE WORKFLOW)
 
-Rủi ro thấp, quota thấp:
-- Đọc file, giải thích code, tư vấn kiến trúc
-- Tạo file mới trong `tmp/` hoặc `.agent/`
-- Sửa typo / format nhỏ trong 1 file
-- Lệnh read-only: `git log`, `docker ps`, `dir`
-- Tạo artifact báo cáo / draft
+Quy trình chuẩn khi khởi tạo hoặc phát triển một tính năng/dự án mới để đảm bảo tính chặt chẽ, tối ưu token (Quota-driven), và an toàn (Anti-Surface Fix).
 
----
+### Bước 0: Phân loại Yêu cầu & Khoanh vùng Tech Stack (Routing)
+- **Hành động:** Tự động phân tích yêu cầu để định tuyến.
+  - **Stack 1 (Astro + Cloudflare Pages + D1):** Ưu tiên Text, Blog, pSEO.
+  - **Stack 2 (Next.js + PostgreSQL + VPS Cloud):** Ưu tiên Web App logic phức tạp.
+  - **Luật Chống Đoán Mò:** Nếu yêu cầu Tech Stack lạ (PHP, Django...), Agent **dừng lại ngay** và hỏi trắc nghiệm (A/B) để User quyết định.
 
-## 🗺️ 4 ĐỘI CHUYÊN BIỆT
+### Bước 1: Lập Đặc tả & Kiến trúc (BA/Spec & SEO Architecture)
+- **Hành động:** Phân tích, chốt Tech Stack, vẽ Blueprint kiến trúc, luồng data. Ghi vào `.agents/specs/spec.md`.
+- **Quy chuẩn Lập Kế hoạch Pillar-Silo (Bắt buộc cho Public Frontend pSEO):**
+  Khi dự án khởi tạo có Public Frontend / pSEO, BẮT BUỘC phải lập kế hoạch cấu trúc 5 Cấp độ chuẩn Technical SEO trước khi viết code:
+  1. **Cấp 1 — Entity Classification & Taxonomy:** Phân loại sản phẩm/dịch vụ/entity theo Tier ưu tiên (Tier 1 Core/National, Tier 2-6 Regional/State/Sub-category).
+  2. **Cấp 2 — Keyword Research & Intent Mapping:** Phân tích 4 nhóm intent (*Commercial, Informational, Tutorial/Guides, Long-tail*) kèm Volume ước tính và target URL tương ứng.
+  3. **Cấp 3 — Cấu trúc Cây Pillar - Silo - Cluster & Mapping Route URL Next.js:**
+     - *Pillar Hub (`/category/`)*: Hub tổng quan thương mại, prose ~1500+ từ.
+     - *Silo Pages (`/category/sub-item/`)*: Trang ngách chuyên sâu + Interactive Live Tester/Widget, ~1200+ từ.
+     - *Cluster Pages (`/category/sub-item/feature/`)*: Trang hướng dẫn/dữ liệu chi tiết.
+     - Route tree linh hoạt bám sát Next.js App Router.
+  4. **Cấp 4 — Technical SEO Onpage & Schema JSON-LD Checklist:**
+     - Single `<h1>` per page, Heading hierarchy H1->H2->H3.
+     - Canonical Tag absolute (`trailingSlash: true`).
+     - Multi-layer Schema JSON-LD (`Organization`, `WebSite`, `Article`/`Product`/`SoftwareApplication`/`LocalBusiness`, `FAQPage`, `BreadcrumbList`).
+     - Internal linking 3 chiều Pillar <-> Silo <-> Cluster qua Component `<RelatedLinks>`.
+  5. **Cấp 5 — Chiến lược Hybrid Content & Định danh Con số Phong Thủy Bát Tự:**
+     - **Hybrid Content Model**: Kết hợp văn bản tĩnh SSR Prose Indexable cô đọng (cho Google Crawlers & AI Search) với các khối tương tác động Client Interactive Widgets/Tools (cho trải nghiệm người dùng).
+     - **Quy tắc Con số Phong Thủy Bát Tự (Universal Feng Shui Numeric Rule)**: Mọi con số hiển thị công khai trên website (gói dịch vụ, số giá, hotline, số đếm thống kê, số lượng items, badges, số đại diện...) BẮT BUỘC tuân thủ Bát Tự Phong Thủy — ưu tiên chọn các số may mắn Phát (8), Trường Thịnh (9), Lộc (6), tránh tuyệt đối các số xui như Tử (4).
+- **Trạm kiểm dịch 1:** Dừng lại hỏi: "Bản Spec & Cấu trúc Pillar-Silo này chuẩn ý anh chưa?". Chỉ đi tiếp khi User chốt "OK".
 
-### 🔍 ĐỘI HUNTER — SEO & QA Audit
-**Kích hoạt khi:** *"audit / check tổng thể / scan [dự án]"*
+### Bước 2: Bóc tách Task & Lên Plan (Planner)
+- **Hành động:** Bóc tách Checklist lưu vào `.agents/specs/tasks.md`. Áp dụng **Quota-Driven Routing** (Pro cho logic khó, Flash/Flash Lite cho UI/Content).
 
-**3 Subagent song song:**
-```
-Sub-A1: SEO Analyst
-  Skills: speckit.seo-technical, speckit.checklist
-  Job: Quét → Phân Tích → ĐỀ XUẤT FIX trực tiếp. Xử lý Metadata, Schema, Silo.
-  + Soi Header/Footer: Đảm bảo sạch link rác (no `#`), link volume cao ở vị trí ưu tiên.
-  + Soi Homepage/Pillar: Đảm bảo chia H2 theo Section (Vùng miền, Cụm logic).
-  Output: seo_[YYYYMMDD].md (Kèm checklist lệnh/file cần sửa để Main Agent tự Fix)
+### Bước 3: Đội hình Thực thi Code theo Module (Builder / Coder)
+- **Hành động:** Coder/Builder xây dựng từng Module/Page theo `tasks.md`.
+- **🛡️ CONTRACT BẮT BUỘC KHI CODE TỪNG PAGE — SEO Preflight Card:**
+  Khi code hoàn tất bất kỳ trang nào (Home, Pillar, Silo, Cluster), Coder BẮT BUỘC đọc và đối chiếu đủ **19 Hạng Mục Kiểm Tra** trong [seo-preflight-card](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/seo-preflight-card/SKILL.md) (Single Source of Truth). Bao gồm: URL/Canonical, Content Structure, Schema, Internal Links, CWV Performance, Image Pipeline, Logo/Favicon, Navigation Priority, Live Search, SSR/Font.
+- **Trạm kiểm dịch 2 (Anti-Hallucination):** Gặp lỗi rẽ nhánh phức tạp hoặc đụng quota -> **Dừng lại, sinh báo cáo lỗi (`debug-report.md`)**. Không tự ý bịa code.
 
-Sub-A2: Bug Hunter (Puppeteer)
-  Skills: speckit.debug-crawler, speckit.qa-audit
-  Job: Crawl đại diện → Tìm JS Errors, 404, Hydration → TÌM ROOT CAUSE & ĐỀ XUẤT FIX.
-  + Scan nhanh ALL URLs (HTTP status).
-  Output: bugs_[YYYYMMDD].md (Kèm giải pháp fix triệt để)
-
-Sub-A3: Content Auditor
-  Skills: speckit.analyze
-  Job: Quét Thin Content, Spam Key, Spam Link, Duplicate Pattern, Alt Text.
-  + Tự động lên danh sách các điểm cần xóa/viết lại trên Home, Pillar, Cluster.
-  Output: content_[YYYYMMDD].md
-```
-
-**Main Agent tổng hợp:** `audit_full_[YYYYMMDD].md`.
-⚠️ **Bắt buộc:** Sau khi quét xong, Agent phải hỏi user: *"Em đã tìm ra X lỗi, anh có muốn em tự động CHẠY FIX các lỗi này luôn không?"*
-**Lưu tại:** `D:\Project\[du-an]\.agent\reports\`
-**Thời gian mục tiêu:** < 5 phút
-
----
-
-### 🕷️ ĐỘI SPIDER — Data Pipeline & Crawler
-**Kích hoạt khi:** *"crawl / cào data / scrape [target]"*
-
-**Pipeline 3 tầng:**
-```
-Sub-C1: Stealth Crawler (gemini-2.5-flash-lite)
-  Skills: speckit.debug-crawler
-  Config: Puppeteer Stealth, concurrency=3, delay 1.5-3s, retry=3
-  Anti-bot: Rotate UA, fake fingerprint
-  Output: raw/batch_[N].json
-
-Sub-C2: Data Processor (gemini-2.5-flash)
-  Job: Clean → Validate → Deduplicate → Chuẩn hóa Unicode
-  Output: processed/data_[YYYYMMDD].json + error_log.md
-
-Sub-C3: Monitor (gemini-2.5-flash-lite)
-  Job: Track block rate, speed, ETA
-  Alert: Block > 30% → giảm concurrency | Block > 50% → DỪNG, báo ngay
-```
+### Bước 4: Kiểm thử & Audit Chuẩn Trang (QA Tester / Hunter)
+- **Hành động:** QA Tester kiểm thử chi tiết **TỪNG PAGE 1 (Page-by-Page Audit)** dựa ĐÚNG THEO 10 Case Kiểm Thử Nối Tiếp ở Bước 3.
+- **Phương pháp QA:**
+  - Fast Scan (100% URLs): Phát hiện 404, Thin content (< 300 từ), Thiếu Title/H1, Leaked Mock Data.
+  - Deep Audit (URL Đại diện từng loại Page): Puppeteer kiểm tra Console Error, Headings, GEO Box, Schema JSON-LD, LCP Lazy images, Visual Accordion.
+- **Tiêu chí duyệt:** Score ≥ 80/100 VÀ KHÔNG CÓ LỖI 🔴 CRITICAL -> Mới được phép cho Deploy. Nếu vi phạm 🔴 -> Block Deploy ngay lập tức và xuất `qa-audit-report.md`.
 
 ---
 
-### ⚙️ ĐỘI BUILDER — Feature Development
-**Kích hoạt khi:** *"thêm tính năng / build / fix bug phức tạp"*
-
-**Pipeline SDD 3 Phase:**
-```
-Phase 1 (Song song):
-  Sub-B1: Spec Writer (Pro) — speckit.specify → spec.md → CHỜ DUYỆT
-  (⚠️ Bắt buộc: Spec phải bao gồm chuẩn SEO Onpage: H2, Internal Link ngang/dọc, Header/Footer sạch)
-  Sub-B2: Codebase Researcher (flash) — speckit.analyze → research_notes.md
-
-Phase 2 (Sau duyệt):
-  Sub-B3: Implementer (flash) — speckit.implement → code theo tasks.md
-  (⚠️ Bắt buộc: Lúc code phải tự động tuân thủ chuẩn SEO, schema, không nhồi nhét spam)
-  Sub-B4: Tester (flash) — speckit.tester → test → feedback → B3 fix
-  [B3 và B4 trao đổi tự động, loop đến khi PASS]
-
-Phase 3:
-  Main Agent tổng hợp → walkthrough.md → báo user
-```
-
-**Framework configs:** Next.js (`npm run build`), WordPress (`php -l`), Node.js (`node --check`)
-
----
+## 🗺️ 4 ĐỘI CHUYÊN BIỆT & QUY TRÌNH DEPLOY
 
 ### 🚢 ĐỘI DEPLOYER — DevOps & Infrastructure
-**Kích hoạt khi:** *"deploy / setup docker / config cloudflare"*
+**Tuân thủ 100% quy chuẩn quy định tại [speckit.devops](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/speckit.devops/SKILL.md):**
 
-**⚠️ Production = BẮT BUỘC xác nhận explicit trước**
+#### 1. DEPLOY DEV (Development - Máy cá nhân)
+- Hot-reload code, dùng `docker-compose.yml`.
+- Tự động quét port trống local (dải 8900-8999).
+- Bind Localhost `127.0.0.1:${PUBLIC_PORT:-8920}:3000`.
 
-```
-Sub-D1: Docker Specialist — pc-sysadmin
-  Build → Up → Health check → Log check → Port check
-
-Sub-D2: Cloudflare Configurer — cloudflare-infra
-  Cache purge → DNS verify → Tunnel health → SSL check
-
-Sub-D3: Post-Deploy Verifier — speckit.qa-audit (quick mode)
-  Homepage 200 + < 3s → No JS Error → SSL valid → API OK
-  Nếu lỗi: Alert ngay + đề xuất rollback
-```
-
-**Safety Rules tuyệt đối:**
-- KHÔNG `docker system prune` khi chưa hỏi
-- KHÔNG xóa DB volume khi chưa backup
-- Production: bắt buộc anh reply `"ok deploy production"`
+#### 2. DEPLOY PRODUCTION (Server VPS) — BẮT BUỘC BÓC TÁCH 2 KỊCH BẢN:
+- **Kịch Bản 1: Deploy Production Lần Đầu**: Xác nhận IP VPS -> Quét Port Collision (`ss -tulpn`) -> Build `docker-compose.prod.yml` -> Nginx Proxy (`nginx -t`) -> Cloudflare API & Certbot SSL.
+- **Kịch Bản 2: Deploy Update Thường Xuyên (Smart Deploy)**: Project Isolation (`cd /home/[domain]`) -> Smart Differential Rebuild (`--no-deps`) -> Zero Downtime & Memory check (`free -m`) -> Safe Cache flush.
 
 ---
 
@@ -171,13 +159,3 @@ Sub-D3: Post-Deploy Verifier — speckit.qa-audit (quick mode)
 | Phân tích / Spec / Kiến trúc | Pro |
 | Code / Script / DevOps | flash |
 | Crawl / Monitor / Read-only | flash-lite |
-
----
-
-## 🔗 Blueprint Files (Chi Tiết)
-
-- [hunter-team.md](file:///C:/Users/Opengate/.gemini/config/subagents/hunter-team.md)
-- [spider-team.md](file:///C:/Users/Opengate/.gemini/config/subagents/spider-team.md)
-- [builder-team.md](file:///C:/Users/Opengate/.gemini/config/subagents/builder-team.md)
-- [deployer-team.md](file:///C:/Users/Opengate/.gemini/config/subagents/deployer-team.md)
-- [Global Rule (auto-load)](file:///C:/Users/Opengate/.gemini/config/rules/multi_agent_routing_rule.md)

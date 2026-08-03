@@ -27,7 +27,7 @@ Tuyệt đối tuân thủ nguyên tắc "Từ nhẹ đến nặng" để tiết
 - **Khi nào áp dụng**: Cấp 1 bó tay, bug ẩn không sinh log, hoặc User chủ động yêu cầu "scan/audit toàn bộ website", "truy vết lỗi".
 - **Quy trình vận hành Crawler**:
   1. Hỏi User URL gốc cần scan và tuỳ chọn quét Desktop hay Mobile.
-  2. Để tối ưu dung lượng, KHÔNG `npm install` puppeteer lại từ đầu ở mỗi dự án. Hãy chạy `npm link puppeteer puppeteer-extra puppeteer-extra-plugin-stealth` tại thư mục `tmp/` để dùng bản cài global. Sau đó tạo Script Tạm (`tmp/debug_crawler.js`) với cấu hình `puppeteer-extra-plugin-stealth` chống block. KHÔNG xả rác ra project chính.
-  3. Cài cắm các bẫy rập: `page.on('console')`, `page.on('pageerror')`, `page.on('response')` (bắt mã lỗi >= 400). Trích xuất thẻ SEO và gọi `screenshot()`.
-  4. Thực thi file bằng Node.js và đọc kết quả quét.
-  5. Viết báo cáo Tiếng Việt, tổng kết lỗi ẩn, trả về Link Clickable dạng `[Mở thư mục Screenshots](file:///C:/path/to/tmp/screenshots/)` để User kiểm tra trực quan.
+  2. Để tối ưu dung lượng, TUYỆT ĐỐI KHÔNG `npm install`, không `npm link` và KHÔNG tạo thư mục `tmp` trong workspace của dự án. Hãy sử dụng thư mục tạm global của Agent: `C:\Users\Opengate\.gemini\tmp`. Khởi tạo Script Tạm (`C:\Users\Opengate\.gemini\tmp\debug_crawler.js`) tại đây. Yêu cầu Require node modules từ global, không cài vào workspace.
+  3. Cài cắm các bẫy rập: `page.on('console')`, `page.on('pageerror')`, `page.on('response')` (bắt mã lỗi >= 400). Trích xuất thẻ SEO và gọi `screenshot()`. Lưu ảnh vào thư mục global `C:\Users\Opengate\.gemini\tmp\screenshots\`.
+  4. Thực thi file bằng Node.js (Vd: `node C:\Users\Opengate\.gemini\tmp\debug_crawler.js`) và đọc kết quả quét.
+  5. Viết báo cáo Tiếng Việt, tổng kết lỗi ẩn, trả về Link Clickable dạng `[Mở thư mục Screenshots](file:///C:/Users/Opengate/.gemini/tmp/screenshots/)` để User kiểm tra trực quan.

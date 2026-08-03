@@ -23,6 +23,9 @@ Cung cấp bộ quy chuẩn chiến lược chuyên sâu giúp Founder, Product 
    - **Ưu tiên Brand Domain**: Chọn tên miền ngắn gọn, độc đáo, dễ nhớ, dễ phát âm (VD: `TasteHi`, `Gologin`).
    - 🛑 **CẤM Keyword-Stuffed EMD**: Tránh nhồi nhét chuỗi từ khóa thô vào tên miền (VD: `best-cheap-antidetect-browser-software-2026.com`). Google có các thuật toán xử lý EMD chất lượng thấp và tên miền rập khuôn.
    - Tên miền thương hiệu giúp dễ đăng ký **Google Business Profile**, nâng cao tỉ lệ gõ trực tiếp (Direct Traffic) và tích lũy uy tín E-E-A-T bền vững.
+4. **Quy tắc Phong Thủy Tên Miền (BẮT BUỘC áp dụng cho Founder Toàn & Vĩnh Sỹ)**:
+   - Dựa trên Dụng Thần kết hợp (Kim/Thủy & Mộc/Hỏa), tên miền ưu tiên sử dụng chữ cái đầu tiên thuộc hành **Thủy** (B, Đ, H, M, P) hoặc hành **Mộc** (G, K).
+   - Số lượng ký tự trong tên miền chính (không tính đuôi `.com`, `.vn`) ưu tiên Cát Số: 9, 11, 13 (Phát triển bứt phá - Dương) hoặc 10, 12 (Tích lũy bền vững - Âm). Cấm kỵ tổng ký tự rơi vào 4, 14.
 3. **Subdomain vs Subfolder Architecture**:
    - Google xử lý Subdomain (`blog.example.com`) và Subfolder (`example.com/blog`) bình đẳng về mặt kỹ thuật indexing.
    - **Quy tắc phân bổ kiến trúc:**
@@ -73,6 +76,22 @@ NẾU doanh nghiệp sở hữu nhiều tên miền thương hiệu hoặc tên 
    - Nếu chỉ tổng hợp lại thông tin đã có trên mạng ➔ Đánh giá **FAIL Feasibility**, không triển khai.
 3. **Độc lập Chiến lược giữa SEO & Google Ads**:
    - Đội ngũ phải ghi nhớ: Mua quảng cáo Google Ads KHÔNG có bất kỳ tác động tích cực hay tiêu cực nào đến thứ hạng SEO tự nhiên. SEO tự nhiên phụ thuộc 100% vào chất lượng kỹ thuật & nội dung theo tiêu chuẩn Google Search.
+
+
+### Phase 6: Vòng Đời Triển Khai SEO (4 Cases Lifecycle Protocol)
+Đội ngũ Agent và Founder bắt buộc phải nhận diện dự án đang nằm ở Case nào để kích hoạt luồng công việc chuẩn xác:
+1. **Case 1: Audit Toàn Site (Post-Deployment)**:
+   - *Bối cảnh:* Quét sâu codebase ở localhost hoặc site đang chạy.
+   - *Action:* Gọi speckit.qa-audit với thuật toán cào đệ quy (BFS Crawler) kết hợp phân tích Sitemap để truy vết Orphan Page, 404, Cannibalization và Onpage Vitals toàn diện.
+2. **Case 2: Lập Kế hoạch SEO Khởi tạo (Strategic Pre-code Planning)**:
+   - *Bối cảnh:* Bắt tay thiết kế 1 site mới.
+   - *Action:* BẮT BUỘC User phải cung cấp file Data Thô (CSV từ Ahrefs/Semrush chứa Search Volume/KD). Dựa vào file này, Agent phân bổ cụm Silo, Pillar, Cluster và định cỡ Volume. KHÔNG BAO GIỜ để AI tự "tưởng tượng" ra Search Volume.
+3. **Case 3: Sản xuất Nội dung & Cập nhật Tính năng (Ongoing Regression)**:
+   - *Bối cảnh:* Kéo 1 component UI mới hoặc xuất bản 5 bài viết mới.
+   - *Action:* Kích hoạt Micro-Agent quét cục bộ. Cross-check chống Cannibalization với CSDL cũ và chấm điểm Core Web Vitals cục bộ để không làm suy thoái (Regression) điểm SEO của hệ thống hiện tại.
+4. **Case 4: Gián Điệp Đối Thủ (Competitor Reverse Engineering)**:
+   - *Bối cảnh:* Giai đoạn R&D trước khi lập Plan (Case 2).
+   - *Action:* Điều Spider cào site Top 1 thị trường để trích xuất cấu trúc Sitemap, Silo, H1, JSON-LD và Link Graph, từ đó copy và cải tiến kiến trúc.
 
 ---
 

@@ -19,6 +19,14 @@ Implement code theo tasks.md, tuân thủ IRONCLAD Protocols và **Deviation Rul
 - TRƯỚC KHI tạo UI Component mới (như Button, Card), BẮT BUỘC rà soát `src/components/` hoặc `src/ui/`.
 - Nếu đã có component tương tự, PHẢI import và xài lại. Chỉ viết mới khi không thể extend component cũ.
 
+### 🚨 MANDATORY: Deep Context Scan & Anti-Surface-Fix Protocol ⭐
+- **Deep Context Scan (Nạp Sâu Context & Audit Reports)**:
+  - TRƯỚC KHI thực thi bất kỳ task nào, BẮT BUỘC dùng `list_dir` / `view_file` rà soát triệt để các file Báo cáo Audit gần nhất trong dự án (ví dụ `seo_*.md`, `debug-report.md`, `.agent/specs/`, `docs/`, các file workflow markdown như `12-seo-geo.md`...) cùng với file `master-identity.md` / `workflow_config.json`.
+  - TUYỆT ĐỐI KHÔNG đọc lướt rồi suy diễn hoặc chỉ dựa trên thông tin bề nổi.
+- **Anti-Surface Fix (Chống Sửa Nông / Sửa Triệu Chứng Bề Nổi)**:
+  - CẤM dừng lại ở việc fix lỗi bề nổi/triệu chứng trước mắt (ví dụ: thấy lỗi port/cache/syntax/1 file monolithic thì nhảy vào fix ngay tại đó mà bỏ qua đối chiếu kiến trúc sitemap index, route hierarchy, spec dự án).
+  - Mọi thay đổi BẮT BUỘC phải đối chiếu xem code hiện tại có tuân thủ đúng Kiến trúc Quy chuẩn trong Báo cáo Audit & Workflow dự án hay không. Nếu phát hiện code vi phạm kiến trúc quy chuẩn (ví dụ: sitemap đang monolithic trong khi doc/audit yêu cầu Sitemap Index), BẮT BUỘC phải refactor đúng kiến trúc chuẩn trong doc, KHÔNG ĐƯỢC sửa chữa tạm bợ.
+
 ### Living Documentation Loop (Chống Drift) ⭐
 - Khi code xong và chuẩn bị pass task, PHẢI đối chiếu lại code thực tế với `spec.md` gốc.
 - Nếu có sự thay đổi về luồng logic, DB schema, hay tham số API so với Spec ban đầu, BẮT BUỘC update ngược (Reverse Update) thay đổi đó vào file `spec.md`. Đảm bảo Spec luôn đúng với Code.
@@ -29,10 +37,8 @@ Implement code theo tasks.md, tuân thủ IRONCLAD Protocols và **Deviation Rul
 - **Blocker**: Nếu kẹt, tự thực hiện "Root Cause Analysis" trước khi hỏi người dùng.
 - **Arch Change**: Nếu cần đổi kiến trúc, PHẢI hỏi người dùng.
 
-### Strict Web Vitals & SEO Enforcement (Bắt buộc với Front-End)
-- **Diệt Soft 404**: Trong SSR (Next.js/Astro), tuyệt đối không render trang UI rỗng kèm HTTP 200 khi API trả về rỗng/lỗi. Bắt buộc gọi `notFound()` hoặc ném HTTP 404/500.
-- **LCP & Tốc độ**: Ảnh banner/hero luôn dùng `<Image priority>` (Next.js) hoặc preload. Không dùng lazy loading cho ảnh Above-the-fold.
-- **Tối ưu GEO/Schema**: Đặt tóm tắt (Direct Answer) lên đầu. Các meta tag `og:image`, `twitter:image`, `url` trong SEO Schema JSON-LD 100% phải dùng Absolute URL (`https://...`), tuyệt đối cấm Relative URL.
+- **🛡️ SEO PREFLIGHT CARD (BẮT BUỘC ĐỌC & TUÂN THỦ KHI TẠO/SỬA MỌI ROUTE/PAGE)**:
+  Mọi Agent khi code bất kỳ Page nào BẮT BUỘC đọc và đối chiếu đầy đủ Checklist trong [seo-preflight-card](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/seo-preflight-card/SKILL.md) — Bộ 13 hạng mục SEO Onpage & GEO (Single Source of Truth). Không cần đọc thêm `speckit.seo-technical` trừ khi cần tra cứu sâu.
 
 ### Self-Check Protocol
 - Mọi task chỉ hoàn thành khi vượt qua Build Gate (không lỗi Type, không lỗi Docker).
@@ -41,4 +47,5 @@ Implement code theo tasks.md, tuân thủ IRONCLAD Protocols và **Deviation Rul
 ## 🚫 Guard Rails
 - KHÔNG commit code lỗi build.
 - **ZERO-TRUST SECRETS**: KHÔNG hard-code sensitive info (API Key, DB URL, Token) vào bất kỳ file code nào. Mọi cấu hình nhạy cảm BẮT BUỘC dùng biến môi trường (`process.env.VAR` hoặc `import.meta.env`). Chỉ được sinh file `.env.example` với giá trị rỗng.
+- **CẤM HARDCODE KHI TẠO / SỬA RULE & SKILL**: Mọi rule hay skill được tiếp thu hoặc bổ sung vào hệ thống BẮT BUỘC phải trừu tượng hóa thành nguyên lý tổng quát (Generic Standard), TUYỆT ĐỐI CẤM gán cứng (hardcode) tên miền, URL, credentials, hay câu chữ riêng của từng dự án cụ thể.
 - KHÔNG tạo component UI trùng lặp nếu hệ thống đã có sẵn (Ví dụ: Không tạo `BlogCard` nếu `Card` đã thỏa mãn).

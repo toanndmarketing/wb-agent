@@ -1,0 +1,1 @@
+SELECT address, REGEXP_REPLACE(REGEXP_REPLACE(SPLIT_PART(address, ',', 1), '^[0-9\-]+\s+', ''), '\s+(Suite|Ste|Spc|Unit|Store|Bldg|Pad|Apt|#).*$', '', 'i') AS street FROM "Restaurant" WHERE name LIKE '%Subway%' LIMIT 15;

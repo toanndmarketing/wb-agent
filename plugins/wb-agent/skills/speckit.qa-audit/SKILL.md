@@ -10,16 +10,26 @@ Kiểm tra toàn diện mọi URL thực tế của project theo **2 chiến lư
 
 ## 🪄 CUSTOM SLASH COMMANDS (TRIGGER ALIAS)
 Agent **BẮT BUỘC** tự động kích hoạt các kịch bản tương ứng nếu User bắt đầu câu chat bằng các lệnh sau:
-- `/scan-static`: (Quét Tĩnh) Không cần build, chỉ đọc cấu trúc source code, kiểm tra lỗ hổng Hardcode Secrets, Component Reusability, Zod Validation, và Techstack Mismatch. Báo cáo ra `code-audit-report.md`.
-- `/scan-dynamic`: (Quét Động) Khởi chạy quy trình QA Audit (Fast Scan + Deep Scan bằng Puppeteer). Chấm điểm SEO, Schema, Core Web Vitals. Báo cáo ra `qa-audit-report.md`.
-- `/scan-hunter`: (Đội Đặc Nhiệm) Triệu hồi toàn bộ `hunter-team` chạy ngầm (Background). Quét rà soát Orphan Pages, Redirect Chains và Audit diện rộng trên hệ thống lớn. Lên Checklist cần sửa.
+
+### `/audit-seo` — Lệnh Chính (Primary Command)
+- **Cú pháp**: `/audit-seo [URL hoặc tên dự án] [--level 1|2|3] [--batch]`
+- **Mặc định**: Không có `--level` → tự động chạy cấp 2 (dynamic).
+- `--level 1` = `/scan-static` | `--level 2` = `/scan-dynamic` | `--level 3` = `/scan-hunter`
+- `--batch`: Quét đồng loạt nhiều dự án. Agent tự scan thư mục workspace, phát hiện các project (dựa trên `package.json` / `next.config.ts` / `astro.config.mjs`), build lần lượt, audit từng site và xuất **1 báo cáo tổng hợp `batch-audit-summary.md`**.
+
+### Lệnh tắt (Alias — tương thích ngược):
+- `/scan-static`: (Cấp 1 — Quét Tĩnh) Không cần build, chỉ đọc source code. Check: Hardcode Secrets, `<a>` thiếu `title`, `href="#"`, `<a>` bọc `<div>`, thiếu `alt`, thiếu Schema, thiếu canonical, ảnh PNG/JPG chưa convert WebP. Output: `code-audit-report.md`.
+- `/scan-dynamic`: (Cấp 2 — Quét Động) Build + Puppeteer test. DOM check: H1, headings, canonical, Schema JSON-LD, Console errors. UI check: GEO box, FAQ accordion, image alt/dimensions, navigation priority, live search. CWV check: LCP lazy, CLS dimensions, INP handlers. Output: `qa-audit-report.md` + screenshots.
+- `/scan-hunter`: (Cấp 3 — Đội Đặc Nhiệm) Full audit: Lighthouse CLI, Sitemap cross-check DB, Orphan Pages, Redirect Chains, Keyword Cannibalization (so sánh Meta Title toàn site). Output: `qa-audit-report.md` + `fix-checklist.md`.
 
 ---
 
 ## 📥 Pre-flight (BẮT BUỘC ĐỌC TRƯỚC)
-1. `.agent/identity/master-identity.md` → Base URL, framework, DB connection, cấu trúc Silo/Route.
-2. `package.json` → Xác định dependencies có sẵn (puppeteer, axios, prisma…).
-3. Config framework (`next.config.ts`, `astro.config.mjs`) → `trailingSlash`, `basePath`.
+1. **🚨 MANDATORY: Deep Context Scan**: Rà soát triệt để các file Báo cáo Audit cũ (`seo_*.md`, `qa-audit-report.md`), workflow files (`12-seo-geo.md`), và `master-identity.md`. CẤM đọc lướt rồi tự suy diễn.
+2. **Anti-Surface Fix**: Khi phát hiện lỗi QA/Audit, BẮT BUỘC đối chiếu với Kiến trúc Quy chuẩn của dự án (ví dụ Sitemap Index vs Single Sitemap). CẤM đưa ra giải pháp sửa nông/bề nổi.
+3. `.agent/identity/master-identity.md` → Base URL, framework, DB connection, cấu trúc Silo/Route.
+4. `package.json` → Xác định dependencies có sẵn (puppeteer, axios, prisma…).
+5. Config framework (`next.config.ts`, `astro.config.mjs`) → `trailingSlash`, `basePath`.
 
 ---
 
@@ -31,14 +41,14 @@ Thu thập URL từ 2 nguồn độc lập và **BẮT BUỘC ĐỐI CHIẾU CH�
 
 | Nguồn | Cách lấy & Output |
 |-------|---------|
-| **Nguồn 1: Sitemap** | Fetch `{BASE_URL}/sitemap.xml` → parse `<loc>` → Output: `tmp/url-sitemap.txt` |
-| **Nguồn 2: DB & Code** | Scan dynamic routes (`src/app/**/page.tsx`) + Query Database trực tiếp → Output: `tmp/url-db.txt` |
+| **Nguồn 1: Sitemap** | Fetch `{BASE_URL}/sitemap.xml` → parse `<loc>` → Output: `C:\Users\Opengate\.gemini\tmp\url-sitemap.txt` |
+| **Nguồn 2: DB & Code** | Scan dynamic routes (`src/app/**/page.tsx`) + Query Database trực tiếp → Output: `C:\Users\Opengate\.gemini\tmp\url-db.txt` |
 
 **Cross-Check Logic (Cực kỳ quan trọng):**
 - URL có trong `url-db.txt` nhưng KHÔNG CÓ trong `url-sitemap.txt` → `[🔴 BUG SEO] Sitemap bị thiếu, Google không index được.`
 - URL có trong `url-sitemap.txt` nhưng KHÔNG CÓ trong `url-db.txt` → `[🔴 BUG SEO] Sitemap chứa link rác/URL ảo (Ghost URL).`
 
-→ Cuối cùng merge 2 tệp này lại thành tệp tổng `tmp/url-master.txt` để đưa vào Bước 2.
+→ Cuối cùng merge 2 tệp này lại thành tệp tổng `C:\Users\Opengate\.gemini\tmp\url-master.txt` để đưa vào Bước 2.
 
 ---
 
@@ -46,10 +56,10 @@ Thu thập URL từ 2 nguồn độc lập và **BẮT BUỘC ĐỐI CHIẾU CH�
 
 **Mục tiêu**: Phát hiện data gap, thiếu nội dung, link chết — không cần render JS.
 
-Script `tmp/qa-fast-scan.js` dùng `fetch()` thuần (không Puppeteer), chạy song song 20 concurrent:
+Script `C:\Users\Opengate\.gemini\tmp\qa-fast-scan.js` dùng `fetch()` thuần (không Puppeteer), chạy song song 20 concurrent:
 
 ```javascript
-// Với MỖI URL trong tmp/url-master.txt:
+// Với MỖI URL trong C:\Users\Opengate\.gemini\tmp\url-master.txt:
 const res = await fetch(url)
 const html = await res.text()
 
@@ -73,7 +83,7 @@ const checks = {
 - `titleMissing || h1Missing` → `🔴 SEO CRITICAL`
 - `schemaPresent === false` → `🟡 SEO`
 
-**Output**: `tmp/fast-scan-result.json` — toàn bộ URL + trạng thái từng check.
+**Output**: `C:\Users\Opengate\.gemini\tmp\fast-scan-result.json` — toàn bộ URL + trạng thái từng check.
 
 ---
 
@@ -89,7 +99,7 @@ const checks = {
 ```
 → Tổng: 7-10 URL, cover đủ mọi loại template.
 
-Script `tmp/qa-deep-audit.js` dùng Puppeteer với Stealth plugin:
+Script `C:\Users\Opengate\.gemini\tmp\qa-deep-audit.js` dùng Puppeteer với Stealth plugin:
 
 ```javascript
 // Với MỖI URL đại diện → crawl đầy đủ:
@@ -107,10 +117,12 @@ const deep = await page.evaluate(() => ({
   metaDescLength: document.querySelector('meta[name="description"]')?.content?.length,
   canonical: document.querySelector('link[rel="canonical"]')?.href,
 
-  // Content Quality
+  // Content Quality & UI Section Depth
   wordCount: document.body.innerText.replace(/\s+/g,' ').split(' ').length,
+  homepageSectionCount: document.querySelectorAll('main > section, main > div > section, section').length,
   hasFaqBlock: document.body.innerHTML.includes('FAQPage') ||
                !!document.querySelector('[data-faq], .faq-block'),
+  hasVisualFaqAccordion: !!document.querySelector('[data-faq-accordion], details, .faq-accordion, .accordion-item'),
   hasDirectAnswer: !!document.querySelector('.geo-direct-answer, [class*="direct-answer"]'),
 
   // Schema & Technical
@@ -129,25 +141,25 @@ const deep = await page.evaluate(() => ({
 }))
 
 // Screenshot để review trực quan
-await page.screenshot({ path: `tmp/screenshots/${slug}.png`, fullPage: true })
+await page.screenshot({ path: `C:\Users\Opengate\.gemini\tmp\screenshots/${slug}.png`, fullPage: true })
 ```
 
-**Phân loại từ Deep Audit:**
+**Phân loại từ Deep Audit — Đối chiếu 1:1 với [seo-preflight-card](file:///C:/Users/Opengate/.gemini/config/plugins/wb-agent/skills/seo-preflight-card/SKILL.md) (Single Source of Truth cho tất cả SEO Criteria):**
 
-| Phát hiện | Severity |
-|-----------|---------|
-| JS Console Error | 🔴 BUG |
-| `h1Count !== 1` | 🔴 SEO |
-| `titleLength < 30` hoặc `> 60` | 🔴 SEO |
-| `metaDescLength > 160` hoặc trống | 🟡 SEO |
-| `hasBreadcrumbSchema === false` (trang con) | 🔴 SEO |
-| `hasFaqBlock === false` (Silo Hub) | 🟡 MISSING |
-| `hasDirectAnswer === false` | 🟡 MISSING |
-| `lcpLazy === true` | 🔴 CWV |
-| `h2InLink > 0` | 🔴 HTML SEMANTIC |
-| `brokenImages > 0` | 🔴 UI |
-| `crossSiloLinks === 0` (trang lá) | 🟡 LINK JUICE |
-| Schema thiếu loại phù hợp | 🟡 SEO |
+| Case Protocol | Phát hiện | Severity |
+|---------------|-----------|---------|
+| **Case 1** | URL thiếu Trailing Slash / Redirect 308 | 🔴 SEO |
+| **Case 2** | `titleLength < 30` hoặc `> 60` / `metaDescLength > 160` hoặc trống | 🔴 SEO |
+| **Case 3** | `h1Count !== 1` (Thiếu H1 hoặc thừa H1) / `h2InLink > 0` (Thẻ `<a>` bọc khối H2/H3) | 🔴 SEO / SEMANTIC |
+| **Case 4** | `hasDirectAnswer === false` (Thiếu GEO Direct Answer Hero Box hợp nhất) | 🔴 GEO / AI OVERVIEWS |
+| **Case 5** | Canonical relative / Meta Robots `noindex` ở public page | 🔴 SEO |
+| **Case 6** | `hasBreadcrumbSchema === false` (trang con) / Schema thiếu loại phù hợp | 🔴 SEO |
+| **Case 7** | `crossSiloLinks === 0` (Thiếu internal links 3 chiều Pillar<->Silo<->Cluster) | 🟡 LINK JUICE |
+| **Case 8** | `hasFaqSchema === true && hasVisualFaqAccordion === false` (Có Schema nhưng thiếu UI Accordion) | 🔴 FAQ VISUAL MISSING |
+| **Case 9** | Page rỗng/lỗi data nhưng trả về HTTP 200 thay vì `notFound()` (Soft 404) | 🔴 SOFT 404 |
+| **Case 10** | `brokenImages > 0` / Thiếu dynamic Alt text / Background màu Kim-Hỏa sai Phong Thủy | 🔴 UI / ALT TEXT |
+| **Chung** | JS Console Error | 🔴 BUG |
+| **Trang chủ** | `homepageSectionCount < 6` (Trang chủ < 6 Section) | 🔴 HOMEPAGE THIN CONTENT (-15đ, Block Deploy) |
 
 ---
 
@@ -200,7 +212,7 @@ await page.screenshot({ path: `tmp/screenshots/${slug}.png`, fullPage: true })
 ---
 
 ## 🚫 Guard Rails
-- Script chạy trong `tmp/` — không commit vào project.
+- Script chạy trong `C:\Users\Opengate\.gemini\tmp\` — không commit vào project.
 - Deep Audit (Bước 3) tối đa **10 URL** — không crawl toàn bộ.
 - Fast Scan (Bước 2) crawl ALL URL nhưng chỉ dùng `fetch()` thuần — nhanh, nhẹ.
 - Phải đối chiếu chéo (Cross-check) Sitemap và Database để bắt lỗi Sitemap.
