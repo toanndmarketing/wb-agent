@@ -62,7 +62,7 @@ class ProjectGenerator:
         print("📜 Tạo Constitution...")
         self._write_file(
             os.path.join(self.agents_dir, "memory", "constitution.md"),
-            render_constitution(self.project_name, needs_docker),
+            render_constitution(self.project_name, needs_docker, self.project_type),
         )
 
         # ─── 4. Project-scoped AGENTS.md (auto-loaded by Antigravity) ───

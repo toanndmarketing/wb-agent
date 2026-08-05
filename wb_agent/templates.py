@@ -11,6 +11,12 @@ from datetime import datetime
 # ============================================================================
 def render_master_identity(project_name: str, project_type: str, scan_context: str = "") -> str:
     today = datetime.now().strftime("%Y-%m-%d")
+    tech_stack_section = "<!-- Liệt kê tech stack chính: Next.js 15, Prisma, PostgreSQL, Docker... -->"
+    if project_type == "Astro (Cloudflare Pages)":
+        tech_stack_section = "- Framework: Astro (Cloudflare Serverless)\n- Database: Drizzle ORM + Cloudflare D1\n- Styling: TailwindCSS"
+    elif project_type == "Astro (Docker VPS)":
+        tech_stack_section = "- Framework: Astro (Node.js SSR Adapter)\n- Database: SQLite (better-sqlite3) in WAL mode\n- ORM: Drizzle ORM\n- Styling: TailwindCSS\n- Infrastructure: Docker (Node Alpine), Nginx Proxy"
+
     return f"""# 🧠 Master Identity — {project_name}
 
 > **Generated**: {today} | **Type**: {project_type} | **wb-agent**: v2.0
@@ -22,7 +28,7 @@ def render_master_identity(project_name: str, project_type: str, scan_context: s
 {project_type}
 
 ## Tech Stack
-<!-- Liệt kê tech stack chính: Next.js 15, Prisma, PostgreSQL, Docker... -->
+{tech_stack_section}
 
 ## Port Registry
 <!-- Quy định ports cho project này -->
@@ -53,7 +59,7 @@ def render_master_identity(project_name: str, project_type: str, scan_context: s
 # ============================================================================
 # 2. CONSTITUTION (project law)
 # ============================================================================
-def render_constitution(project_name: str, needs_docker: bool) -> str:
+def render_constitution(project_name: str, needs_docker: bool, project_type: str = "fullstack") -> str:
     docker_section = ""
     if needs_docker:
         docker_section = """
@@ -63,6 +69,12 @@ def render_constitution(project_name: str, needs_docker: bool) -> str:
 - Production dùng `docker-compose.prod.yml` với multi-stage builds.
 - Bind ports tới `127.0.0.1` (localhost only) cho proxied services.
 """
+
+    tech_stack_constitution = """- Framework: \n- Language: \n- Database: \n- ORM: """
+    if project_type == "astro_cloudflare":
+        tech_stack_constitution = "- Framework: Astro (Cloudflare Serverless)\n- Language: TypeScript / JavaScript\n- Database: Cloudflare D1\n- ORM: Drizzle ORM\n- Deployment: Cloudflare Pages & Workers"
+    elif project_type == "astro_vps":
+        tech_stack_constitution = "- Framework: Astro (Node.js SSR Adapter)\n- Language: TypeScript / JavaScript\n- Database: SQLite (better-sqlite3) in WAL Mode\n- ORM: Drizzle ORM\n- Deployment: VPS Docker + Nginx Proxy"
 
     return f"""# 📜 Constitution — {project_name}
 
@@ -74,11 +86,7 @@ def render_constitution(project_name: str, needs_docker: bool) -> str:
 - **Incremental**: Build incrementally, không bao giờ bắt đầu lại từ đầu.
 
 ## Tech Stack
-<!-- Khai báo stack chính xác tại đây -->
-- Framework: 
-- Language: 
-- Database: 
-- ORM: 
+{tech_stack_constitution}
 {docker_section}
 ## Coding Standards
 - TypeScript strict mode (nếu dùng TS).

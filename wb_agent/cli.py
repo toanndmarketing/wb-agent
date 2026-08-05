@@ -165,8 +165,10 @@ Loại dự án:
   web_saas    — Dashboard, Admin, API Service
   fullstack   — Frontend + Backend API (SEO + DevOps)
   wordpress   — WordPress Theme/Plugin
-  mobile_app  — iOS/Android
-  script      — Python/Bash/JS scripts
+  mobile_app       — iOS/Android
+  script           — Python/Bash/JS scripts
+  astro_cloudflare — Astro SSR on Cloudflare Pages
+  astro_vps        — Astro SSR Node + SQLite on Docker VPS
         """,
     )
 

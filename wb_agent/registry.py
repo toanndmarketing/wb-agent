@@ -45,6 +45,18 @@ PROJECT_TYPES = {
         "needs_seo": False,
         "needs_docker": False,
     },
+    "astro_cloudflare": {
+        "label": "Astro (Cloudflare Pages)",
+        "description": "Astro SSR Serverless on Cloudflare (D1/KV/R2)",
+        "needs_seo": True,
+        "needs_docker": False,
+    },
+    "astro_vps": {
+        "label": "Astro (Docker VPS)",
+        "description": "Astro SSR Node + SQLite on Docker VPS",
+        "needs_seo": True,
+        "needs_docker": True,
+    },
 }
 
 
@@ -68,6 +80,13 @@ def auto_detect_project_type(scan_profile: dict) -> str | None:
     pages = scan_profile.get("pages", [])
     api_routes = scan_profile.get("api", {}).get("routes", [])
     language = scan_profile.get("language")
+
+    # Astro detection
+    if framework == "Astro":
+        if has_docker:
+            return "astro_vps"
+        else:
+            return "astro_cloudflare"
 
     # WordPress detection
     if _has_file_pattern(scan_profile, ["wp-content", "functions.php", "style.css"]):
