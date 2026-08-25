@@ -29,17 +29,18 @@ Khi Team Phân tích SEO lập Spec hoặc Thiết kế kiến trúc (Silo/Clust
 1. **Phòng thủ Thin Content (Nội dung mỏng):** Không tạo ra hàng nghìn trang (pSEO) có nội dung rập khuôn, chỉ thay đổi mỗi tên địa phương/từ khóa. Mọi trang đích (landing page) phải có "Unique Value" (Dữ liệu đặc thù, bảng biểu, so sánh thực tế).
 2. **Phòng thủ Manipulative Link-building (Thao túng liên kết):** Cấu trúc Internal Link (Silo) phải tự nhiên, đi theo luồng hành trình người dùng (Link Juice đi từ Home -> Pillar -> Silo -> Cluster). Tuyệt đối cấm tạo các module "Tag Cloud" nhồi nhét link chéo vô tội vạ.
 3. **Phòng thủ AI Slop (Nội dung rác):** Toàn bộ quy trình sinh nội dung (Content Generation Pipeline) phải được thiết kế theo dạng Data-Driven (truyền data thực, số liệu API, JSON vào prompt) để ép AI phân tích, thay vì để AI tự do "bịa" chữ (Hallucinate).
-4. **Phòng thủ Programmatic Template Spam (Metadata Title & Description Độc bản Tự nhiên):**
-   - **CẤM TUYỆT ĐỐI công thức máy móc rập khuôn**: Cấm các template ghép cứng vô hồn dạng `[Tên] - [Địa chỉ], [Thành phố]`, `[Tên] ([Thành phố]) - Menu & Reviews`, `[Tên] - Reviews & Ratings in [Thành phố]`. Hàng nghìn URL cùng 1 cấu trúc chỉ tráo biến sẽ bị Google SpamBrain phạt Scaled Content Abuse.
-   - **Quy chuẩn SEO Title (Văn xuôi Thực thể - Entity-Dense Prose)**:
-     + Bắt buộc viết thành **1 câu văn xuôi có nghĩa, tự nhiên, 100% unique** (headline mời gọi, sinh động).
-     + Kết hợp tự nhiên: **[Tên đối tượng] + [Local chính: Neighborhood/City] + [Thực thể độc đáo: Món đặc trưng/Cuisine/Vibe/Trải nghiệm]**.
-     + Độ dài: **BẮT BUỘC DƯỚI 70 KÝ TỰ** (Lý tưởng: 50 – 65 ký tự).
-     + Không dùng ngoặc vuông `[]` hay lạm dụng gạch đứng `|`.
+4. **Phòng thủ Programmatic Template Spam (Metadata Title & Description Độc bản Tự nhiên đa ngành):**
+   - **CẤM TUYỆT ĐỐI công thức máy móc rập khuôn**: Cấm các template ghép cứng biến số vô hồn (như `[Tên] - [Địa chỉ], [Thành phố]`, `[Sản phẩm] ([Danh mục]) - Giá & Đánh giá`, `[Dịch vụ] tại [Địa phương] - Báo giá`). Hàng nghìn URL cùng 1 khung cú pháp chỉ tráo biến số sẽ bị Google SpamBrain nhận diện là Scaled Content Abuse / Boilerplate Spam.
+   - **Quy chuẩn SEO Title (Văn xuôi Thực thể - Entity-Dense Natural Prose)**:
+     + Bắt buộc viết thành **1 câu văn xuôi hoàn chỉnh có nghĩa, tự nhiên, 100% unique** (đóng vai trò là một headline thu hút, giải quyết đúng Search Intent).
+     + Kết hợp linh hoạt theo ngữ cảnh ngành hàng: **[Thực thể chính (Tên Thương hiệu / Đối tượng / Sản phẩm / Dịch vụ)] + [Ngữ cảnh phân loại (Vị trí Local / Danh mục / Phân khúc)] + [Thực thể khác biệt hóa mạnh nhất (Tính năng độc quyền / USP / Điểm nhấn trải nghiệm / Điểm nổi bật)]**.
+     + Độ dài: **BẮT BUỘC DƯỚI 70 KÝ TỰ** (Lý tưởng SERP: 50 – 65 ký tự).
+     + Tuyệt đối KHÔNG dùng ngoặc vuông `[]` hoặc lạm dụng dấu gạch đứng `|`.
    - **Quy chuẩn Meta Description**:
-     + 1-2 câu văn xuôi cuốn hút giàu thực thể (135 – 158 ký tự), kết thúc bằng Call-To-Action (CTA) tự nhiên.
-     + CẤM câu boilerplate rác: `Visit [Name] at [Address] to read customer reviews, view ratings and check details...`
-   - **Đồng bộ Sitemap Lastmod**: Khi update metadata hàng loạt, bắt buộc cập nhật `updatedAt = new Date()` để sitemap `<lastmod>` đổi mới cho bot Google cào lại.
+     + Viết 1-2 câu văn xuôi hấp dẫn, tự nhiên, giàu thông tin thực thể (135 – 158 ký tự), phản ánh đúng giá trị trang và kết thúc bằng một lời kêu gọi hành động (Call-To-Action - CTA) phù hợp với Search Intent.
+     + CẤM triệt để các câu boilerplate mẫu rác (như `Xem chi tiết tại X để đọc đánh giá...`, `Khám phá ngay danh sách Y tại Z...`).
+   - **Đồng bộ Timestamp Sitemap (`<lastmod>`)**:
+     + Mỗi khi update hoặc chạy pipeline sinh/sửa metadata hàng loạt, BẮT BUỘC cập nhật trường thời gian (`updatedAt = new Date()`) trong Database để file `sitemap.xml` tự động render `<lastmod>` mới nhất, giúp bot tìm kiếm nhận diện bài được làm mới và cào lại tự nhiên.
 
 **Quy tắc ứng phó bắt buộc (Anti-Spam/Anti-Slop):**
 - Cấm nhồi nhét từ khóa, cấm tạo nội dung rác (scaled content abuse) vô giá trị.
