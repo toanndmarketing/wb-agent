@@ -19,6 +19,10 @@ Implement code theo tasks.md, tuân thủ IRONCLAD Protocols và **Deviation Rul
 - TRƯỚC KHI tạo UI Component mới (như Button, Card), BẮT BUỘC rà soát `src/components/` hoặc `src/ui/`.
 - Nếu đã có component tương tự, PHẢI import và xài lại. Chỉ viết mới khi không thể extend component cũ.
 
+### 🚨 Strict Architecture Cross-Check (SEO & Link Juice Flow)
+- BẮT BUỘC ĐỐI CHIẾU: Khi implement các task liên quan đến Route, Internal Linking, hoặc điều chỉnh Component sinh link (vd: `SiblingLinks`, `CuisineLinks`...), TRƯỚC KHI code, bắt buộc phải đọc và đối chiếu chéo (cross-check) với các file quy chuẩn kiến trúc (vd: `silo-seo-audit-matrix.md` hoặc `seo-audit.md`).
+- Tuyệt đối không code bề nổi UI/HTML nếu làm sai mạch chảy Link Juice (Silo Flow) đã được thiết kế.
+
 ### 🚨 MANDATORY: Deep Context Scan & Anti-Surface-Fix Protocol ⭐
 - **Deep Context Scan (Nạp Sâu Context & Audit Reports)**:
   - TRƯỚC KHI thực thi bất kỳ task nào, BẮT BUỘC dùng `list_dir` / `view_file` rà soát triệt để các file Báo cáo Audit gần nhất trong dự án (ví dụ `seo_*.md`, `debug-report.md`, `.agent/specs/`, `docs/`, các file workflow markdown như `12-seo-geo.md`...) cùng với file `master-identity.md` / `workflow_config.json`.

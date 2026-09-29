@@ -14,6 +14,7 @@ Chẩn đoán sự cố hệ thống, tìm nguyên nhân gốc rễ (Root Cause)
    - CẤM đọc lướt rồi suy diễn.
 2. **Anti-Surface Fix Protocol (Chống Sửa Nông / Sửa Triệu Chứng Bề Nổi)**:
    - CẤM chỉ fix lỗi bề nổi/triệu chứng trước mắt (ví dụ: thấy port bận, cache lỗi, syntax crash thì sửa tạm mà bỏ qua quy chuẩn kiến trúc tổng thể sitemap index, router structure, API contract trong doc).
+   - **Đặc biệt với lỗi Route / SEO / Link Juice:** Tuyệt đối không fix UI/HTML nếu chưa kiểm tra chéo (cross-check) mạch chảy Link Juice với file `silo-seo-audit-matrix.md` hoặc `seo-audit.md`. Nếu link không đâm đúng Silo Cấp 2 / Cấp 3, đó là Bug Kiến Trúc, phải báo cáo và sửa tận gốc.
    - Mọi phương án fix lỗi phải đối chiếu với Architecture Specs & Audit Reports của dự án. Nếu phát hiện code hiện tại sai kiến trúc chuẩn, BẮT BUỘC phải đề xuất refactor chuẩn hóa kiến trúc.
 3. **Kiểm tra logs hệ thống**:
    - Dùng lệnh `docker compose logs -f <service>` hoặc đọc log files trực tiếp để tìm exception, stack trace, hoặc error codes.
