@@ -4,6 +4,8 @@
 Script tự động chụp giao diện website và xuất trọn bộ 7 file PDF tài liệu đính kèm
 chuẩn quy định Thông báo Website TMĐT Bán hàng của Bộ Công Thương (online.gov.vn).
 
+Hỗ trợ tùy biến URL các trang chính sách theo từng website thông qua --routes-json.
+
 Yêu cầu thư viện:
   pip install playwright pypdf
   playwright install chromium
@@ -11,9 +13,9 @@ Yêu cầu thư viện:
 
 import os
 import sys
+import json
 import argparse
 import subprocess
-from urllib.parse import urljoin
 from pypdf import PdfWriter
 
 try:
@@ -62,6 +64,16 @@ CSS_PRINT_CLEANUP = """
 }
 """
 
+DEFAULT_ROUTES = {
+    "1_privacy": ["/chinh-sach-bao-mat"],
+    "2_complaint": ["/gop-y", "/dieu-khoan-su-dung"],
+    "3_pricing": ["/dieu-khoan-su-dung", "/huong-dan-mua-hang"],
+    "4_payment": ["/chinh-sach-thanh-toan"],
+    "5_terms": ["/dieu-khoan-su-dung"],
+    "6_delivery_return": ["/chinh-sach-van-chuyen", "/chinh-sach-doi-tra", "/chinh-sach-bao-hanh"],
+    "7_support": ["/lien-he", "/gop-y"]
+}
+
 def print_page_to_pdf(page, url, output_pdf_path):
     print(f"  🌐 Đang tải trang: {url}")
     try:
@@ -70,13 +82,11 @@ def print_page_to_pdf(page, url, output_pdf_path):
             print(f"  ⚠️ Cảnh báo: Trang trả về mã lỗi HTTP {response.status}: {url}")
     except Exception as e:
         print(f"  ⚠️ Không thể tải {url}: {e}")
-        # Thử lại với domcontentloaded
         try:
             page.goto(url, wait_until="domcontentloaded", timeout=15000)
         except Exception:
             return False
 
-    # Inject CSS ẩn floating bar & bottom bar
     page.add_style_tag(content=CSS_PRINT_CLEANUP)
     
     # Cuộn trang để kích hoạt lazy loading hình ảnh
@@ -98,7 +108,6 @@ def print_page_to_pdf(page, url, output_pdf_path):
     }""")
     page.wait_for_timeout(1000)
 
-    # Xuất PDF khổ A4, có header & footer chuẩn
     page.emulate_media(media="print")
     page.pdf(
         path=output_pdf_path,
@@ -124,60 +133,66 @@ def merge_pdfs(input_pdf_list, output_pdf_path):
         return True
     return False
 
-def generate_bct_files(base_url, brand_slug, out_dir, logo_path=None):
+def build_full_url(base_url, route_or_url):
+    if route_or_url.startswith("http://") or route_or_url.startswith("https://"):
+        return route_or_url
+    return f"{base_url}/{route_or_url.lstrip('/')}"
+
+def generate_bct_files(base_url, brand_slug, out_dir, logo_path=None, routes_json=None):
     os.makedirs(out_dir, exist_ok=True)
     temp_dir = os.path.join(out_dir, "_temp_pdf")
     os.makedirs(temp_dir, exist_ok=True)
 
     base_url = base_url.rstrip("/")
 
-    # Danh mục 7 file chuẩn kèm danh sách đường dẫn cần gộp
+    routes = dict(DEFAULT_ROUTES)
+    if routes_json and os.path.exists(routes_json):
+        with open(routes_json, "r", encoding="utf-8") as f:
+            custom_routes = json.load(f)
+            routes.update(custom_routes)
+
     file_definitions = [
         {
             "id": 1,
             "filename": f"1_Chinh_sach_bao_mat_{brand_slug}.pdf",
             "title": "Chính sách bảo mật",
-            "urls": [f"{base_url}/chinh-sach-bao-mat"]
+            "urls": [build_full_url(base_url, r) for r in routes["1_privacy"]]
         },
         {
             "id": 2,
             "filename": f"2_Phuong_thuc_tiep_nhan_va_giai_quyet_khieu_nai_{brand_slug}.pdf",
             "title": "Phương thức tiếp nhận & giải quyết khiếu nại",
-            "urls": [f"{base_url}/gop-y", f"{base_url}/dieu-khoan-su-dung"]
+            "urls": [build_full_url(base_url, r) for r in routes["2_complaint"]]
         },
         {
             "id": 3,
             "filename": f"3_Chinh_sach_gia_{brand_slug}.pdf",
             "title": "Chính sách giá",
-            "urls": [f"{base_url}/dieu-khoan-su-dung", f"{base_url}/huong-dan-mua-hang"]
+            "urls": [build_full_url(base_url, r) for r in routes["3_pricing"]]
         },
         {
             "id": 4,
             "filename": f"4_Chinh_sach_ve_thanh_toan_{brand_slug}.pdf",
             "title": "Chính sách về thanh toán",
-            "urls": [f"{base_url}/chinh-sach-thanh-toan"]
+            "urls": [build_full_url(base_url, r) for r in routes["4_payment"]]
         },
         {
             "id": 5,
             "filename": f"5_Dieu_kien_cung_cap_hang_hoa_dich_vu_{brand_slug}.pdf",
             "title": "Điều kiện cung cấp hàng hóa/dịch vụ",
-            "urls": [f"{base_url}/dieu-khoan-su-dung"]
+            "urls": [build_full_url(base_url, r) for r in routes["5_terms"]]
         },
         {
             "id": 6,
             "filename": f"6_Chinh_sach_giao_hang_doi_tra_hoan_tien_{brand_slug}.pdf",
             "title": "Chính sách giao hàng, đổi trả & hoàn tiền",
-            "urls": [
-                f"{base_url}/chinh-sach-van-chuyen",
-                f"{base_url}/chinh-sach-doi-tra",
-                f"{base_url}/chinh-sach-bao-hanh"
-            ]
+            "urls": [build_full_url(base_url, r) for r in routes["6_delivery_return"]]
         },
         {
             "id": 7,
             "filename": f"7_Hinh_thuc_ho_tro_truc_tuyen_{brand_slug}.pdf",
             "title": "Hình thức hỗ trợ trực tuyến",
-            "urls": [f"{base_url}/lien-he", f"{base_url}/gop-y"]
+            "urls": [build_full_url(base_url, r) for r in routes["7_support"]]
         }
     ]
 
@@ -209,12 +224,10 @@ def generate_bct_files(base_url, brand_slug, out_dir, logo_path=None):
                     temp_pdfs.append(tmp_pdf)
 
             if len(temp_pdfs) == 1:
-                # 1 trang duy nhất, đổi tên hoặc copy sang file chính
                 if os.path.exists(final_path):
                     os.remove(final_path)
                 os.replace(temp_pdfs[0], final_path)
             elif len(temp_pdfs) > 1:
-                # Gộp nhiều trang
                 merge_pdfs(temp_pdfs, final_path)
                 for t in temp_pdfs:
                     if os.path.exists(t):
@@ -228,13 +241,11 @@ def generate_bct_files(base_url, brand_slug, out_dir, logo_path=None):
 
         browser.close()
 
-    # Dọn dẹp thư mục tạm
     try:
         os.rmdir(temp_dir)
     except Exception:
         pass
 
-    # Xử lý Logo nếu được chỉ định
     if logo_path and os.path.exists(logo_path):
         target_logo = os.path.join(out_dir, f"0_Logo_{brand_slug}.png")
         import shutil
@@ -243,7 +254,6 @@ def generate_bct_files(base_url, brand_slug, out_dir, logo_path=None):
 
     print("🎉 HOÀN TẤT 100%! Toàn bộ 7 file PDF đã sẵn sàng nộp lên online.gov.vn.")
 
-    # Mở thư mục Windows File Explorer tự động
     if sys.platform == "win32":
         try:
             os.startfile(out_dir)
@@ -252,10 +262,11 @@ def generate_bct_files(base_url, brand_slug, out_dir, logo_path=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Xuất bộ 7 file PDF tài liệu đính kèm Bộ Công Thương")
-    parser.add_argument("--url", required=True, help="URL trang chủ website (ví dụ: https://mkpc.vn)")
-    parser.add_argument("--brand", default="web", help="Slug thương hiệu (ví dụ: mkpc)")
+    parser.add_argument("--url", required=True, help="URL trang chủ website (ví dụ: https://example.com)")
+    parser.add_argument("--brand", default="brand", help="Slug thương hiệu đặt tên file (ví dụ: myshop)")
     parser.add_argument("--out", default="./docs/bct-files", help="Thư mục lưu file PDF xuất ra")
     parser.add_argument("--logo", default=None, help="Đường dẫn file ảnh logo (nếu có)")
+    parser.add_argument("--routes-json", default=None, help="File JSON mapping 7 mục với các slug thực tế của web")
     args = parser.parse_args()
 
-    generate_bct_files(args.url, args.brand, args.out, args.logo)
+    generate_bct_files(args.url, args.brand, args.out, args.logo, args.routes_json)
